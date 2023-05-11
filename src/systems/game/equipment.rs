@@ -34,6 +34,7 @@ pub enum WeaponProficiency {
     Exotic,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Copy)]
 pub enum WeaponName {
     Gauntlet,
     UnarmedStrike,
@@ -285,6 +286,285 @@ pub enum WeaponName {
     WristLauncherHeavy,
 }
 
+impl WeaponName {
+    pub fn array_martial_elf_familiarity() -> [WeaponName; 6] {
+        use WeaponName::*;
+        [
+            Longsword,
+            Rapier,
+            Shortbow,
+            ShortbowComposite,
+            Longbow,
+            LongbowComposite,
+        ]
+    }
+    pub fn array_simple() -> [WeaponName; 40] {
+        use WeaponName::*;
+        [
+            Gauntlet,
+            UnarmedStrike,
+            BattleAspergillum,
+            BrassKnife,
+            BrassKnuckles,
+            Cestus,
+            Dagger,
+            DaggerPunching,
+            GauntleSpiked,
+            Handwraps,
+            TravelingKettle,
+            HookHand,
+            Kunai,
+            MaceLight,
+            Sickle,
+            SpringBlade,
+            WoodenStake,
+            // Simple One-handed Melee
+            Club,
+            ClubMere,
+            MaceHeavy,
+            Shortspear,
+            // Simple Two-handed Melee Weapons
+            Bayonet,
+            BoardingPike,
+            Kumade,
+            KumadeCollapsible,
+            LanternStaff,
+            Longspear,
+            Quarterstaff,
+            Spear,
+            SpearBoar,
+            SpearWeighted,
+            // Simple Ranged Weapons
+            Blowgun,
+            CrossbowHeavy,
+            CrossbowHeavyUnderwater,
+            CrossbowLight,
+            Dart,
+            Javalin,
+            Sling,
+            Stingchuck,
+            Stonebow,
+        ]
+    }
+    pub fn array_martial() -> [WeaponName; 84] {
+        use WeaponName::*;
+        [
+            //// Martial Weapons
+            // Light Melee Weapons
+            AxeBoarding,
+            AxeThrowing,
+            BladeBoot,
+            CatoNineTails,
+            ClawBlades,
+            DaggerDueling,
+            Dogslicer,
+            HammerLight,
+            Gladius,
+            Handaxe,
+            KatarTriBladed,
+            KnifeSwitchblade,
+            KoboldTailAttachmentLongLash,
+            KoboldTailAttachmentPounder,
+            KoboldTailAttachmentRazored,
+            KoboldTailAttachmentSpiked,
+            KoboldTailAttachmentSweeper,
+            Kukri,
+            Machete,
+            PickLight,
+            RatfolkTailblade,
+            Sap,
+            SeaKnife,
+            ShieldLight,
+            SpikedArmor,
+            SpikedShieldLight,
+            Starknife,
+            SwordShort,
+            WarRazor,
+            // One-Handed Melee Weapons
+            Ankus,
+            BattleAxe,
+            CombatScabbard,
+            Cutlass,
+            FlailLight,
+            Gandasa,
+            Klar,
+            Longsword,
+            Manople,
+            PickHeavy,
+            Rapier,
+            CombatScabbardSharpened,
+            Scimitar,
+            Scizore,
+            ShieldHeavy,
+            SpikedShieldHeavy,
+            SwordCane,
+            Terbutje,
+            TerbutjeSteel,
+            Trident,
+            Warhammer,
+            // Two-Handed Melee Weapons
+            Bardiche,
+            BecDeCorbin,
+            Bill,
+            EarthBreaker,
+            Falchion,
+            FlailHeavy,
+            Glaive,
+            GlaiveGuisarme,
+            Greataxe,
+            Greatclub,
+            Greatsword,
+            Guisarme,
+            Halberd,
+            HammerLucerne,
+            Horsechopper,
+            Lance,
+            OgreHook,
+            Pickaxe,
+            Planson,
+            Ranseur,
+            Scythe,
+            SpearSyringe,
+            // Ranged Weapons
+            Ammentum,
+            Chakram,
+            DartJolting,
+            HungaMunga,
+            Hurlbat,
+            Longbow,
+            LongbowComposite,
+            Pilum,
+            Shortbow,
+            ShortbowComposite,
+            SpearSling,
+            ThrowingArrowCord,
+        ]
+    }
+    pub fn array_exotic() -> [WeaponName; 111] {
+        use WeaponName::*;
+        [
+            //// Exotic
+            // Light Melee Weapons
+            Aklys,
+            AxeGauntletDwarvenLight,
+            AxeKnuckle,
+            BarbazuBeard,
+            BattlePoi,
+            DaggerSwordbreaker,
+            FlyingTalon,
+            GnomePincher,
+            HalflingRopeShot,
+            HelmetDwarvenBoulder,
+            Kama,
+            KnifeButterfly,
+            KnifeDeerHorn,
+            MaulaxeDwarven,
+            Nunchaku,
+            Quadrens,
+            RazorDrow,
+            RopeGauntlet,
+            SabreSawtoothLight, // can sometimes be light or medium, see details
+            Sai,
+            Sanpkhang,
+            Siangham,
+            Sica,
+            ThornBracer,
+            WarShieldDwarven,
+            Waveblade,
+            WhipScorpion,
+            // One-Handed
+            AxeGauntletDwarvenHeavy,
+            AxeHooked,
+            BrokenBackSeax,
+            Estoc,
+            Falcata,
+            Flickmace,
+            Flindbar,
+            Khopesh,
+            Knobkerrie,
+            RamHammerDwarven,
+            RapierSpiral,
+            Rhoka,
+            SabreSawtoothMedium, // can sometimes be light or medium, see details
+            Shotel,
+            SickleSword,
+            SplitBladeSword,
+            SwordDueling,
+            SwordBastard,
+            Tongi,
+            WaraxeDwarven,
+            WaraxeDwarvenDouble,
+            Whip,
+            // Two-Handed
+            AxeOrcDouble,
+            AxeButchering,
+            BattleLadderGnome,
+            BoardingGaff,
+            ChainHammer,
+            ChainSpiked,
+            Crook,
+            CurveBladeElven,
+            DornDergarDwarven,
+            DoubleSpear,
+            ElvenBranchedSpear,
+            Fauchard,
+            FlailDire,
+            Flailpole,
+            Flambard,
+            FlyingBlade,
+            Garrote,
+            GiantStickerDwarven,
+            HammerGnomeHooked,
+            Harpoon,
+            LongaxeDwarven,
+            LongHammerDwarven,
+            Mancatcher,
+            OrcSkullRam,
+            PistonMaulGnome,
+            RipsawGlaiveGnome,
+            ScarfBladed,
+            SpearTotem,
+            SphinxHammerDwarven,
+            Switchscythe,
+            SwordTwoBladed,
+            UgroshDwarven,
+            // Ranged
+            DartsFeatherweight,
+            Bola,
+            BolaBrutal,
+            Boomerang,
+            BowThorn,
+            CrossbowCrankHeavy,
+            CrossbowCrankLight,
+            CrossbowDouble,
+            CrossbowHand,
+            CrossbowLaunching,
+            CrossbowRepeatingHeavy,
+            CrossbowRepeatingLight,
+            FlaskThrower,
+            GrapplingHook,
+            HornbowOrc,
+            JavalinStormshaft,
+            Lasso,
+            Net,
+            NetSnag,
+            PelletbowDwarvenLight,
+            PelletbowDwarvenHeavy,
+            ShieldThrowing,
+            ShrillshaftJavalin,
+            Shuriken,
+            SlingDouble,
+            SlingGlove,
+            SlingStaffHalfling,
+            SlingStitched,
+            WristLauncher,
+            WristLauncherHeavy,
+        ]
+    }
+}
+
+// Racial weapon groups, used with the weapon_names_vec below to easily get the
+// list of WeaponName items.
 pub enum RacialWeapon {
     Dwarven,
     Orc,
@@ -292,7 +572,7 @@ pub enum RacialWeapon {
 }
 
 impl RacialWeapon {
-    fn weapon_names_vec(&self) -> Vec<WeaponName> {
+    pub fn weapon_names_vec(&self) -> Vec<WeaponName> {
         use WeaponName::*;
         match self {
             Self::Dwarven => vec![
@@ -313,8 +593,8 @@ impl RacialWeapon {
                 DornDergarDwarven,
                 MaulaxeDwarven,
             ],
-            Self::Orc => vec![],
-            Self::Elf => vec![],
+            Self::Orc => vec![AxeOrcDouble, OrcSkullRam, HornbowOrc],
+            Self::Elf => vec![ElvenBranchedSpear, CurveBladeElven],
         }
     }
 }

@@ -24,6 +24,7 @@ pub const GRID_Z_POS: f32 = 0.;
 
 fn main() {
     //// just for testing for now
+    use crate::systems::game::character::PlayableRace;
     use crate::systems::game::race::*;
     use RacialTraitName::*;
     ////
@@ -58,7 +59,10 @@ fn main() {
     //
     // For testing character.rs
     //
-    app.insert_resource(RaceBuilder(vec![
+    app.insert_resource(RaceBuilder(
+        RacialTraitName::default_traits(&PlayableRace::Gnome),
+        // RacialTraitName::default_traits(&PlayableRace::Elf),
+        // vec![
         // Humanoid,
         // Human,
         // SizeMedium,
@@ -69,13 +73,33 @@ fn main() {
         // BaseHumanBonusFeat,
         // BaseHumanSkilled,
         // ElvenImmunities,
-        BaseElfElvenMagic,
-        KeenSenses,
-    ]))
+        // BaseElfElvenMagic,
+        // KeenSenses,
+        // BaseElfWeaponFamiliarity,
+        // ]
+    ))
     .add_system(spawn_player.on_startup())
-    .add_system(print_skill_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)))
-    .add_system(build_race.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)))
-    .add_system(print_builder.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)));
+    .add_systems(
+        (
+            print_armor_class_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_floating_bonus_feats
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            build_race.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_ability_score_bonuses
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_saving_throw_bonuses
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_caster_level_bonuses
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_floating_ability_bonuses
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_skill_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_builder.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_weapon_proficiencies
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+        )
+            .chain(),
+    );
 
     app.run();
 }
