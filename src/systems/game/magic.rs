@@ -29,8 +29,15 @@ use bevy::prelude::*;
 //          fireball.run_if(on_event::<FireBallEvent>())
 //      );
 //  }
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq, Ord)]
+pub enum SlaSource {
+    GnomeMagic,
+}
+
 #[derive(Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq)]
 pub struct SpellLikeAbility {
+    pub source: SlaSource,
     pub spell_name: SpellName,
     pub cast_frequency: CastFrequency,
     pub uses: Option<u32>,
@@ -53,7 +60,6 @@ pub enum CasterLevelUse {
     Dispel,
     OvercomeSpellResistance,
 }
-impl character::Limitation for CasterLevelUse {}
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq, Ord)]
 pub enum SpellName {

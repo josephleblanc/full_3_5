@@ -60,8 +60,8 @@ fn main() {
     // For testing character.rs
     //
     app.insert_resource(RaceBuilder(
-        RacialTraitName::default_traits(&PlayableRace::Gnome),
-        // RacialTraitName::default_traits(&PlayableRace::Elf),
+        // RacialTraitName::default_traits(&PlayableRace::Gnome),
+        RacialTraitName::default_traits(&PlayableRace::Elf),
         // vec![
         // Humanoid,
         // Human,
@@ -97,6 +97,10 @@ fn main() {
             print_builder.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
             print_weapon_proficiencies
                 .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_spell_like_abilities
+                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_spell_dc_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+            print_attack_roll_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
         )
             .chain(),
     );

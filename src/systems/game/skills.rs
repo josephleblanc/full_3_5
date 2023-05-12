@@ -12,7 +12,6 @@ pub enum SpellcraftUses {
     DecipherScroll,
     CraftItem,
 }
-impl character::Limitation for SpellcraftUses {}
 
 // SkillName
 #[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq)]

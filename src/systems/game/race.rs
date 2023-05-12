@@ -29,25 +29,25 @@ pub enum RacialTraitName {
     //// Vision
     NormalVision,
     LowLightVision,
-    // DarkVisionSixty,
-    // DarkVisionOneTwenty,
+    DarkVision,
+    DarkVisionSuperior,
     //// Speed
     SpeedNormal,
     SpeedSlow,
     //// Type
     Humanoid,
+    Outsider,
     //// Subtype
     Human,
     Elf,
     Gnome,
-    // OutsiderNative,    // Aasimar, Fetchling
-    // HumanoidGoblinoid, // Gorblin
-    // HumanoidReptilian, // Kobold
+    Native,
+    Goblinoid,
+    Reptilian,
     //// Skills
-    // Sneaky,
     //// Weapon Familiarity
     BaseElfWeaponFamiliarity,
-    // OrcWeaponFamiliarity,
+    OrcWeaponFamiliarity,
     //// Languages
     BaseLanguagesCommonAny,
     //// Immunities and Resistances
@@ -57,6 +57,15 @@ pub enum RacialTraitName {
     ChooseOneASM,
     // LightSensitivity, // Dhampir, Kobold
     // LanguagesCommon,  // Only Common, no extras
+    // Dwarf Base Traits
+    BaseDwarfASM,
+    Dwarf,
+    BaseDwarfLanguages,
+    BaseDwarfHardy,
+    BaseDwarfStability,
+    BaseDwarfGreed,
+    BaseDwarfStonecunning,
+    BaseDwarfWeaponFamiliarity,
     // Human Base Traits
     BaseHumanBonusFeat,
     BaseHumanSkilled,
@@ -72,15 +81,14 @@ pub enum RacialTraitName {
     BaseGnomeASM,
     // BaseGnomeType,
     BaseGnomeLanguages,
-    BaseGnomeDefensiveTraining,
+    DefensiveTraining,
     BaseGnomeIllusionResistance,
     BaseGnomeObsessive,
     BaseGnomeGnomeMagic,
     BaseGnomeHatred,
-    // BaseGnomeWeaponFamiliarity,
+    BaseGnomeWeaponFamiliarity,
     // // Half-Elf Base Traits
-    // BaseHalfElfType,
-    // BaseHalfElfLanguages,
+    BaseHalfElfLanguages,
     // BaseHalfElfAdaptability,
     // BaseHalfElfElfBlood,
     // BaseHalfElfMultitalented,
@@ -97,7 +105,7 @@ pub enum RacialTraitName {
     // BaseHalflingFearless,
     // BaseHalflingHalflingLuck,
     // BaseHalflingSureFooted,
-    // BasehalflingWeaponFamiliarity,
+    BaseHalflingWeaponFamiliarity,
     // // Aasimar Base Traits
     // BaseAasimarASB, // +2 Wis, +2 Cha
     // BaseAasimarLanguages,
@@ -113,7 +121,7 @@ pub enum RacialTraitName {
     // BaseCatfolkSprinter,
     // // Dhampir Base Traits
     // BaseDhampirASM, // +2 Dex, +2 Cha, -2 Con
-    // BaseDhampirType,
+    Dhampir,
     // BaseDhampirUndeadResistance,
     // BaseDhampirResistLevelDrain,
     // BaseDhampirManipulative,
@@ -124,13 +132,13 @@ pub enum RacialTraitName {
     // //
     // // Drow Base Traits
     // BaseDrowASM, // +2 Dex, +2 Cha, -2 Con
-    // WeaponFamiliarityDrow,
     // BaseDrowLanguages,
     // BaseDrowImmunities,
     // BaseDrowSpellResistance,
     // BaseDrowSLA,
     // BaseDrowPoisonUse,
     // BaseDrowLightBlindness,
+    BaseDrowWeaponFamiliarity,
     // // Fetchling Base Traits
     // BaseFetchlingASM, // +2 Dex, +2 Cha, -2 Wis
     // BaseFetchlingLanguages,
@@ -146,6 +154,7 @@ pub enum RacialTraitName {
     // // Hobgoblin Base Traits
     // BaseHobgoblinASM, // +2 Dex, +2 Con
     // BaseHobgoblinLanguages,
+    HobgoblinSneaky,
     // // Ifrit Base Traits
     // BaseIfritASM, // +2 Dex, +2 Cha, -2 Wis
     // BaseIfritLanguages,
@@ -159,7 +168,7 @@ pub enum RacialTraitName {
     // BaseKoboldCrafty,
     // // Orc Base Traits
     // BaseOrcASM, // +4 Str, -2 Int, -2 Wis, -2 Cha
-    // HumanoidOrc,
+    Orc,
     // BaseOrcLanguages,
     // BaseOrcFerocity,
     // // Oread Base Traits
@@ -170,7 +179,7 @@ pub enum RacialTraitName {
     // BaseOreadEarthAffinity,
     // // Ratfolk Base Traits
     // BaseRatfolkASM, // +2 Dex, +2 Int, -2 Str
-    // HumanoidRatfolk,
+    Ratfolk,
     // BaseRatfolkLanguages,
     // BaseRatfolkTinker,
     // BaseRatfolkRodentEmpathy,
@@ -183,10 +192,11 @@ pub enum RacialTraitName {
     // BaseSylphAirAffinity,
     // // Tengu Base Traits
     // BaseTenguASM, // +2 Dex, +2 Wis, -2 Con
-    // HumanoidTengu,
+    TenguSneaky,
+    Tengu,
     // BaseTenguLanguages,
     // BaseTenguGiftedLinguist,
-    // BaseTenguSwordtrained,
+    BaseTenguSwordtrained,
     // BaseTenguNaturalWeapons,
     // BaseTenguSenses, // Same as low-light vision
     // // Tiefling Base Traits
@@ -219,49 +229,28 @@ impl RacialTraitName {
         use RacialTraitName::*;
         match race {
             PlayableRace::Human => vec![
-                // test1 succeeded
                 Humanoid,
-                // test1 succeeded
                 Human,
-                // test1 succeeded
                 SizeMedium,
-                // test1 succeeded
                 NormalVision,
-                // test1 succeeded
                 SpeedNormal,
-                // test1 succeeded
                 ChooseOneASM,
-                // test1 succeeded
                 BaseLanguagesCommonAny,
-                // test1 succeeded
                 BaseHumanBonusFeat,
-                // test1 succeeded
                 BaseHumanSkilled,
             ],
             PlayableRace::Elf => vec![
-                // test1 succeeded
                 SizeMedium,
-                // test1 succeeded
                 NormalVision,
-                // test1 succeeded
                 SpeedNormal,
-                // test1 succeeded
                 LowLightVision,
-                // test1 succeeded
                 BaseElfASM,
-                // test1 succeeded
                 Humanoid,
-                // test1 succeeded
                 Elf,
-                // test1 succeeded
                 BaseElfLanguages,
-                // test1 succeeded -> SleepImmunity
                 ElvenImmunities,
-                // test1 succeeded
                 KeenSenses,
-                // test1 succeeded
                 BaseElfElvenMagic,
-                // test1 succeeded
                 BaseElfWeaponFamiliarity,
             ],
             PlayableRace::Gnome => vec![
@@ -271,240 +260,253 @@ impl RacialTraitName {
                 SizeSmall,
                 SpeedSlow,
                 BaseGnomeLanguages,
-                BaseGnomeDefensiveTraining,
+                DefensiveTraining,
                 BaseGnomeIllusionResistance,
                 KeenSenses,
                 BaseGnomeObsessive,
                 BaseGnomeGnomeMagic,
                 BaseGnomeHatred,
-                //         BaseGnomeWeaponFamiliarity,
+                BaseGnomeWeaponFamiliarity,
                 LowLightVision,
             ],
+            PlayableRace::HalfElf => vec![
+                ChooseOneASM,
+                Humanoid,
+                Elf,
+                Human,
+                SizeMedium,
+                BaseHalfElfLanguages,
+                ElvenImmunities,
+                // BaseHalfElfAdaptability,
+                KeenSenses,
+                LowLightVision,
+                // BaseHalfElfElfBlood,
+                // BaseHalfElfMultitalented,
+            ],
+
+            PlayableRace::HalfOrc => vec![
+                ChooseOneASM,
+                //         BaseHalfOrcType,
+                SizeMedium,
+                //         BaseOrcLanguages,
+                //         BaseHalfOrcIntimidating,
+                //         BaseHalfOrcOrcFerocity,
+                OrcWeaponFamiliarity,
+                DarkVision,
+                //         BaseHalfOrcOrcBlood,
+            ],
+            PlayableRace::Halfling => vec![
+                //         BaseHalflingASB,
+                SizeSmall,
+                //         BaseHalflingType,
+                SpeedSlow,
+                //         BaseHalflingLanguages,
+                //         BaseHalflingFearless,
+                //         BaseHalflingHalflingLuck,
+                //         BaseHalflingSureFooted,
+                BaseHalflingWeaponFamiliarity,
+                KeenSenses,
+            ],
+            PlayableRace::Aasimar => vec![
+                //         BaseAasimarASB, // +2 Wis, +2 Cha
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseAasimarLanguages,
+                //         BaseAasimarCelestialResistance,
+                //         BaseAasimarSkilled,
+                //         BaseAasimarSLA, // Spell-like Ability
+                DarkVision,
+            ],
+            PlayableRace::Catfolk => vec![
+                //         BaseCatfolkASM,
+                //         BaseCatfolkType,
+                SpeedNormal,
+                SizeMedium,
+                //         BaseCatfolkLanguages,
+                //         BaseCatfolkCatsLuck,
+                //         BaseCatfolkNaturalHunter,
+                //         BaseCatfolkSprinter,
+                LowLightVision,
+            ],
+            PlayableRace::Dhampir => vec![
+                //         BaseDhampirASM, // +2 Dex, +2 Cha, -2 Con
+                Humanoid,
+                Dhampir,
+                SizeMedium,
+                SpeedNormal,
+                //         LanguagesCommon,
+                //         BaseDhampirUndeadResistance,
+                //         BaseDhampirResistLevelDrain,
+                //         BaseDhampirManipulative,
+                //         BaseDhampirSLA,
+                DarkVision,
+                LowLightVision,
+                //         LightSensitivity,
+                //         BaseDhampirNegativeEnergyAffinity,
+                //         // Sunlight Syndrome?
+                //         // https://www.d20pfsrd.com/RACES/other-races/featured-races/arg-dhampir/#Sunlight_Syndrome
+            ],
+            PlayableRace::Drow => vec![
+                //         BaseDrowASM, // +2 Dex, +2 Cha, -2 Con
+                Humanoid,
+                Elf,
+                SizeMedium,
+                SpeedNormal,
+                BaseDrowWeaponFamiliarity,
+                //         BaseDrowLanguages,
+                //         BaseDrowImmunities,
+                //         BaseDrowSpellResistance,
+                KeenSenses,
+                //         BaseDrowSLA,
+                //         BaseDrowPoisonUse,
+                DarkVisionSuperior,
+                //         BaseDrowLightBlindness,
+            ],
+            PlayableRace::Fetchling => vec![
+                //         BaseFetchlingASM, // +2 Dex, +2 Cha, -2 Wis
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseFetchlingLanguages,
+                //         BaseFetchlingShadowBlending,
+                //         BaseFetchlingShadowyResistance,
+                //         BaseFetchlingSkilled,
+                //         BaseFetchlingSLA,
+                DarkVision,
+                //         LowLightVision,
+            ],
+            PlayableRace::Goblin => vec![
+                //         BaseGoblinASM, // +4 Dex, -2 Str, -2 Cha
+                Humanoid, Goblinoid, SizeSmall, SpeedSlow,
+                //         BaseGoblinLanguages,
+                //         BaseGoblinSkilled,
+                //         BaseGoblinFastMovement,
+                DarkVision,
+            ],
+            PlayableRace::Hobgoblin => vec![
+                //         BaseHobgoblinASM, // +2 Dex, +2 Con
+                Humanoid,
+                Goblinoid,
+                SpeedNormal,
+                SizeMedium,
+                //         BaseHobgoblinLanguages,
+                HobgoblinSneaky,
+                DarkVision,
+            ],
+            PlayableRace::Ifrit => vec![
+                //         BaseIfritASM, // +2 Dex, +2 Cha, -2 Wis
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseIfritLanguages,
+                //         BaseIfritEnergyResistance, // fire 5
+                //         BaseIfritSLA,
+                //         BaseIfritFireAffinity,
+                DarkVision,
+            ],
+            PlayableRace::Kobold => vec![
+                //         BaseKoboldASM, // +2 Dex, -4 Str, -2 Con
+                Humanoid,
+                Reptilian,
+                SizeSmall,
+                SpeedNormal,
+                //         BaseKoboldLanguages,
+                //         BaseKoboldArmor,
+                //         BaseKoboldCrafty,
+                DarkVision,
+                //         LightSensitivity,
+            ],
+            PlayableRace::Orc => vec![
+                //         BaseOrcASM, // +4 Str, -2 Int, -2 Wis, -2 Cha
+                Humanoid,
+                Orc,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseOrcLanguages,
+                //         BaseOrcFerocity,
+                //         OrcWeaponFamiliarity,
+                DarkVision,
+                //         LightSensitivity,
+            ],
+            PlayableRace::Oread => vec![
+                //         BaseOreadASM, // +2 Str, +2 Wis, -2 Cha
+                Outsider, Native, SizeMedium, SpeedSlow,
+                //         BaseOreadLanguages,
+                //         BaseOreadEnergyResistance, // 5 Earth
+                //         BaseOreadSLA,
+                DarkVision,
+                //         BaseOreadEarthAffinity,
+            ],
+            PlayableRace::Ratfolk => vec![
+                //         BaseRatfolkASM, // +2 Dex, +2 Int, -2 Str
+                Humanoid, Ratfolk, SizeSmall, SpeedSlow,
+                //         BaseRatfolkLanguages,
+                //         BaseRatfolkTinker,
+                //         BaseRatfolkRodentEmpathy,
+                //         BaseRatfolkSwarming,
+                DarkVision,
+            ],
+            PlayableRace::Sylph => vec![
+                //         BaseSylphASM, // +2 Dex, +2 Int, -2 Con
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseSylphLanguages,
+                //         BaseSylphEnergyResistance,
+                //         BaseSylphSLA,
+                DarkVision,
+                //         BaseSylphAirAffinity,
+            ],
+            PlayableRace::Tengu => vec![
+                //         BaseTenguASM, // +2 Dex, +2 Wis, -2 Con
+                Humanoid,
+                Tengu,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseTenguLanguages,
+                TenguSneaky,
+                //         BaseTenguGiftedLinguist,
+                BaseTenguSwordtrained,
+                //         BaseTenguNaturalWeapons,
+                //         BaseTenguSenses, // Same as low-light vision
+            ],
+            PlayableRace::Tiefling => vec![
+                //         BaseTieflingASM, // +2 Dex, +2 Int, -2 Cha
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseTieflingLanguages,
+                //         BaseTieflingFiendishResistance,
+                //         BaseTieflingSkilled,
+                //         BaseTieflingSLA,
+                DarkVision,
+                //         BaseTieflingFiendishSorcery,
+            ],
+            PlayableRace::Undine => vec![
+                //         BaseUndineASM, // +2 Dex, +2 Wis, -2 Str
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedNormal,
+                //         BaseUndineLanguages,
+                //         BaseUndineEnergyResistance,
+                //         BaseUndineSLA,
+                //         BaseUndineWaterAffinity,
+                DarkVision,
+            ],
+            // }
+            //    }
+            // }
             _ => vec![],
         }
     }
 }
-//     PlayableRace::HalfElf => vec![
-//         ChooseOneASM,
-//         BaseElfType,
-//         SizeMedium,
-//         BaseElfLanguages,
-//         ElvenImmunities,
-//         BaseHalfElfAdaptability,
-//         KeenSenses,
-//         LowLightVision,
-//         BaseHalfElfElfBlood,
-//         BaseHalfElfMultitalented,
-//     ],
-//     PlayableRace::HalfOrc => vec![
-//         ChooseOneASM,
-//         BaseHalfOrcType,
-//         SizeMedium,
-//         BaseOrcLanguages,
-//         BaseHalfOrcIntimidating,
-//         BaseHalfOrcOrcFerocity,
-//         OrcWeaponFamiliarity,
-//         DarkVisionSixty,
-//         BaseHalfOrcOrcBlood,
-//     ],
-//     PlayableRace::Halfling => vec![
-//         BaseHalflingASB,
-//         SizeSmall,
-//         BaseHalflingType,
-//         SpeedSlow,
-//         BaseHalflingLanguages,
-//         BaseHalflingFearless,
-//         BaseHalflingHalflingLuck,
-//         BaseHalflingSureFooted,
-//         BasehalflingWeaponFamiliarity,
-//         KeenSenses,
-//     ],
-//     PlayableRace::Aasimar => vec![
-//         BaseAasimarASB, // +2 Wis, +2 Cha
-//         OutsiderNative,
-//         SizeMedium,
-//         SpeedNormal,
-//         BaseAasimarLanguages,
-//         BaseAasimarCelestialResistance,
-//         BaseAasimarSkilled,
-//         BaseAasimarSLA, // Spell-like Ability
-//         DarkVisionSixty,
-//     ],
-//     PlayableRace::Catfolk => vec![
-//         BaseCatfolkASM,
-//         BaseCatfolkType,
-//         SpeedNormal,
-//         BaseCatfolkLanguages,
-//         BaseCatfolkCatsLuck,
-//         BaseCatfolkNaturalHunter,
-//         BaseCatfolkSprinter,
-//         LowLightVision,
-//     ],
-//     PlayableRace::Dhampir => vec![
-//         BaseDhampirASM, // +2 Dex, +2 Cha, -2 Con
-//         BaseDhampirType,
-//         SizeMedium,
-//         LanguagesCommon,
-//         BaseDhampirUndeadResistance,
-//         BaseDhampirResistLevelDrain,
-//         BaseDhampirManipulative,
-//         BaseDhampirSLA,
-//         DarkVisionSixty,
-//         LowLightVision,
-//         LightSensitivity,
-//         BaseDhampirNegativeEnergyAffinity,
-//         // Sunlight Syndrome?
-//         // https://www.d20pfsrd.com/RACES/other-races/featured-races/arg-dhampir/#Sunlight_Syndrome
-//     ],
-//     PlayableRace::Drow => vec![
-//         BaseDrowASM, // +2 Dex, +2 Cha, -2 Con
-//         HumanoidElf,
-//         SizeMedium,
-//         SpeedNormal,
-//         WeaponFamiliarityDrow,
-//         BaseDrowLanguages,
-//         BaseDrowImmunities,
-//         BaseDrowSpellResistance,
-//         KeenSenses,
-//         BaseDrowSLA,
-//         BaseDrowPoisonUse,
-//         DarkVisionOneTwenty,
-//         BaseDrowLightBlindness,
-//     ],
-//     PlayableRace::Fetchling => vec![
-//         BaseFetchlingASM, // +2 Dex, +2 Cha, -2 Wis
-//         OutsiderNative,
-//         SizeMedium,
-//         BaseFetchlingLanguages,
-//         BaseFetchlingShadowBlending,
-//         BaseFetchlingShadowyResistance,
-//         BaseFetchlingSkilled,
-//         BaseFetchlingSLA,
-//         DarkVisionSixty,
-//         LowLightVision,
-//     ],
-//     PlayableRace::Goblin => vec![
-//         BaseGoblinASM, // +4 Dex, -2 Str, -2 Cha
-//         HumanoidGoblinoid,
-//         SizeSmall,
-//         SpeedSlow,
-//         BaseGoblinLanguages,
-//         BaseGoblinSkilled,
-//         BaseGoblinFastMovement,
-//         DarkVisionSixty,
-//     ],
-//     PlayableRace::Hobgoblin => vec![
-//         BaseHobgoblinASM, // +2 Dex, +2 Con
-//         HumanoidGoblinoid,
-//         SpeedNormal,
-//         BaseHobgoblinLanguages,
-//         Sneaky,
-//         DarkVisionSixty,
-//     ],
-//     PlayableRace::Ifrit => vec![
-//         BaseIfritASM, // +2 Dex, +2 Cha, -2 Wis
-//         OutsiderNative,
-//         SizeMedium,
-//         SpeedNormal,
-//         BaseIfritLanguages,
-//         BaseIfritEnergyResistance, // fire 5
-//         BaseIfritSLA,
-//         BaseIfritFireAffinity,
-//         DarkVisionSixty,
-//     ],
-//     PlayableRace::Kobold => vec![
-//         BaseKoboldASM, // +2 Dex, -4 Str, -2 Con
-//         HumanoidReptilian,
-//         SizeSmall,
-//         SpeedNormal,
-//         BaseKoboldLanguages,
-//         BaseKoboldArmor,
-//         BaseKoboldCrafty,
-//         DarkVisionSixty,
-//         LightSensitivity,
-//     ],
-//     PlayableRace::Orc => vec![
-//         BaseOrcASM, // +4 Str, -2 Int, -2 Wis, -2 Cha
-//         HumanoidOrc,
-//         SizeMedium,
-//         SpeedNormal,
-//         BaseOrcLanguages,
-//         BaseOrcFerocity,
-//         OrcWeaponFamiliarity,
-//         DarkVisionSixty,
-//         LightSensitivity,
-//     ],
-//     PlayableRace::Oread => vec![
-//         BaseOreadASM, // +2 Str, +2 Wis, -2 Cha
-//         OutsiderNative,
-//         SizeMedium,
-//         SpeedSlow,
-//         BaseOreadLanguages,
-//         BaseOreadEnergyResistance, // 5 Earth
-//         BaseOreadSLA,
-//         DarkVisionSixty,
-//         BaseOreadEarthAffinity,
-//     ],
-//     PlayableRace::Ratfolk => vec![
-//         BaseRatfolkASM, // +2 Dex, +2 Int, -2 Str
-//         HumanoidRatfolk,
-//         SizeSmall,
-//         SpeedSlow,
-//         BaseRatfolkLanguages,
-//         BaseRatfolkTinker,
-//         BaseRatfolkRodentEmpathy,
-//         BaseRatfolkSwarming,
-//         DarkVisionSixty,
-//     ],
-//     PlayableRace::Sylph => vec![
-//         BaseSylphASM, // +2 Dex, +2 Int, -2 Con
-//         OutsiderNative,
-//         SizeMedium,
-//         SpeedNormal,
-//         BaseSylphLanguages,
-//         BaseSylphEnergyResistance,
-//         BaseSylphSLA,
-//         DarkVisionSixty,
-//         BaseSylphAirAffinity,
-//     ],
-//     PlayableRace::Tengu => vec![
-//         BaseTenguASM, // +2 Dex, +2 Wis, -2 Con
-//         HumanoidTengu,
-//         SizeMedium,
-//         SpeedNormal,
-//         BaseTenguLanguages,
-//         Sneaky,
-//         BaseTenguGiftedLinguist,
-//         BaseTenguSwordtrained,
-//         BaseTenguNaturalWeapons,
-//         BaseTenguSenses, // Same as low-light vision
-//     ],
-//     PlayableRace::Tiefling => vec![
-//         BaseTieflingASM, // +2 Dex, +2 Int, -2 Cha
-//         OutsiderNative,
-//         SizeMedium,
-//         SpeedNormal,
-//         BaseTieflingLanguages,
-//         BaseTieflingFiendishResistance,
-//         BaseTieflingSkilled,
-//         BaseTieflingSLA,
-//         DarkVisionSixty,
-//         BaseTieflingFiendishSorcery,
-//     ],
-//     PlayableRace::Undine => vec![
-//         BaseUndineASM, // +2 Dex, +2 Wis, -2 Str
-//         OutsiderNative,
-//         SizeMedium,
-//         BaseUndineLanguages,
-//         BaseUndineEnergyResistance,
-//         BaseUndineSLA,
-//         BaseUndineWaterAffinity,
-//         DarkVisionSixty,
-//     ],
-// }
-//    }
-// }
-
 // BaseElfWeaponFamiliarity,
 pub struct CharacterTraits(Vec<RacialTraitName>);
 ///////////////////////////////////////////////////////////////////////////////
@@ -583,16 +585,27 @@ pub fn build_race(
     mut q_skill_bonuses: Query<&mut SkillBonuses>,
     mut q_ability_score_bonuses: Query<&mut AbilityScoreBonuses>,
     mut q_saving_throw_bonuses: Query<&mut SavingThrowBonuses>,
-    mut q_caster_level_bonus: Query<&mut CasterLevelBonuses>,
+    mut q_caster_level_bonuses: Query<&mut CasterLevelBonuses>,
     mut q_ac_bonuses: Query<&mut ArmorClassBonuses>,
     mut q_floating_skill_bonuses: Query<&mut FloatingSkillBonuses>,
     mut q_spell_like_abilities: Query<&mut SpellLikeAbilities>,
     mut q_spell_dc_bonuses: Query<&mut SpellDCBonuses>,
+    mut q_attack_roll_bonuses: Query<&mut AttackRollBonuses>,
 ) {
     let builder_entity = query_builder.get_single().unwrap();
     let mut entity_commands = &mut commands.get_entity(builder_entity).unwrap();
     for racial_trait_name in race.0.iter() {
         //// RacialTraitNames with a corresponding IntoComponentBuilder impl
+        // CreatureType
+        // CreatureSubtype
+        // CharacterSize
+        // BaseLanguages
+        // BonusSkillPerLevel
+        // GroundSpeed
+        // NormalVision
+        // LowLightVision
+        // DarkVision
+        // CharacterWeaponProficiency
         if let Ok(creature_type) = CreatureType::from_name(racial_trait_name) {
             entity_commands = entity_commands.insert(creature_type);
         };
@@ -617,11 +630,17 @@ pub fn build_race(
         if let Ok(low_light_vision) = LowLightVision::from_name(racial_trait_name) {
             entity_commands = entity_commands.insert(low_light_vision);
         };
+        if let Ok(dark_vision) = DarkVision::from_name(racial_trait_name) {
+            entity_commands = entity_commands.insert(dark_vision);
+        };
         if let Ok(racial_proficiency) = CharacterWeaponProficiency::from_name(racial_trait_name) {
             entity_commands = entity_commands.insert(racial_proficiency);
         };
 
         //// RacialTraitNames with a corresponding IntoVecBuilder impl
+        // FloatingBonusFeat
+        // FloatingAbilityBonus
+        // FloatingSkillBonus
         if let Ok(floating_bonus_feat) = FloatingBonusFeat::from_name(racial_trait_name) {
             if let Ok(mut floating_feats) = q_floating_bonus_feats.get_mut(builder_entity) {
                 floating_feats.push(floating_bonus_feat);
@@ -645,20 +664,16 @@ pub fn build_race(
         }
         //// RacialTraitNames with a corresponding IntoHashMapVecBuilder impl
         // SkillBonus
+        // ArmorClassBonus
         // AbilityScoreBonus
+        // SpellLikeAbility
+        // SpellDCBonus
+        // AttackRollBonuses
+        // CasterLevelBonuses
+        // SavingThrowBonuses
         if let Ok(skill_bonus) = SkillBonus::from_name(racial_trait_name) {
             if let Ok(mut skill_bonuses) = q_skill_bonuses.get_mut(builder_entity) {
-                for single_skill_bonus in skill_bonus.into_iter() {
-                    skill_bonuses
-                        .0
-                        .entry(single_skill_bonus.skill_name)
-                        .and_modify(|vec| {
-                            if !vec.as_slice().contains(&single_skill_bonus) {
-                                vec.push(single_skill_bonus);
-                            }
-                        })
-                        .or_insert(vec![single_skill_bonus]);
-                }
+                skill_bonuses.add_or_insert_all(skill_bonus);
             } else {
                 entity_commands.insert(SkillBonus::vec_to_component(skill_bonus));
             }
@@ -672,118 +687,60 @@ pub fn build_race(
         }
         if let Ok(ability_score_bonus) = AbilityScoreBonus::from_name(racial_trait_name) {
             if let Ok(mut ability_score_bonuses) = q_ability_score_bonuses.get_mut(builder_entity) {
-                for single_ability_score_bonus in ability_score_bonus.into_iter() {
-                    ability_score_bonuses
-                        .0
-                        .entry(single_ability_score_bonus.ability)
-                        .and_modify(|vec| {
-                            if !vec.as_slice().contains(&single_ability_score_bonus) {
-                                vec.push(single_ability_score_bonus);
-                            }
-                        })
-                        .or_insert(vec![single_ability_score_bonus]);
-                }
+                ability_score_bonuses.add_or_insert_all(ability_score_bonus)
             } else {
                 entity_commands.insert(AbilityScoreBonuses::from(ability_score_bonus));
             }
         }
-        //// Special Cases below
-        if let Ok(elven_immunities) = ElvenImmunitiesBuilder::from_name(racial_trait_name) {
-            if let Ok(mut saving_throw_bonuses) = q_saving_throw_bonuses.get_mut(builder_entity) {
-                saving_throw_bonuses
-                    .0
-                    .entry(elven_immunities.saving_throw_bonus.saving_throw)
-                    .and_modify(|vec| {
-                        if !vec
-                            .as_slice()
-                            .contains(&elven_immunities.saving_throw_bonus)
-                        {
-                            vec.push(elven_immunities.saving_throw_bonus);
-                        }
-                    })
-                    .or_insert(vec![elven_immunities.saving_throw_bonus]);
+        if let Ok(new_bonuses) = SpellLikeAbility::from_name(racial_trait_name) {
+            if let Ok(mut old_bonuses) = q_spell_like_abilities.get_mut(builder_entity) {
+                old_bonuses.add_or_insert_all(new_bonuses)
             } else {
-                entity_commands.insert(SavingThrowBonuses::from(vec![
-                    elven_immunities.saving_throw_bonus,
-                ]));
-            }
-            entity_commands.insert(elven_immunities.immunity);
-        }
-        if let Ok(elven_magic) = ElvenMagicBuilder::from_name(racial_trait_name) {
-            if let Ok(mut skill_bonuses) = q_skill_bonuses.get_mut(builder_entity) {
-                skill_bonuses
-                    .0
-                    .entry(elven_magic.skill_bonus.skill_name)
-                    .and_modify(|vec| {
-                        if !vec.as_slice().contains(&elven_magic.skill_bonus) {
-                            vec.push(elven_magic.skill_bonus);
-                        }
-                    })
-                    .or_insert(vec![elven_magic.skill_bonus]);
-            } else {
-                entity_commands.insert(SkillBonuses::from(vec![elven_magic.skill_bonus]));
-            }
-            if let Ok(mut sr_bonuses) = q_caster_level_bonus.get_mut(builder_entity) {
-                sr_bonuses
-                    .0
-                    .entry(elven_magic.caster_level_bonus.bonus_type)
-                    .and_modify(|vec| {
-                        if !vec.as_slice().contains(&elven_magic.caster_level_bonus) {
-                            vec.push(elven_magic.caster_level_bonus);
-                        }
-                    })
-                    .or_insert(vec![elven_magic.caster_level_bonus]);
-            } else {
-                entity_commands.insert(CasterLevelBonuses(CasterLevelBonuses::from_builder(vec![
-                    elven_magic.caster_level_bonus,
-                ])));
+                entity_commands.insert(SpellLikeAbilities::from(new_bonuses));
             }
         }
-        if let Ok(gnome_magic) = GnomeMagicBuilder::from_name(racial_trait_name) {
-            if let Ok(mut spell_like_abilities) = q_spell_like_abilities.get_mut(builder_entity) {
-                let sla_filtered: Vec<SpellLikeAbility> = gnome_magic
-                    .spell_like_abilities
-                    .into_iter()
-                    .filter(|spell_like_ability| {
-                        spell_like_abilities
-                            .0
-                            .as_slice()
-                            .contains(spell_like_ability)
-                    })
-                    .collect();
-                spell_like_abilities
-                    .0
-                    .extend_from_slice(sla_filtered.as_slice());
+        if let Ok(new_bonuses) = SpellDCBonus::from_name(racial_trait_name) {
+            if let Ok(mut old_bonuses) = q_spell_dc_bonuses.get_mut(builder_entity) {
+                old_bonuses.add_or_insert_all(new_bonuses)
             } else {
-                entity_commands.insert(SpellLikeAbilities::from(gnome_magic.spell_like_abilities));
+                entity_commands.insert(SpellDCBonuses::from(new_bonuses));
             }
-            if let Ok(mut spell_dc_bonuses) = q_spell_dc_bonuses.get_mut(builder_entity) {
-                spell_dc_bonuses
-                    .0
-                    .entry(gnome_magic.spell_dc_bonus.bonus_type)
-                    .and_modify(|vec| {
-                        if !vec.as_slice().contains(&gnome_magic.spell_dc_bonus) {
-                            vec.push(gnome_magic.spell_dc_bonus.clone());
-                        }
-                    })
-                    .or_insert(vec![gnome_magic.spell_dc_bonus]);
+        }
+        if let Ok(new_bonuses) = AttackRollBonus::from_name(racial_trait_name) {
+            if let Ok(mut old_bonuses) = q_attack_roll_bonuses.get_mut(builder_entity) {
+                old_bonuses.add_or_insert_all(new_bonuses)
             } else {
-                entity_commands.insert(SpellDCBonuses::from(vec![gnome_magic.spell_dc_bonus]));
+                entity_commands.insert(AttackRollBonuses::from(new_bonuses));
+            }
+        }
+        if let Ok(new_bonuses) = CasterLevelBonus::from_name(racial_trait_name) {
+            if let Ok(mut old_bonuses) = q_caster_level_bonuses.get_mut(builder_entity) {
+                old_bonuses.add_or_insert_all(new_bonuses)
+            } else {
+                entity_commands.insert(CasterLevelBonuses::from(new_bonuses));
+            }
+        }
+        if let Ok(new_bonuses) = SavingThrowBonus::from_name(racial_trait_name) {
+            if let Ok(mut old_bonuses) = q_saving_throw_bonuses.get_mut(builder_entity) {
+                old_bonuses.add_or_insert_all(new_bonuses)
+            } else {
+                entity_commands.insert(SavingThrowBonuses::from(new_bonuses));
             }
         }
     }
 }
 pub fn print_builder(query_builder: Query<Entity, With<CharacterBuilder>>, mut commands: Commands) {
-    println!("here");
+    let width = 80_usize;
+    println!("{}", format!("{:-^width$}", "Components"));
     let builder = query_builder.get_single().unwrap();
-    println!("or here?");
     commands.get_entity(builder).unwrap().log_components();
-    println!("maybe here?");
 }
 pub fn print_skill_bonuses(query_skill_bonuses: Query<&SkillBonuses, With<CharacterBuilder>>) {
     if let Ok(skill_bonuses) = query_skill_bonuses.get_single() {
+        let width = 80_usize;
+        println!("{}", format!("{:-^width$}", "SkillBonuses"));
         for skill in skill_bonuses.0.iter() {
-            println!("{:?}", skill);
+            println!("{:#?}", skill);
         }
     }
 }
@@ -914,6 +871,33 @@ pub fn print_floating_skill_bonuses(query: Query<&FloatingSkillBonuses>) {
         }
     }
 }
+pub fn print_spell_like_abilities(query: Query<&SpellLikeAbilities>) {
+    if let Ok(bonuses) = query.get_single() {
+        let width: usize = 80;
+        println!("{}", format!("{:-^width$}", "SpellLikeAbilities"));
+        for bonus in bonuses.0.iter() {
+            println!("{:#?}", bonus);
+        }
+    }
+}
+pub fn print_spell_dc_bonuses(query: Query<&SpellDCBonuses>) {
+    if let Ok(bonuses) = query.get_single() {
+        let width: usize = 80;
+        println!("{}", format!("{:-^width$}", "SpellDCBonuses"));
+        for bonus in bonuses.0.iter() {
+            println!("{:#?}", bonus);
+        }
+    }
+}
+pub fn print_attack_roll_bonuses(query: Query<&AttackRollBonuses>) {
+    if let Ok(bonuses) = query.get_single() {
+        let width: usize = 80;
+        println!("{}", format!("{:-^width$}", "AttackRollBonuses"));
+        for bonus in bonuses.0.iter() {
+            println!("{:#?}", bonus);
+        }
+    }
+}
 //     mut q_caster_level_bonus: Query<&mut CasterLevelBonuses>,
 
 //// The reciprocal trait to IntoComponentBuilder and IntoCharBuilderHash above,
@@ -929,10 +913,10 @@ use std::error::Error;
 // inserted to the player's Entity later on.
 // This way IntoComponentBuilder can still be applied to the RacialTraitName,
 // but note that this is not a `Component`, but is composed of `Component`s.
-pub struct ElvenImmunitiesBuilder {
-    pub immunity: SleepImmunity,
-    pub saving_throw_bonus: SavingThrowBonus,
-}
+// pub struct ElvenImmunitiesBuilder {
+//     pub immunity: SleepImmunity,
+//     pub saving_throw_bonus: SavingThrowBonus,
+// }
 ///////////////////////////////////////////////////////////////////////////////
 ////// IntoComponentBuilder
 //// Weapon Familiarity
@@ -942,14 +926,53 @@ impl IntoComponentBuilder for CharacterWeaponProficiency {
         match racial_trait_name {
             RacialTraitName::BaseElfWeaponFamiliarity => {
                 let mut proficiency = CharacterWeaponProficiency::new();
-                for elf_martial in RacialWeapon::Elf.weapon_names_vec() {
-                    proficiency.exotic.remove(&elf_martial);
-                    proficiency.martial.insert(elf_martial, false);
+                let mut elf_martial = RacialWeapon::Elf.exotic_to_martial_vec();
+                for _ in 0..elf_martial.len() {
+                    let weapon = elf_martial.pop()
+                        .expect("Invalid WeaponName in RacialWeapon::Elf.exotic_to_martial_vec(), or empty Vec, passed to from_name() method of CharacterWeaponProficiency from trait IntoComponentBuilder");
+                    proficiency.exotic.remove(&weapon);
+                    proficiency.martial.insert(weapon, false);
                 }
-                for elf_proficient in WeaponName::array_martial_elf_familiarity() {
+                for elf_proficient in RacialWeapon::Elf.racial_proficient_vec() {
                     proficiency.martial.insert(elf_proficient, true);
                 }
 
+                Ok(proficiency)
+            }
+            RacialTraitName::BaseGnomeWeaponFamiliarity => {
+                let mut proficiency = CharacterWeaponProficiency::new();
+                let mut race_martial = RacialWeapon::Gnome.exotic_to_martial_vec();
+                for _ in 0..race_martial.len() {
+                    let weapon = race_martial.pop()
+                        .expect("Invalid WeaponName in RacialWeapon::Gnome.exotic_to_martial_vec(), or empty Vec, passed to from_name() method of CharacterWeaponProficiency from trait IntoComponentBuilder");
+                    proficiency.exotic.remove(&weapon);
+                    proficiency.martial.insert(weapon, false);
+                }
+                Ok(proficiency)
+            }
+            RacialTraitName::BaseDrowWeaponFamiliarity => {
+                let mut proficiency = CharacterWeaponProficiency::new();
+                for drow_proficient in RacialWeapon::Drow.racial_proficient_vec() {
+                    proficiency.martial.insert(drow_proficient, true);
+                }
+                Ok(proficiency)
+            }
+            RacialTraitName::BaseTenguSwordtrained => {
+                let mut proficiency = CharacterWeaponProficiency::new();
+                for tengu_proficient in RacialWeapon::Tengu.racial_proficient_vec() {
+                    proficiency.martial.insert(tengu_proficient, true);
+                }
+                Ok(proficiency)
+            }
+            RacialTraitName::BaseDwarfWeaponFamiliarity => {
+                let mut proficiency = CharacterWeaponProficiency::new();
+                let mut race_martial = RacialWeapon::Dwarf.exotic_to_martial_vec();
+                for _ in 0..race_martial.len() {
+                    let weapon = race_martial.pop()
+                        .expect("Invalid WeaponName in RacialWeapon::Gnome.exotic_to_martial_vec(), or empty Vec, passed to from_name() method of CharacterWeaponProficiency from trait IntoComponentBuilder");
+                    proficiency.exotic.remove(&weapon);
+                    proficiency.martial.insert(weapon, false);
+                }
                 Ok(proficiency)
             }
             _ => Err(format!(
@@ -978,10 +1001,12 @@ impl IntoComponentBuilder for BonusSkillPerLevel {
 }
 //// Creature Type
 // Humanoid -> Humanoid
+// Outsider -> Outsider
 impl IntoComponentBuilder for CreatureType {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
         match racial_trait_name {
-            &RacialTraitName::Humanoid => Ok(Self::Humanoid),
+            RacialTraitName::Humanoid => Ok(Self::Humanoid),
+            RacialTraitName::Outsider => Ok(Self::Outsider),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for CreatureType in from_name() \
                 method of trait IntoComponentBuilder",
@@ -993,16 +1018,25 @@ impl IntoComponentBuilder for CreatureType {
 }
 
 //// Creature Subtype
-// Human -> Human
-// Elf -> Elf
+// Human        -> Human
+// Elf          -> Elf
+// ... etc.
 impl IntoComponentBuilder for CreatureSubtype {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
         match racial_trait_name {
             RacialTraitName::Human => Ok(Self::Human),
             RacialTraitName::Elf => Ok(Self::Elf),
             RacialTraitName::Gnome => Ok(Self::Gnome),
+            RacialTraitName::Dwarf => Ok(Self::Dwarf),
+            RacialTraitName::Native => Ok(Self::Native),
+            RacialTraitName::Goblinoid => Ok(Self::Goblinoid),
+            RacialTraitName::Reptilian => Ok(Self::Reptilian),
+            RacialTraitName::Orc => Ok(Self::Orc),
+            RacialTraitName::Ratfolk => Ok(Self::Ratfolk),
+            RacialTraitName::Tengu => Ok(Self::Tengu),
+            RacialTraitName::Dhampir => Ok(Self::Dhampir),
             _ => Err(format!(
-                "Invalid RacialTraitName: {:?} for CreatureType in from_name() \
+                "Invalid RacialTraitName: {:?} for CreatureSubtype in from_name() \
                 method of trait IntoComponentBuilder",
                 racial_trait_name
             )
@@ -1053,6 +1087,10 @@ impl IntoComponentBuilder for BaseLanguages {
                 given: vec![Common, Gnome, Sylvan],
                 choices: vec![Draconic, Dwarven, Elven, Giant, Goblin, Orc],
             }),
+            RacialTraitName::BaseDwarfLanguages => Ok(Self {
+                given: vec![Common, Dwarven],
+                choices: vec![Giant, Gnome, Goblin, Terran, Undercommon],
+            }),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for BaseLanguages in \
                 from_name() method of trait IntoComponentBuilder",
@@ -1081,7 +1119,7 @@ impl IntoComponentBuilder for GroundSpeed {
 }
 
 //// Vision
-// SpeedNormal -> SpeedNormal
+// NormalVision -> NormalVision(true)
 impl IntoComponentBuilder for NormalVision {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
         match racial_trait_name {
@@ -1096,6 +1134,22 @@ impl IntoComponentBuilder for NormalVision {
     }
 }
 
+// DarkVision -> DarkVision(distance)
+impl IntoComponentBuilder for DarkVision {
+    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
+        match racial_trait_name {
+            RacialTraitName::DarkVision => Ok(Self(60.)),
+            RacialTraitName::DarkVisionSuperior => Ok(Self(120.)),
+            _ => Err(format!(
+                "Invalid RacialTraitName: {:?} for DarkVision in from_name() \
+                method of trait IntoComponentBuilder",
+                racial_trait_name
+            )
+            .into()),
+        }
+    }
+}
+// LowLightVision -> LowLightVision(distance)
 impl IntoComponentBuilder for LowLightVision {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
         match racial_trait_name {
@@ -1196,8 +1250,28 @@ impl IntoHashMapVecBuilder<SavingThrowBonuses> for SavingThrowBonus {
                     limitation: LimitationEnum::SpellSchool(SpellSchool::Illusion),
                 },
             ]),
+            RacialTraitName::BaseDwarfHardy => Ok(vec![
+                Self {
+                    bonus: 2,
+                    bonus_type: BonusType::Racial,
+                    saving_throw: SavingThrowName::Will,
+                    limitation: LimitationEnum::PoisonAndSpells(Poison {}, Magic {}),
+                },
+                Self {
+                    bonus: 2,
+                    bonus_type: BonusType::Racial,
+                    saving_throw: SavingThrowName::Reflex,
+                    limitation: LimitationEnum::PoisonAndSpells(Poison {}, Magic {}),
+                },
+                Self {
+                    bonus: 2,
+                    bonus_type: BonusType::Racial,
+                    saving_throw: SavingThrowName::Fort,
+                    limitation: LimitationEnum::PoisonAndSpells(Poison {}, Magic {}),
+                },
+            ]),
             _ => Err(format!(
-                "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
+                "Invalid RacialTraitName: {:?} for SavingThrowBonus in from_name() \
                 method of trait IntoComponentBuilder",
                 racial_trait_name
             )
@@ -1205,26 +1279,47 @@ impl IntoHashMapVecBuilder<SavingThrowBonuses> for SavingThrowBonus {
         }
     }
 }
-//// Spell DC Bonuses (nothing here yet, good template though
-// impl IntoHashMapVecBuilder<SpellDCBonuses> for SpellDCBonus {
-//     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
-//         match racial_trait_name {
-//             RacialTraitName:: => Ok(vec![Self {
-//                 bonus: 2,
-//                 bonus_type: BonusType::Racial,
-//                 limitation: LimitationEnum::SpellSchool(SpellSchool::Illusion),
-//             }]),
-//             _ => Err(format!(
-//                 "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
-//                 method of trait IntoComponentBuilder",
-//                 racial_trait_name
-//             )
-//             .into()),
-//         }
-//     }
-// }
+impl IntoHashMapVecBuilder<CMDBonuses> for CMDBonus {
+    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
+        match racial_trait_name {
+            RacialTraitName::BaseDwarfStability => Ok(vec![Self {
+                bonus: 4,
+                key: BonusType::Racial,
+                bonus_type: BonusType::Racial,
+                limitation: vec![
+                    LimitationEnum::CombatManeuverName(CombatManeuverName::BullRush),
+                    LimitationEnum::CombatManeuverName(CombatManeuverName::Trip),
+                ],
+            }]),
+            _ => Err(format!(
+                "Invalid RacialTraitName: {:?} for CMDBonus in from_name() \
+                 method of trait IntoComponentBuilder",
+                racial_trait_name
+            )
+            .into()),
+        }
+    }
+}
+impl IntoHashMapVecBuilder<SpellDCBonuses> for SpellDCBonus {
+    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
+        match racial_trait_name {
+            RacialTraitName::BaseGnomeGnomeMagic => Ok(vec![Self {
+                bonus: 2,
+                key: BonusType::Racial,
+                bonus_type: BonusType::Racial,
+                limitation: vec![LimitationEnum::SpellSchool(SpellSchool::Illusion)],
+            }]),
+            _ => Err(format!(
+                "Invalid RacialTraitName: {:?} for SpellDCBonus in from_name() \
+                 method of trait IntoComponentBuilder",
+                racial_trait_name
+            )
+            .into()),
+        }
+    }
+}
 //// One-time Skill Bonus
-// Will go into SkillBonuses
+// SkillBonuses
 impl IntoHashMapVecBuilder<SkillBonuses> for SkillBonus {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
         use SkillName::*;
@@ -1233,8 +1328,44 @@ impl IntoHashMapVecBuilder<SkillBonuses> for SkillBonus {
                 bonus: 2,
                 bonus_type: BonusType::Racial,
                 skill_name: Perception,
-                limitation: LimitationEnum::None,
+                limitation: vec![LimitationEnum::None],
             }]),
+            RacialTraitName::BaseElfElvenMagic => Ok(vec![Self {
+                bonus: 2,
+                bonus_type: BonusType::Racial,
+                skill_name: SkillName::Spellcraft,
+                limitation: vec![LimitationEnum::Spellcraft(SpellcraftUses::IdentifyItem)],
+            }]),
+            RacialTraitName::BaseDwarfGreed => Ok(vec![Self {
+                bonus: 2,
+                bonus_type: BonusType::Racial,
+                skill_name: SkillName::Appraise,
+                limitation: vec![
+                    LimitationEnum::ItemContains(ItemContains::PreciousMetal),
+                    LimitationEnum::ItemContains(ItemContains::Gemstones),
+                ],
+            }]),
+            RacialTraitName::HobgoblinSneaky => Ok(vec![Self {
+                bonus: 4,
+                bonus_type: BonusType::Racial,
+                skill_name: Stealth,
+                limitation: vec![LimitationEnum::None],
+            }]),
+            RacialTraitName::TenguSneaky => Ok(vec![
+                Self {
+                    bonus: 2,
+                    bonus_type: BonusType::Racial,
+                    skill_name: Perception,
+                    limitation: vec![LimitationEnum::None],
+                },
+                Self {
+                    bonus: 2,
+                    bonus_type: BonusType::Racial,
+                    skill_name: Stealth,
+                    limitation: vec![LimitationEnum::None],
+                },
+            ]),
+
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
                 method of trait IntoComponentBuilder",
@@ -1255,16 +1386,19 @@ impl IntoHashMapVecBuilder<AbilityScoreBonuses> for AbilityScoreBonus {
                     ability: Dexterity,
                     bonus: 2,
                     bonus_type: Racial,
+                    limitation: LimitationEnum::None,
                 },
                 Self {
                     ability: Intelligence,
                     bonus: 2,
                     bonus_type: Racial,
+                    limitation: LimitationEnum::None,
                 },
                 Self {
                     ability: Constitution,
                     bonus: -2,
                     bonus_type: Racial,
+                    limitation: LimitationEnum::None,
                 },
             ]),
             RacialTraitName::BaseGnomeASM => Ok(vec![
@@ -1272,16 +1406,39 @@ impl IntoHashMapVecBuilder<AbilityScoreBonuses> for AbilityScoreBonus {
                     ability: Constitution,
                     bonus: 2,
                     bonus_type: Racial,
+                    limitation: LimitationEnum::None,
                 },
                 Self {
                     ability: Charisma,
                     bonus: 2,
                     bonus_type: Racial,
+                    limitation: LimitationEnum::None,
                 },
                 Self {
                     ability: Strength,
                     bonus: -2,
                     bonus_type: Racial,
+                    limitation: LimitationEnum::None,
+                },
+            ]),
+            RacialTraitName::BaseDwarfASM => Ok(vec![
+                Self {
+                    ability: Constitution,
+                    bonus: 2,
+                    bonus_type: Racial,
+                    limitation: LimitationEnum::None,
+                },
+                Self {
+                    ability: Wisdom,
+                    bonus: 2,
+                    bonus_type: Racial,
+                    limitation: LimitationEnum::None,
+                },
+                Self {
+                    ability: Charisma,
+                    bonus: -2,
+                    bonus_type: Racial,
+                    limitation: LimitationEnum::None,
                 },
             ]),
             _ => Err(format!(
@@ -1296,7 +1453,7 @@ impl IntoHashMapVecBuilder<AbilityScoreBonuses> for AbilityScoreBonus {
 impl IntoHashMapVecBuilder<ArmorClassBonuses> for ArmorClassBonus {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
         match racial_trait_name {
-            RacialTraitName::BaseGnomeDefensiveTraining => Ok(vec![Self {
+            RacialTraitName::DefensiveTraining => Ok(vec![Self {
                 bonus: 4,
                 bonus_type: BonusType::Racial,
                 // need to add a limitation for vs attacks from giant
@@ -1311,33 +1468,61 @@ impl IntoHashMapVecBuilder<ArmorClassBonuses> for ArmorClassBonus {
         }
     }
 }
-
-//// Special cases that turn into more than one Component
-//   - ElvenImmunities
-//   - ElvenMagic
-impl IntoComponentBuilder for ElvenImmunitiesBuilder {
-    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
-        use SavingThrowName::*;
-        use SpellSchool::*;
+impl IntoHashMapVecBuilder<AttackRollBonuses> for AttackRollBonus {
+    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
         match racial_trait_name {
-            RacialTraitName::ElvenImmunities => Ok(Self {
-                saving_throw_bonus: SavingThrowBonus {
-                    saving_throw: Will,
-                    bonus: 2,
-                    bonus_type: BonusType::Racial,
-                    limitation: LimitationEnum::SpellSchool(Enchantment),
-                },
-                immunity: SleepImmunity,
-            }),
+            RacialTraitName::BaseGnomeHatred => Ok(vec![Self {
+                bonus: 1,
+                bonus_type: BonusType::Racial,
+                key: BonusType::Racial,
+                // need to add a limitation for vs attacks from giant
+                limitation: vec![
+                    LimitationEnum::AttackingTargetTypeAndSubtype(
+                        CreatureType::Humanoid,
+                        CreatureSubtype::Reptilian,
+                    ),
+                    LimitationEnum::AttackingTargetTypeAndSubtype(
+                        CreatureType::Humanoid,
+                        CreatureSubtype::Goblinoid,
+                    ),
+                ],
+            }]),
             _ => Err(format!(
-                "Invalid RacialTraitName: {:?} for ElvenImmunitiesBuilder in \
-                from_name() method of trait IntoComponentBuilder",
+                "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
+                method of trait IntoComponentBuilder",
                 racial_trait_name
             )
             .into()),
         }
     }
 }
+
+//// Special cases that turn into more than one Component
+//   - ElvenImmunities
+//   - ElvenMagic
+// impl IntoComponentBuilder for ElvenImmunitiesBuilder {
+//     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
+//         use SavingThrowName::*;
+//         use SpellSchool::*;
+//         match racial_trait_name {
+//             RacialTraitName::ElvenImmunities => Ok(Self {
+//                 saving_throw_bonus: SavingThrowBonus {
+//                     saving_throw: Will,
+//                     bonus: 2,
+//                     bonus_type: BonusType::Racial,
+//                     limitation: LimitationEnum::SpellSchool(Enchantment),
+//                 },
+//                 immunity: SleepImmunity,
+//             }),
+//             _ => Err(format!(
+//                 "Invalid RacialTraitName: {:?} for ElvenImmunitiesBuilder in \
+//                 from_name() method of trait IntoComponentBuilder",
+//                 racial_trait_name
+//             )
+//             .into()),
+//         }
+//     }
+// }
 
 pub struct ElvenMagicBuilder {
     caster_level_bonus: CasterLevelBonus,
@@ -1357,7 +1542,7 @@ impl IntoComponentBuilder for ElvenMagicBuilder {
                     bonus: 2,
                     bonus_type: BonusType::Racial,
                     skill_name: SkillName::Spellcraft,
-                    limitation: LimitationEnum::Spellcraft(SpellcraftUses::IdentifyItem),
+                    limitation: vec![LimitationEnum::Spellcraft(SpellcraftUses::IdentifyItem)],
                 },
             }),
             _ => Err(format!(
@@ -1369,7 +1554,83 @@ impl IntoComponentBuilder for ElvenMagicBuilder {
         }
     }
 }
+impl IntoHashMapVecBuilder<CasterLevelBonuses> for CasterLevelBonus {
+    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
+        match racial_trait_name {
+            RacialTraitName::BaseElfElvenMagic => Ok(vec![Self {
+                bonus: 2,
+                bonus_type: BonusType::Racial,
+                limitation: CasterLevelUse::OvercomeSpellResistance,
+            }]),
+            _ => Err(format!(
+                "Invalid RacialTraitName: {:?} for CasterLevelBonus in from_name() \
+                method of trait IntoComponentBuilder",
+                racial_trait_name
+            )
+            .into()),
+        }
+    }
+}
 
+impl IntoHashMapVecBuilder<SpellLikeAbilities> for SpellLikeAbility {
+    fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
+        use SpellName::*;
+        match racial_trait_name {
+            RacialTraitName::BaseGnomeGnomeMagic => Ok(vec![
+                SpellLikeAbility {
+                    source: SlaSource::GnomeMagic,
+                    spell_name: DancingLights,
+                    cast_frequency: CastFrequency::PerDay,
+                    uses: Some(1),
+                    ability_score: AbilityScore::Charisma,
+                    limitation: Some(LimitationEnum::AbilityScoreAbove(
+                        AbilityScore::Charisma,
+                        10,
+                    )),
+                },
+                SpellLikeAbility {
+                    source: SlaSource::GnomeMagic,
+                    spell_name: GhostSound,
+                    cast_frequency: CastFrequency::PerDay,
+                    uses: Some(1),
+                    ability_score: AbilityScore::Charisma,
+                    limitation: Some(LimitationEnum::AbilityScoreAbove(
+                        AbilityScore::Charisma,
+                        10,
+                    )),
+                },
+                SpellLikeAbility {
+                    source: SlaSource::GnomeMagic,
+                    spell_name: Prestidigitation,
+                    cast_frequency: CastFrequency::PerDay,
+                    uses: Some(1),
+                    ability_score: AbilityScore::Charisma,
+                    limitation: Some(LimitationEnum::AbilityScoreAbove(
+                        AbilityScore::Charisma,
+                        10,
+                    )),
+                },
+                SpellLikeAbility {
+                    source: SlaSource::GnomeMagic,
+                    spell_name: SpeakWithAnimals,
+                    cast_frequency: CastFrequency::PerDay,
+                    uses: Some(1),
+                    ability_score: AbilityScore::Charisma,
+                    limitation: Some(LimitationEnum::AbilityScoreAbove(
+                        AbilityScore::Charisma,
+                        10,
+                    )),
+                },
+            ]),
+            _ => Err(format!(
+                "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
+                method of trait IntoComponentBuilder",
+                racial_trait_name
+            )
+            .into()),
+        }
+    }
+}
 impl IntoComponentBuilder for GnomeMagicBuilder {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
         use SpellName::*;
@@ -1378,10 +1639,12 @@ impl IntoComponentBuilder for GnomeMagicBuilder {
                 spell_dc_bonus: SpellDCBonus {
                     bonus: 1,
                     bonus_type: BonusType::Racial,
+                    key: BonusType::Racial,
                     limitation: vec![LimitationEnum::SpellSchool(SpellSchool::Illusion)],
                 },
                 spell_like_abilities: vec![
                     SpellLikeAbility {
+                        source: SlaSource::GnomeMagic,
                         spell_name: DancingLights,
                         cast_frequency: CastFrequency::PerDay,
                         uses: Some(1),
@@ -1392,6 +1655,7 @@ impl IntoComponentBuilder for GnomeMagicBuilder {
                         )),
                     },
                     SpellLikeAbility {
+                        source: SlaSource::GnomeMagic,
                         spell_name: GhostSound,
                         cast_frequency: CastFrequency::PerDay,
                         uses: Some(1),
@@ -1402,6 +1666,7 @@ impl IntoComponentBuilder for GnomeMagicBuilder {
                         )),
                     },
                     SpellLikeAbility {
+                        source: SlaSource::GnomeMagic,
                         spell_name: Prestidigitation,
                         cast_frequency: CastFrequency::PerDay,
                         uses: Some(1),
@@ -1412,6 +1677,7 @@ impl IntoComponentBuilder for GnomeMagicBuilder {
                         )),
                     },
                     SpellLikeAbility {
+                        source: SlaSource::GnomeMagic,
                         spell_name: SpeakWithAnimals,
                         cast_frequency: CastFrequency::PerDay,
                         uses: Some(1),

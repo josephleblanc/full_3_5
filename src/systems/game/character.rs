@@ -16,6 +16,28 @@ pub enum PlayerState {
     /* more possible states here */
 }
 
+// Placeholder structs used in Limitations while waiting to figure those out
+// more.
+// For example, how should I deal with AND and OR limitation styles?
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Hash)]
+pub struct Magic;
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Hash)]
+pub struct Poison;
+
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Hash)]
+pub enum CombatManeuverName {
+    BullRush,
+    Trip,
+    /* more here */
+}
+
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Hash)]
+pub enum ItemContains {
+    PreciousMetal,
+    Gemstones,
+    /* more here */
+}
+
 ////////////////////////////////////////////////////////
 #[derive(Component, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct PlayerName(String);
@@ -34,23 +56,104 @@ pub struct Description(String);
 pub struct SleepImmunity;
 
 #[derive(Component, Clone, Debug, Eq, PartialEq)]
-pub struct SpellLikeAbilities(pub Vec<SpellLikeAbility>);
+pub struct CMDBonuses(pub HashMap<BonusType, Vec<CMDBonus>>);
+
+impl From<Vec<CMDBonus>> for CMDBonuses {
+    fn from(other: Vec<CMDBonus>) -> Self {
+        let mut map: HashMap<BonusType, Vec<CMDBonus>> = HashMap::new();
+        for entry in other.into_iter() {
+            map.entry(entry.bonus_type)
+                .and_modify(|vec| vec.push(entry.clone()))
+                .or_insert(vec![entry]);
+        }
+        Self(map)
+    }
+}
+
+impl BonusesContainer<BonusType, CMDBonus> for CMDBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<BonusType, Vec<CMDBonus>> {
+        &mut self.0
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+pub struct CMDBonus {
+    pub bonus: i32,
+    pub bonus_type: BonusType,
+    pub key: BonusType,
+    pub limitation: Vec<LimitationEnum>,
+}
+
+impl NewBonusKey<BonusType> for CMDBonus {
+    fn key(&self) -> BonusType {
+        self.key
+    }
+}
+
+#[derive(Component, Clone, Debug, Eq, PartialEq)]
+pub struct AttackRollBonuses(pub HashMap<BonusType, Vec<AttackRollBonus>>);
+
+impl From<Vec<AttackRollBonus>> for AttackRollBonuses {
+    fn from(other: Vec<AttackRollBonus>) -> Self {
+        let mut map: HashMap<BonusType, Vec<AttackRollBonus>> = HashMap::new();
+        for entry in other.into_iter() {
+            map.entry(entry.bonus_type)
+                .and_modify(|vec| vec.push(entry.clone()))
+                .or_insert(vec![entry]);
+        }
+        Self(map)
+    }
+}
+
+impl BonusesContainer<BonusType, AttackRollBonus> for AttackRollBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<BonusType, Vec<AttackRollBonus>> {
+        &mut self.0
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+pub struct AttackRollBonus {
+    pub bonus: i32,
+    pub bonus_type: BonusType,
+    pub key: BonusType,
+    pub limitation: Vec<LimitationEnum>,
+}
+
+impl NewBonusKey<BonusType> for AttackRollBonus {
+    fn key(&self) -> BonusType {
+        self.key
+    }
+}
+
+#[derive(Component, Clone, Debug, Eq, PartialEq)]
+pub struct SpellLikeAbilities(pub HashMap<SlaSource, Vec<SpellLikeAbility>>);
 
 impl From<Vec<SpellLikeAbility>> for SpellLikeAbilities {
     fn from(other: Vec<SpellLikeAbility>) -> Self {
-        Self(other)
+        let mut map: HashMap<SlaSource, Vec<SpellLikeAbility>> = HashMap::new();
+        for entry in other.into_iter() {
+            map.entry(entry.source)
+                .and_modify(|vec| vec.push(entry))
+                .or_insert(vec![entry]);
+        }
+        Self(map)
+    }
+}
+
+impl BonusesContainer<SlaSource, SpellLikeAbility> for SpellLikeAbilities {
+    fn get_hashmap(&mut self) -> &mut HashMap<SlaSource, Vec<SpellLikeAbility>> {
+        &mut self.0
+    }
+}
+
+impl NewBonusKey<SlaSource> for SpellLikeAbility {
+    fn key(&self) -> SlaSource {
+        self.source
     }
 }
 
 #[derive(Component, Clone, Debug, Eq, PartialEq)]
 pub struct SpellDCBonuses(pub HashMap<BonusType, Vec<SpellDCBonus>>);
-
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
-pub struct SpellDCBonus {
-    pub bonus: i32,
-    pub bonus_type: BonusType,
-    pub limitation: Vec<LimitationEnum>,
-}
 
 impl From<Vec<SpellDCBonus>> for SpellDCBonuses {
     fn from(other: Vec<SpellDCBonus>) -> Self {
@@ -64,29 +167,51 @@ impl From<Vec<SpellDCBonus>> for SpellDCBonuses {
     }
 }
 
-pub trait UsesBonusKey
-where
-    Self: std::hash::Hash + Eq,
-{
-    fn bonus_type(&self) -> BonusType;
+impl BonusesContainer<BonusType, SpellDCBonus> for SpellDCBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<BonusType, Vec<SpellDCBonus>> {
+        &mut self.0
+    }
 }
 
-pub trait BonusContainer<U>
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+pub struct SpellDCBonus {
+    pub bonus: i32,
+    pub bonus_type: BonusType,
+    pub key: BonusType,
+    pub limitation: Vec<LimitationEnum>,
+}
+
+impl NewBonusKey<BonusType> for SpellDCBonus {
+    fn key(&self) -> BonusType {
+        self.key
+    }
+}
+
+pub trait NewBonusKey<T>
+where
+    Self: std::hash::Hash + Eq,
+    T: std::hash::Hash + Eq + Copy,
+{
+    fn key(&self) -> T;
+}
+
+pub trait BonusesContainer<T, U>
 where
     Self: Component + From<Vec<U>>,
-    U: UsesBonusKey + IntoHashMapVecBuilder<Self> + Clone,
+    U: NewBonusKey<T> + IntoHashMapVecBuilder<Self> + Clone,
+    T: std::hash::Hash + Eq + Copy,
 {
-    fn get_hashmap(&mut self) -> &mut HashMap<BonusType, Vec<U>>;
+    fn get_hashmap(&mut self) -> &mut HashMap<T, Vec<U>>;
 
     fn add_or_insert_all(&mut self, bonus_vec_to_add: Vec<U>) {
         use std::collections::hash_map::Entry::Vacant;
         let map = self.get_hashmap();
         for single_bonus in bonus_vec_to_add.into_iter() {
-            if let Vacant(entry) = map.entry(single_bonus.bonus_type()) {
+            if let Vacant(entry) = map.entry(single_bonus.key()) {
                 entry.insert(vec![single_bonus]);
             } else {
                 map //.get_hashmap()
-                    .entry(single_bonus.bonus_type())
+                    .entry(single_bonus.key())
                     .and_modify(|vec| {
                         if !vec.as_slice().contains(&single_bonus) {
                             vec.push(single_bonus);
@@ -95,11 +220,24 @@ where
             }
         }
     }
+    fn add_or_insert(&mut self, bonus_to_add: U) {
+        use std::collections::hash_map::Entry::Vacant;
+        let map = self.get_hashmap();
+        if let Vacant(entry) = map.entry(bonus_to_add.key()) {
+            entry.insert(vec![bonus_to_add]);
+        } else {
+            map.entry(bonus_to_add.key()).and_modify(|vec| {
+                if !vec.as_slice().contains(&bonus_to_add) {
+                    vec.push(bonus_to_add);
+                }
+            });
+        }
+    }
 }
 
 #[derive(Component, Clone, Debug, Eq, PartialEq)]
 pub struct ArmorClassBonuses(pub HashMap<BonusType, Vec<ArmorClassBonus>>);
-impl BonusContainer<ArmorClassBonus> for ArmorClassBonuses {
+impl BonusesContainer<BonusType, ArmorClassBonus> for ArmorClassBonuses {
     fn get_hashmap(&mut self) -> &mut HashMap<BonusType, Vec<ArmorClassBonus>> {
         &mut self.0
     }
@@ -124,8 +262,8 @@ pub struct ArmorClassBonus {
     pub limitation: LimitationEnum,
 }
 
-impl UsesBonusKey for ArmorClassBonus {
-    fn bonus_type(&self) -> BonusType {
+impl NewBonusKey<BonusType> for ArmorClassBonus {
+    fn key(&self) -> BonusType {
         self.bonus_type
     }
 }
@@ -161,7 +299,22 @@ impl CharacterWeaponProficiency {
 
 #[derive(Component, Clone, Debug, Eq, PartialEq)]
 pub struct CasterLevelBonuses(pub HashMap<BonusType, Vec<CasterLevelBonus>>);
-impl WrapsBonus<BonusType, CasterLevelBonus> for CasterLevelBonuses {}
+impl From<Vec<CasterLevelBonus>> for CasterLevelBonuses {
+    fn from(other: Vec<CasterLevelBonus>) -> Self {
+        let mut map: HashMap<BonusType, Vec<CasterLevelBonus>> = HashMap::new();
+        for entry in other {
+            map.entry(entry.bonus_type)
+                .and_modify(|vec| vec.push(entry))
+                .or_insert(vec![entry]);
+        }
+        Self(map)
+    }
+}
+impl BonusesContainer<BonusType, CasterLevelBonus> for CasterLevelBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<BonusType, Vec<CasterLevelBonus>> {
+        &mut self.0
+    }
+}
 
 #[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Ord, Hash)]
 pub struct CasterLevelBonus {
@@ -169,41 +322,20 @@ pub struct CasterLevelBonus {
     pub bonus_type: BonusType,
     pub limitation: CasterLevelUse,
 }
-
-pub trait Bonus<U>
-where
-    Self: std::hash::Hash,
-    U: std::hash::Hash,
-{
-    fn key(&self) -> U;
-}
-
-impl Bonus<BonusType> for CasterLevelBonus {
+impl NewBonusKey<BonusType> for CasterLevelBonus {
     fn key(&self) -> BonusType {
         self.bonus_type
-    }
-}
-
-pub trait WrapsBonus<U, T>
-where
-    Self: Component,
-    T: std::hash::Hash + Clone + Copy + Bonus<U>,
-    U: std::hash::Hash + Clone + Copy + Eq,
-{
-    fn from_builder(other: Vec<T>) -> HashMap<U, Vec<T>> {
-        let mut map: HashMap<U, Vec<T>> = HashMap::new();
-        for entry in other {
-            map.entry(entry.key())
-                .and_modify(|vec| vec.push(entry))
-                .or_insert(vec![entry]);
-        }
-        map
     }
 }
 
 // Ability Score bonuses, from all sources.
 #[derive(Component, Clone, Debug, Eq, PartialEq)]
 pub struct AbilityScoreBonuses(pub HashMap<AbilityScore, Vec<AbilityScoreBonus>>);
+impl BonusesContainer<AbilityScore, AbilityScoreBonus> for AbilityScoreBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<AbilityScore, Vec<AbilityScoreBonus>> {
+        &mut self.0
+    }
+}
 
 impl From<Vec<AbilityScoreBonus>> for AbilityScoreBonuses {
     fn from(other: Vec<AbilityScoreBonus>) -> Self {
@@ -222,6 +354,13 @@ pub struct AbilityScoreBonus {
     pub ability: AbilityScore,
     pub bonus: i32,
     pub bonus_type: BonusType,
+    pub limitation: LimitationEnum,
+}
+
+impl NewBonusKey<AbilityScore> for AbilityScoreBonus {
+    fn key(&self) -> AbilityScore {
+        self.ability
+    }
 }
 
 // used during character creation to apply a specific value bonus
@@ -298,7 +437,18 @@ impl From<Vec<SavingThrowBonus>> for SavingThrowBonuses {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Copy, Hash)]
+impl BonusesContainer<SavingThrowName, SavingThrowBonus> for SavingThrowBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<SavingThrowName, Vec<SavingThrowBonus>> {
+        &mut self.0
+    }
+}
+impl NewBonusKey<SavingThrowName> for SavingThrowBonus {
+    fn key(&self) -> SavingThrowName {
+        self.saving_throw
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd, Copy, Hash, Eq)]
 pub struct SavingThrowBonus {
     // Not a Component
     pub bonus: i32,
@@ -312,45 +462,37 @@ pub struct SavingThrowBonus {
 // bonus type.
 #[derive(Component, Debug)]
 pub struct SkillBonuses(pub HashMap<SkillName, Vec<SkillBonus>>);
+impl BonusesContainer<SkillName, SkillBonus> for SkillBonuses {
+    fn get_hashmap(&mut self) -> &mut HashMap<SkillName, Vec<SkillBonus>> {
+        &mut self.0
+    }
+}
 
 impl From<Vec<SkillBonus>> for SkillBonuses {
     fn from(other: Vec<SkillBonus>) -> Self {
         let mut map: HashMap<SkillName, Vec<SkillBonus>> = HashMap::new();
         for entry in other {
             map.entry(entry.skill_name)
-                .and_modify(|vec| vec.push(entry))
+                .and_modify(|vec| vec.push(entry.clone()))
                 .or_insert(vec![entry]);
         }
         Self(map)
     }
 }
 
-pub trait Limitation {}
-// pub trait Limitation: Sync + Send + 'static + std::fmt::Debug {}
-// struct LimitBox {
-//     boxed_limitation: Box<dyn Limitation>,
-// }
-//
-// impl LimitBox {
-//     fn new(trait_impl: impl Limitation + 'static) -> Self {
-//         LimitBox {
-//             boxed_limitation: Box::new(trait_impl),
-//         }
-//     }
-// }
-
-#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Hash, Ord)]
-pub struct NoLimitation;
-
 // #[derive(Debug)]
-#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy, Eq, Hash)]
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
 pub struct SkillBonus {
     // Not a Component
     pub bonus: i32,
     pub bonus_type: BonusType,
     pub skill_name: SkillName,
-    pub limitation: LimitationEnum,
-    // pub limitation: Box<dyn Limitation>,
+    pub limitation: Vec<LimitationEnum>,
+}
+impl NewBonusKey<SkillName> for SkillBonus {
+    fn key(&self) -> SkillName {
+        self.skill_name
+    }
 }
 
 ////// Limitation
@@ -365,6 +507,11 @@ pub enum LimitationEnum {
     SpellSchool(magic::SpellSchool),
     PlayerState(PlayerState),
     AbilityScoreAbove(AbilityScore, u32),
+    AttackingTargetTypeAndSubtype(CreatureType, CreatureSubtype),
+    // Poison and magic are placeholder until I get around to those systems
+    PoisonAndSpells(Poison, Magic),
+    CombatManeuverName(CombatManeuverName),
+    ItemContains(ItemContains),
     None,
 }
 
@@ -590,7 +737,7 @@ pub struct NormalVision(pub bool);
 pub struct LowLightVision(pub f32);
 
 #[derive(Component, Clone, Copy, Debug, PartialEq)]
-pub struct Darkvision(pub f32);
+pub struct DarkVision(pub f32);
 
 //// Ability Scores
 #[derive(Component, Clone, Debug, Eq, PartialEq)]
@@ -688,7 +835,20 @@ pub enum PlayableRace {
     Undine,
 }
 
-#[derive(Component, Debug, Copy, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(
+    Component,
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Default,
+    Serialize,
+    Deserialize,
+    Ord,
+    Eq,
+    PartialOrd,
+    Hash,
+)]
 pub enum CreatureType {
     Aberration,
     Animal,
@@ -735,6 +895,7 @@ pub enum CreatureSubtype {
     Demon,
     Devil,
     Div,
+    Dhampir,
     Dwarf,
     Earth,
     Elemental,
@@ -778,6 +939,7 @@ pub enum CreatureSubtype {
     Sasquatch,
     Shapechangeer,
     Swarm,
+    Tengu,
     Troop,
     Udaeus,
     Unbreathing,

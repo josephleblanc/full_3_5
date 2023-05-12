@@ -287,17 +287,6 @@ pub enum WeaponName {
 }
 
 impl WeaponName {
-    pub fn array_martial_elf_familiarity() -> [WeaponName; 6] {
-        use WeaponName::*;
-        [
-            Longsword,
-            Rapier,
-            Shortbow,
-            ShortbowComposite,
-            Longbow,
-            LongbowComposite,
-        ]
-    }
     pub fn array_simple() -> [WeaponName; 40] {
         use WeaponName::*;
         [
@@ -566,16 +555,20 @@ impl WeaponName {
 // Racial weapon groups, used with the weapon_names_vec below to easily get the
 // list of WeaponName items.
 pub enum RacialWeapon {
-    Dwarven,
+    Dwarf,
     Orc,
     Elf,
+    Gnome,
+    Halfling,
+    Tengu,
+    Drow,
 }
 
 impl RacialWeapon {
-    pub fn weapon_names_vec(&self) -> Vec<WeaponName> {
+    pub fn exotic_to_martial_vec(&self) -> Vec<WeaponName> {
         use WeaponName::*;
         match self {
-            Self::Dwarven => vec![
+            Self::Dwarf => vec![
                 WaraxeDwarvenDouble,
                 WaraxeDwarven,
                 UgroshDwarven,
@@ -595,6 +588,48 @@ impl RacialWeapon {
             ],
             Self::Orc => vec![AxeOrcDouble, OrcSkullRam, HornbowOrc],
             Self::Elf => vec![ElvenBranchedSpear, CurveBladeElven],
+            Self::Gnome => vec![
+                GnomePincher,
+                BattleLadderGnome,
+                HammerGnomeHooked,
+                PistonMaulGnome,
+                RipsawGlaiveGnome,
+            ],
+            Self::Halfling => vec![HalflingRopeShot, SlingStaffHalfling],
+            Self::Tengu => vec![],
+            Self::Drow => vec![],
+        }
+    }
+    pub fn racial_proficient_vec(&self) -> Vec<WeaponName> {
+        use WeaponName::*;
+        match self {
+            Self::Dwarf => vec![BattleAxe, PickHeavy, Warhammer],
+            Self::Elf => vec![
+                Longsword,
+                Rapier,
+                Shortbow,
+                ShortbowComposite,
+                Longbow,
+                LongbowComposite,
+            ],
+            Self::Gnome => vec![],
+            Self::Orc => vec![Greataxe, Falchion],
+            Self::Halfling => vec![Sling],
+            Self::Tengu => vec![
+                SwordBastard,
+                Dagger,
+                CurveBladeElven,
+                Falchion,
+                Greatsword,
+                Kukri,
+                Longsword,
+                DaggerPunching,
+                Rapier,
+                Scimitar,
+                SwordShort,
+                SwordTwoBladed,
+            ],
+            Self::Drow => vec![CrossbowHand, Rapier, SwordShort],
         }
     }
 }
