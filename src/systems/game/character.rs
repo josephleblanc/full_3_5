@@ -363,6 +363,41 @@ impl NewBonusKey<AbilityScore> for AbilityScoreBonus {
     }
 }
 
+impl AbilityScoreBonus {
+    pub fn new_racial(positive: [AbilityScore; 2], negative: AbilityScore) -> Vec<Self> {
+        vec![
+            Self {
+                ability: positive[0],
+                bonus: 2,
+                bonus_type: BonusType::Racial,
+                limitation: LimitationEnum::None,
+            },
+            Self {
+                ability: positive[1],
+                bonus: 2,
+                bonus_type: BonusType::Racial,
+                limitation: LimitationEnum::None,
+            },
+            Self {
+                ability: negative,
+                bonus: 2,
+                bonus_type: BonusType::Racial,
+                limitation: LimitationEnum::None,
+            },
+        ]
+    }
+    pub fn new_racial_custom(vec: Vec<(AbilityScore, i32)>) -> Vec<Self> {
+        vec.into_iter()
+            .map(|(ability, bonus)| Self {
+                ability,
+                bonus,
+                bonus_type: BonusType::Racial,
+                limitation: LimitationEnum::None,
+            })
+            .collect()
+    }
+}
+
 // used during character creation to apply a specific value bonus
 // to a chosen ability score,
 // e.x. base human ability score modifier
@@ -597,6 +632,24 @@ impl BonusType {
         }
     }
 }
+//// CreatureSubtype
+// Because a creature can have multiple subtypes, this needs to be
+// a vec - as opposed to creature type, of which a creature can have only
+// one.
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd)]
+pub struct CreatureSubtypes(pub Vec<CreatureSubtype>);
+
+impl CreatureSubtypes {
+    pub fn push(&mut self, other: CreatureSubtype) {
+        self.0.push(other);
+    }
+}
+
+impl From<CreatureSubtype> for CreatureSubtypes {
+    fn from(other: CreatureSubtype) -> Self {
+        CreatureSubtypes(vec![other])
+    }
+}
 
 // Bonus feats to be chosen by the player
 #[derive(Clone, Debug, PartialEq, PartialOrd, Copy)]
@@ -686,15 +739,16 @@ pub enum Language {
     Aquan,
     Auran,
     Boggard,
+    Catfolk,
     Celestial,
     Common,
     Cyclops,
     DarkFolk,
     Draconic,
-    // DrowSignLanguage secret
-    // Druidic secret
+    DrowSignLanguage, // secret
+    Druidic,          // secret
     Dwarven,
-    Dziriak, // D'ziriak
+    Dziriak(SpeaksLanguage), // D'ziriak
     Elven,
     Giant,
     Gnoll,
@@ -708,6 +762,7 @@ pub enum Language {
     Orc,
     Protean,
     Rougarou,
+    RegionalHuman(RegionalHumanLanguage),
     Sphinx,
     Sylvan,
     Tengu,
@@ -719,6 +774,18 @@ pub enum Language {
     AnyNotSecret,
     // Represents any language including secret ones like Druidic
     AnyWithSecret,
+}
+
+#[derive(Component, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Copy)]
+pub enum RegionalHumanLanguage {
+    /* More here, maybe */
+    Any,
+}
+
+#[derive(Component, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Copy)]
+pub enum SpeaksLanguage {
+    UnderstandOnly,
+    Speak,
 }
 
 #[derive(Component, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Copy)]
@@ -1099,6 +1166,7 @@ impl CreatureSubtype {
             Self::Demodand,
             Self::Demon,
             Self::Devil,
+            Self::Dhampir,
             Self::Div,
             Self::Dwarf,
             Self::Earth,
@@ -1143,6 +1211,7 @@ impl CreatureSubtype {
             Self::Sasquatch,
             Self::Shapechangeer,
             Self::Swarm,
+            Self::Tengu,
             Self::Troop,
             Self::Udaeus,
             Self::Unbreathing,
@@ -1182,6 +1251,7 @@ impl fmt::Display for CreatureSubtype {
             Self::Demodand => write!(f, "Demodand"),
             Self::Demon => write!(f, "Demon"),
             Self::Devil => write!(f, "Devil"),
+            Self::Dhampir => write!(f, "Dhampir"),
             Self::Div => write!(f, "Div"),
             Self::Dwarf => write!(f, "Dwarf"),
             Self::Earth => write!(f, "Earth"),
@@ -1226,6 +1296,7 @@ impl fmt::Display for CreatureSubtype {
             Self::Sasquatch => write!(f, "Sasquatch"),
             Self::Shapechangeer => write!(f, "Shapechangeer"),
             Self::Swarm => write!(f, "Swarm"),
+            Self::Tengu => write!(f, "Tengu"),
             Self::Troop => write!(f, "Troop"),
             Self::Udaeus => write!(f, "Udaeus"),
             Self::Unbreathing => write!(f, "Unbreathing"),

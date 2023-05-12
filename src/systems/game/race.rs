@@ -54,11 +54,12 @@ pub enum RacialTraitName {
     ElvenImmunities,
     //// Others
     KeenSenses,
-    ChooseOneASM,
+    ChooseOneASB,
+    DexChaMinusConASB,
     // LightSensitivity, // Dhampir, Kobold
-    // LanguagesCommon,  // Only Common, no extras
+    LanguagesCommon, // Only Common, no extras
     // Dwarf Base Traits
-    BaseDwarfASM,
+    ConWisMinusChaASB,
     Dwarf,
     BaseDwarfLanguages,
     BaseDwarfHardy,
@@ -70,15 +71,14 @@ pub enum RacialTraitName {
     BaseHumanBonusFeat,
     BaseHumanSkilled,
     //// Elf Base Traits
-    BaseElfASM,
+    DexIntMinusConASB,
     BaseElfElvenMagic,
     BaseElfLanguages,
     // BaseElfType,
-    // BaseElfLanguages,
     // BaseElfElvenMagic,
     // BaseElfWeaponFamiliarity,
     // // Gnome Base Traits
-    BaseGnomeASM,
+    ConChaMinusStrASB,
     // BaseGnomeType,
     BaseGnomeLanguages,
     DefensiveTraining,
@@ -94,33 +94,32 @@ pub enum RacialTraitName {
     // BaseHalfElfMultitalented,
     // // Half-Orc Base Traits,
     // BaseHalfOrcType,
-    // BaseHalfOrcLanguages,
+    BaseHalfOrcLanguages,
     // BaseHalfOrcIntimidating,
     // BaseHalfOrcOrcFerocity,
     // BaseHalfOrcOrcBlood,
     // // Halfling Base Traits
-    // BaseHalflingASB,
+    DexChaMinusStrASB,
     // BaseHalflingType,
-    // BaseHalflingLanguages,
+    BaseHalflingLanguages,
     // BaseHalflingFearless,
     // BaseHalflingHalflingLuck,
     // BaseHalflingSureFooted,
     BaseHalflingWeaponFamiliarity,
     // // Aasimar Base Traits
-    // BaseAasimarASB, // +2 Wis, +2 Cha
-    // BaseAasimarLanguages,
+    BaseAasimarASB, // +2 Wis, +2 Cha
+    BaseAasimarLanguages,
     // BaseAasimarCelestialResistance,
     // BaseAasimarSkilled,
     // BaseAasimarSLA, // Spell-like Ability
     // // Catfolk Base Traits
-    // BaseCatfolkASM,
+    DexChaMinusWisASB,
     // BaseCatfolkType,
-    // BaseCatfolkLanguages,
+    BaseCatfolkLanguages,
     // BaseCatfolkCatsLuck,
     // BaseCatfolkNaturalHunter,
     // BaseCatfolkSprinter,
     // // Dhampir Base Traits
-    // BaseDhampirASM, // +2 Dex, +2 Cha, -2 Con
     Dhampir,
     // BaseDhampirUndeadResistance,
     // BaseDhampirResistLevelDrain,
@@ -131,8 +130,8 @@ pub enum RacialTraitName {
     // // https://www.d20pfsrd.com/RACES/other-races/featured-races/arg-dhampir/#Sunlight_Syndrome
     // //
     // // Drow Base Traits
-    // BaseDrowASM, // +2 Dex, +2 Cha, -2 Con
-    // BaseDrowLanguages,
+    BaseDrowASB, // +2 Dex, +2 Cha, -2 Con
+    BaseDrowLanguages,
     // BaseDrowImmunities,
     // BaseDrowSpellResistance,
     // BaseDrowSLA,
@@ -140,75 +139,72 @@ pub enum RacialTraitName {
     // BaseDrowLightBlindness,
     BaseDrowWeaponFamiliarity,
     // // Fetchling Base Traits
-    // BaseFetchlingASM, // +2 Dex, +2 Cha, -2 Wis
-    // BaseFetchlingLanguages,
+    BaseFetchlingLanguages,
     // BaseFetchlingShadowBlending,
     // BaseFetchlingShadowyResistance,
     // BaseFetchlingSkilled,
     // BaseFetchlingSLA,
     // // Goblin Base Traits,
-    // BaseGoblinASM, // +4 Dex, -2 Str, -2 Cha
-    // BaseGoblinLanguages,
+    BaseGoblinASB, // +4 Dex, -2 Str, -2 Cha
+    BaseGoblinLanguages,
     // BaseGoblinSkilled,
     // BaseGoblinFastMovement,
     // // Hobgoblin Base Traits
-    // BaseHobgoblinASM, // +2 Dex, +2 Con
-    // BaseHobgoblinLanguages,
+    BaseHobgoblinASB, // +2 Dex, +2 Con
+    BaseHobgoblinLanguages,
     HobgoblinSneaky,
     // // Ifrit Base Traits
-    // BaseIfritASM, // +2 Dex, +2 Cha, -2 Wis
-    // BaseIfritLanguages,
+    BaseIfritLanguages,
     // BaseIfritEnergyResistance, // fire 5
     // BaseIfritSLA,
     // BaseIfritFireAffinity,
     // // Kobold Base Traits
-    // BaseKoboldASM, // +2 Dex, -4 Str, -2 Con
-    // BaseKoboldLanguages,
+    BaseKoboldASB, // +2 Dex, -4 Str, -2 Con
+    BaseKoboldLanguages,
     // BaseKoboldArmor,
     // BaseKoboldCrafty,
     // // Orc Base Traits
-    // BaseOrcASM, // +4 Str, -2 Int, -2 Wis, -2 Cha
+    BaseOrcASB, // +4 Str, -2 Int, -2 Wis, -2 Cha
     Orc,
-    // BaseOrcLanguages,
+    BaseOrcLanguages,
     // BaseOrcFerocity,
     // // Oread Base Traits
-    // BaseOreadASM, // +2 Str, +2 Wis, -2 Cha
-    // BaseOreadLanguages,
+    StrWisMinusChaASB,
+    BaseOreadLanguages,
     // BaseOreadEnergyResistance, // 5 Earth
     // BaseOreadSLA,
     // BaseOreadEarthAffinity,
     // // Ratfolk Base Traits
-    // BaseRatfolkASM, // +2 Dex, +2 Int, -2 Str
     Ratfolk,
-    // BaseRatfolkLanguages,
+    DexIntMinusStrASB,
+    BaseRatfolkLanguages,
     // BaseRatfolkTinker,
     // BaseRatfolkRodentEmpathy,
     // BaseRatfolkSwarming,
     // // Sylph Base Traits
-    // BaseSylphASM, // +2 Dex, +2 Int, -2 Con
-    // BaseSylphLanguages,
+    BaseSylphLanguages,
     // BaseSylphEnergyResistance,
     // BaseSylphSLA,
     // BaseSylphAirAffinity,
     // // Tengu Base Traits
-    // BaseTenguASM, // +2 Dex, +2 Wis, -2 Con
+    DexWisMinusConASB,
     TenguSneaky,
     Tengu,
-    // BaseTenguLanguages,
+    BaseTenguLanguages,
     // BaseTenguGiftedLinguist,
     BaseTenguSwordtrained,
     // BaseTenguNaturalWeapons,
     // BaseTenguSenses, // Same as low-light vision
     // // Tiefling Base Traits
-    // BaseTieflingASM, // +2 Dex, +2 Int, -2 Cha
-    // BaseTieflingLanguages,
+    DexIntMinusChaASB,
+    BaseTieflingLanguages,
     // BaseTieflingFiendishResistance,
     // BaseTieflingSkilled,
     // BaseTieflingSLA,
     // BaseTieflingFiendishSorcery,
     // // Undine Base Traits
-    // BaseUndineASM, // +2 Dex, +2 Wis, -2 Str
-    // BaseUndineLanguages,
+    DexWisMinusStrASB,
+    BaseUndineLanguages,
     // BaseUndineEnergyResistance,
     // BaseUndineSLA,
     // BaseUndineWaterAffinity,
@@ -221,7 +217,7 @@ impl RacialTraitName {
         use RacialTraitName::*;
         match self {
             // Human
-            ChooseOneASM => Some(vec![AlchemicallyEnhanced, DualTalent]),
+            ChooseOneASB => Some(vec![AlchemicallyEnhanced, DualTalent]),
             _ => None,
         }
     }
@@ -229,22 +225,22 @@ impl RacialTraitName {
         use RacialTraitName::*;
         match race {
             PlayableRace::Human => vec![
+                ChooseOneASB,
                 Humanoid,
                 Human,
                 SizeMedium,
                 NormalVision,
                 SpeedNormal,
-                ChooseOneASM,
                 BaseLanguagesCommonAny,
                 BaseHumanBonusFeat,
                 BaseHumanSkilled,
             ],
             PlayableRace::Elf => vec![
+                DexIntMinusConASB,
                 SizeMedium,
                 NormalVision,
                 SpeedNormal,
                 LowLightVision,
-                BaseElfASM,
                 Humanoid,
                 Elf,
                 BaseElfLanguages,
@@ -254,7 +250,7 @@ impl RacialTraitName {
                 BaseElfWeaponFamiliarity,
             ],
             PlayableRace::Gnome => vec![
-                BaseGnomeASM,
+                ConChaMinusStrASB,
                 Humanoid,
                 Gnome,
                 SizeSmall,
@@ -270,7 +266,7 @@ impl RacialTraitName {
                 LowLightVision,
             ],
             PlayableRace::HalfElf => vec![
-                ChooseOneASM,
+                ChooseOneASB,
                 Humanoid,
                 Elf,
                 Human,
@@ -285,10 +281,13 @@ impl RacialTraitName {
             ],
 
             PlayableRace::HalfOrc => vec![
-                ChooseOneASM,
-                //         BaseHalfOrcType,
+                ChooseOneASB,
+                Humanoid,
+                // Half-Orc has both Human and Orc subtypes
+                Human,
+                Orc,
                 SizeMedium,
-                //         BaseOrcLanguages,
+                BaseHalfOrcLanguages,
                 //         BaseHalfOrcIntimidating,
                 //         BaseHalfOrcOrcFerocity,
                 OrcWeaponFamiliarity,
@@ -296,7 +295,7 @@ impl RacialTraitName {
                 //         BaseHalfOrcOrcBlood,
             ],
             PlayableRace::Halfling => vec![
-                //         BaseHalflingASB,
+                DexChaMinusStrASB,
                 SizeSmall,
                 //         BaseHalflingType,
                 SpeedSlow,
@@ -308,7 +307,7 @@ impl RacialTraitName {
                 KeenSenses,
             ],
             PlayableRace::Aasimar => vec![
-                //         BaseAasimarASB, // +2 Wis, +2 Cha
+                BaseAasimarASB, // +2 Wis, +2 Cha
                 Outsider,
                 Native,
                 SizeMedium,
@@ -320,7 +319,7 @@ impl RacialTraitName {
                 DarkVision,
             ],
             PlayableRace::Catfolk => vec![
-                //         BaseCatfolkASM,
+                DexChaMinusWisASB,
                 //         BaseCatfolkType,
                 SpeedNormal,
                 SizeMedium,
@@ -331,7 +330,7 @@ impl RacialTraitName {
                 LowLightVision,
             ],
             PlayableRace::Dhampir => vec![
-                //         BaseDhampirASM, // +2 Dex, +2 Cha, -2 Con
+                DexChaMinusConASB,
                 Humanoid,
                 Dhampir,
                 SizeMedium,
@@ -349,7 +348,7 @@ impl RacialTraitName {
                 //         // https://www.d20pfsrd.com/RACES/other-races/featured-races/arg-dhampir/#Sunlight_Syndrome
             ],
             PlayableRace::Drow => vec![
-                //         BaseDrowASM, // +2 Dex, +2 Cha, -2 Con
+                BaseDrowASB, // +2 Dex, +2 Cha, -2 Con
                 Humanoid,
                 Elf,
                 SizeMedium,
@@ -365,11 +364,10 @@ impl RacialTraitName {
                 //         BaseDrowLightBlindness,
             ],
             PlayableRace::Fetchling => vec![
-                //         BaseFetchlingASM, // +2 Dex, +2 Cha, -2 Wis
+                DexChaMinusWisASB,
                 Outsider,
                 Native,
                 SizeMedium,
-                SpeedNormal,
                 //         BaseFetchlingLanguages,
                 //         BaseFetchlingShadowBlending,
                 //         BaseFetchlingShadowyResistance,
@@ -379,15 +377,18 @@ impl RacialTraitName {
                 //         LowLightVision,
             ],
             PlayableRace::Goblin => vec![
-                //         BaseGoblinASM, // +4 Dex, -2 Str, -2 Cha
-                Humanoid, Goblinoid, SizeSmall, SpeedSlow,
+                BaseGoblinASB, // +4 Dex, -2 Str, -2 Cha
+                Humanoid,
+                Goblinoid,
+                SizeSmall,
+                SpeedSlow,
                 //         BaseGoblinLanguages,
                 //         BaseGoblinSkilled,
                 //         BaseGoblinFastMovement,
                 DarkVision,
             ],
             PlayableRace::Hobgoblin => vec![
-                //         BaseHobgoblinASM, // +2 Dex, +2 Con
+                BaseHobgoblinASB, // +2 Dex, +2 Con
                 Humanoid,
                 Goblinoid,
                 SpeedNormal,
@@ -397,7 +398,7 @@ impl RacialTraitName {
                 DarkVision,
             ],
             PlayableRace::Ifrit => vec![
-                //         BaseIfritASM, // +2 Dex, +2 Cha, -2 Wis
+                DexChaMinusWisASB,
                 Outsider,
                 Native,
                 SizeMedium,
@@ -409,7 +410,7 @@ impl RacialTraitName {
                 DarkVision,
             ],
             PlayableRace::Kobold => vec![
-                //         BaseKoboldASM, // +2 Dex, -4 Str, -2 Con
+                BaseKoboldASB, // +2 Dex, -4 Str, -2 Con
                 Humanoid,
                 Reptilian,
                 SizeSmall,
@@ -421,7 +422,7 @@ impl RacialTraitName {
                 //         LightSensitivity,
             ],
             PlayableRace::Orc => vec![
-                //         BaseOrcASM, // +4 Str, -2 Int, -2 Wis, -2 Cha
+                BaseOrcASB, // +4 Str, -2 Int, -2 Wis, -2 Cha
                 Humanoid,
                 Orc,
                 SizeMedium,
@@ -433,8 +434,11 @@ impl RacialTraitName {
                 //         LightSensitivity,
             ],
             PlayableRace::Oread => vec![
-                //         BaseOreadASM, // +2 Str, +2 Wis, -2 Cha
-                Outsider, Native, SizeMedium, SpeedSlow,
+                StrWisMinusChaASB,
+                Outsider,
+                Native,
+                SizeMedium,
+                SpeedSlow,
                 //         BaseOreadLanguages,
                 //         BaseOreadEnergyResistance, // 5 Earth
                 //         BaseOreadSLA,
@@ -442,8 +446,11 @@ impl RacialTraitName {
                 //         BaseOreadEarthAffinity,
             ],
             PlayableRace::Ratfolk => vec![
-                //         BaseRatfolkASM, // +2 Dex, +2 Int, -2 Str
-                Humanoid, Ratfolk, SizeSmall, SpeedSlow,
+                DexIntMinusStrASB,
+                Humanoid,
+                Ratfolk,
+                SizeSmall,
+                SpeedSlow,
                 //         BaseRatfolkLanguages,
                 //         BaseRatfolkTinker,
                 //         BaseRatfolkRodentEmpathy,
@@ -451,7 +458,7 @@ impl RacialTraitName {
                 DarkVision,
             ],
             PlayableRace::Sylph => vec![
-                //         BaseSylphASM, // +2 Dex, +2 Int, -2 Con
+                DexIntMinusConASB,
                 Outsider,
                 Native,
                 SizeMedium,
@@ -463,7 +470,7 @@ impl RacialTraitName {
                 //         BaseSylphAirAffinity,
             ],
             PlayableRace::Tengu => vec![
-                //         BaseTenguASM, // +2 Dex, +2 Wis, -2 Con
+                DexWisMinusConASB,
                 Humanoid,
                 Tengu,
                 SizeMedium,
@@ -476,7 +483,7 @@ impl RacialTraitName {
                 //         BaseTenguSenses, // Same as low-light vision
             ],
             PlayableRace::Tiefling => vec![
-                //         BaseTieflingASM, // +2 Dex, +2 Int, -2 Cha
+                DexIntMinusChaASB,
                 Outsider,
                 Native,
                 SizeMedium,
@@ -489,7 +496,7 @@ impl RacialTraitName {
                 //         BaseTieflingFiendishSorcery,
             ],
             PlayableRace::Undine => vec![
-                //         BaseUndineASM, // +2 Dex, +2 Wis, -2 Str
+                DexWisMinusStrASB,
                 Outsider,
                 Native,
                 SizeMedium,
@@ -582,6 +589,7 @@ pub fn build_race(
     query_builder: Query<Entity, With<CharacterBuilder>>,
     mut q_floating_bonus_feats: Query<&mut FloatingBonusFeats>,
     mut q_floating_ability_bonuses: Query<&mut FloatingAbilityBonuses>,
+    mut q_creature_subtypes: Query<&mut CreatureSubtypes>,
     mut q_skill_bonuses: Query<&mut SkillBonuses>,
     mut q_ability_score_bonuses: Query<&mut AbilityScoreBonuses>,
     mut q_saving_throw_bonuses: Query<&mut SavingThrowBonuses>,
@@ -641,6 +649,7 @@ pub fn build_race(
         // FloatingBonusFeat
         // FloatingAbilityBonus
         // FloatingSkillBonus
+        // CreatureSubtype (slight variation from above)
         if let Ok(floating_bonus_feat) = FloatingBonusFeat::from_name(racial_trait_name) {
             if let Ok(mut floating_feats) = q_floating_bonus_feats.get_mut(builder_entity) {
                 floating_feats.push(floating_bonus_feat);
@@ -660,6 +669,13 @@ pub fn build_race(
                 floating_feats.push(floating_skill_bonus);
             } else {
                 entity_commands.insert(FloatingSkillBonuses::from(floating_skill_bonus));
+            }
+        }
+        if let Ok(floating_bonus_feat) = CreatureSubtype::from_name(racial_trait_name) {
+            if let Ok(mut floating_feats) = q_creature_subtypes.get_mut(builder_entity) {
+                floating_feats.push(floating_bonus_feat);
+            } else {
+                entity_commands.insert(CreatureSubtypes::from(floating_bonus_feat));
             }
         }
         //// RacialTraitNames with a corresponding IntoHashMapVecBuilder impl
@@ -1091,6 +1107,109 @@ impl IntoComponentBuilder for BaseLanguages {
                 given: vec![Common, Dwarven],
                 choices: vec![Giant, Gnome, Goblin, Terran, Undercommon],
             }),
+            RacialTraitName::BaseHalfOrcLanguages => Ok(Self {
+                given: vec![Common, Orc],
+                choices: vec![Abyssal, Draconic, Giant, Gnoll, Goblin],
+            }),
+            RacialTraitName::BaseOrcLanguages => Ok(Self {
+                given: vec![Common, Orc],
+                choices: vec![Dwarven, Giant, Gnoll, Goblin, Undercommon],
+            }),
+            RacialTraitName::BaseHalflingLanguages => Ok(Self {
+                given: vec![Common, Halfling],
+                choices: vec![Dwarven, Elven, Gnome, Goblin],
+            }),
+            RacialTraitName::BaseAasimarLanguages => Ok(Self {
+                given: vec![Common, Celestial],
+                choices: vec![Draconic, Dwarven, Elven, Gnome, Halfling, Sylvan],
+            }),
+            RacialTraitName::BaseCatfolkLanguages => Ok(Self {
+                given: vec![Common, Catfolk],
+                choices: vec![Elven, Gnoll, Gnome, Goblin, Halfling, Orc, Sylvan],
+            }),
+            RacialTraitName::BaseDrowLanguages => Ok(Self {
+                given: vec![Undercommon, Elven],
+                choices: vec![
+                    Abyssal,
+                    Aklo,
+                    Aquan,
+                    Common,
+                    Draconic,
+                    DrowSignLanguage,
+                    Gnome,
+                    Goblin,
+                ],
+            }),
+            RacialTraitName::BaseFetchlingLanguages => Ok(Self {
+                given: vec![Common],
+                choices: vec![
+                    Aklo,
+                    Aquan,
+                    Auran,
+                    Draconic,
+                    Dziriak(SpeaksLanguage::UnderstandOnly),
+                    Ignan,
+                    Terran,
+                    RegionalHuman(RegionalHumanLanguage::Any),
+                ],
+            }),
+            RacialTraitName::BaseGoblinLanguages => Ok(Self {
+                given: vec![Goblin],
+                choices: vec![Common, Draconic, Dwarven, Gnoll, Gnome, Halfling, Orc],
+            }),
+            RacialTraitName::BaseHobgoblinLanguages => Ok(Self {
+                given: vec![Common, Goblin],
+                choices: vec![Draconic, Dwarven, Infernal, Giant, Orc],
+            }),
+            RacialTraitName::BaseIfritLanguages => Ok(Self {
+                given: vec![Common, Ignan],
+                choices: vec![Aquan, Auran, Dwarven, Elven, Gnome, Halfling, Terran],
+            }),
+            RacialTraitName::BaseKoboldLanguages => Ok(Self {
+                given: vec![Draconic],
+                choices: vec![Common, Dwarven, Gnome, Undercommon],
+            }),
+            RacialTraitName::BaseOreadLanguages => Ok(Self {
+                given: vec![Common, Terran],
+                choices: vec![
+                    Aquan,
+                    Auran,
+                    Dwarven,
+                    Elven,
+                    Gnome,
+                    Halfling,
+                    Ignan,
+                    Undercommon,
+                ],
+            }),
+            RacialTraitName::BaseRatfolkLanguages => Ok(Self {
+                given: vec![Common],
+                choices: vec![
+                    Aklo,
+                    Draconic,
+                    Dwarven,
+                    Gnoll,
+                    Gnome,
+                    Goblin,
+                    Halfling,
+                    Orc,
+                    Undercommon,
+                ],
+            }),
+            RacialTraitName::BaseSylphLanguages => Ok(Self {
+                given: vec![Common, Auran],
+                choices: vec![Aquan, Dwarven, Elven, Gnome, Halfling, Ignan, Terran],
+            }),
+            RacialTraitName::BaseTenguLanguages => Ok(Self {
+                given: vec![Common, Tengu],
+                choices: vec![AnyNotSecret],
+            }),
+            RacialTraitName::BaseTieflingLanguages => Ok(Self {
+                given: vec![Common, Abyssal, Infernal],
+                choices: vec![
+                    Abyssal, Draconic, Dwarven, Elven, Gnome, Goblin, Halfling, Infernal, Orc,
+                ],
+            }),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for BaseLanguages in \
                 from_name() method of trait IntoComponentBuilder",
@@ -1204,7 +1323,7 @@ impl IntoVecBuilder for FloatingSkillBonus {
 impl IntoVecBuilder for FloatingAbilityBonus {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Self, Box<dyn Error>> {
         match racial_trait_name {
-            RacialTraitName::ChooseOneASM => Ok(Self {
+            RacialTraitName::ChooseOneASB => Ok(Self {
                 val: 2,
                 choices: AbilityScore::as_array().to_vec(),
                 choices_num: 1,
@@ -1379,68 +1498,81 @@ impl IntoHashMapVecBuilder<SkillBonuses> for SkillBonus {
 impl IntoHashMapVecBuilder<AbilityScoreBonuses> for AbilityScoreBonus {
     fn from_name(racial_trait_name: &RacialTraitName) -> Result<Vec<Self>, Box<dyn Error>> {
         use AbilityScore::*;
-        use BonusType::*;
         match racial_trait_name {
-            RacialTraitName::BaseElfASM => Ok(vec![
-                Self {
-                    ability: Dexterity,
-                    bonus: 2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-                Self {
-                    ability: Intelligence,
-                    bonus: 2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-                Self {
-                    ability: Constitution,
-                    bonus: -2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-            ]),
-            RacialTraitName::BaseGnomeASM => Ok(vec![
-                Self {
-                    ability: Constitution,
-                    bonus: 2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-                Self {
-                    ability: Charisma,
-                    bonus: 2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-                Self {
-                    ability: Strength,
-                    bonus: -2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-            ]),
-            RacialTraitName::BaseDwarfASM => Ok(vec![
-                Self {
-                    ability: Constitution,
-                    bonus: 2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-                Self {
-                    ability: Wisdom,
-                    bonus: 2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-                Self {
-                    ability: Charisma,
-                    bonus: -2,
-                    bonus_type: Racial,
-                    limitation: LimitationEnum::None,
-                },
-            ]),
+            // Dwarf
+            RacialTraitName::ConWisMinusChaASB => Ok(AbilityScoreBonus::new_racial(
+                [Constitution, Wisdom],
+                Charisma,
+            )),
+            // Elf
+            RacialTraitName::DexIntMinusConASB => Ok(AbilityScoreBonus::new_racial(
+                [Dexterity, Intelligence],
+                Constitution,
+            )),
+            // Gnome
+            RacialTraitName::ConChaMinusStrASB => Ok(AbilityScoreBonus::new_racial(
+                [Constitution, Charisma],
+                Strength,
+            )),
+            // Halfling
+            RacialTraitName::DexChaMinusStrASB => Ok(AbilityScoreBonus::new_racial(
+                [Dexterity, Charisma],
+                Strength,
+            )),
+            // Catfolk, Ifrit
+            RacialTraitName::DexChaMinusWisASB => {
+                Ok(AbilityScoreBonus::new_racial([Dexterity, Charisma], Wisdom))
+            }
+            // Dhampir, Drow, Fetchling
+            RacialTraitName::DexChaMinusConASB => Ok(AbilityScoreBonus::new_racial(
+                [Dexterity, Charisma],
+                Constitution,
+            )),
+            // Oread
+            RacialTraitName::StrWisMinusChaASB => {
+                Ok(AbilityScoreBonus::new_racial([Strength, Wisdom], Charisma))
+            }
+            // Ratfolk
+            RacialTraitName::DexIntMinusStrASB => Ok(AbilityScoreBonus::new_racial(
+                [Dexterity, Intelligence],
+                Strength,
+            )),
+            RacialTraitName::DexWisMinusConASB => {
+                Ok(AbilityScoreBonus::new_racial([Dexterity, Wisdom], Charisma))
+            }
+            // Tiefling
+            RacialTraitName::DexIntMinusChaASB => Ok(AbilityScoreBonus::new_racial(
+                [Dexterity, Intelligence],
+                Charisma,
+            )),
+            // Undine
+            RacialTraitName::DexWisMinusStrASB => {
+                Ok(AbilityScoreBonus::new_racial([Dexterity, Wisdom], Strength))
+            }
+            RacialTraitName::BaseAasimarASB => Ok(AbilityScoreBonus::new_racial_custom(vec![
+                (Wisdom, 2),
+                (Charisma, 2),
+            ])),
+            RacialTraitName::BaseGoblinASB => Ok(AbilityScoreBonus::new_racial_custom(vec![
+                (Dexterity, 4),
+                (Strength, -2),
+                (Charisma, -2),
+            ])),
+            RacialTraitName::BaseHobgoblinASB => Ok(AbilityScoreBonus::new_racial_custom(vec![
+                (Dexterity, 2),
+                (Constitution, 2),
+            ])),
+            RacialTraitName::BaseKoboldASB => Ok(AbilityScoreBonus::new_racial_custom(vec![
+                (Dexterity, 2),
+                (Strength, -4),
+                (Constitution, -2),
+            ])),
+            RacialTraitName::BaseOrcASB => Ok(AbilityScoreBonus::new_racial_custom(vec![
+                (Strength, 4),
+                (Intelligence, -2),
+                (Wisdom, -2),
+                (Charisma, -2),
+            ])),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for AbilityScoreBonus in \
                 from_name() method of trait IntoComponentBuilder",
