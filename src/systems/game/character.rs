@@ -840,6 +840,20 @@ impl AbilityScore {
     }
 }
 
+impl Display for AbilityScore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use AbilityScore::*;
+        match self {
+            Strength => write!(f, "Strength"),
+            Dexterity => write!(f, "Dexterity"),
+            Constitution => write!(f, "Constitution"),
+            Intelligence => write!(f, "Intelligence"),
+            Wisdom => write!(f, "Wisdom"),
+            Charisma => write!(f, "Charisma"),
+        }
+    }
+}
+
 #[derive(Component, Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum AbilityScoreModifier {
     Strength,

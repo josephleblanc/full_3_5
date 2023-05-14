@@ -71,6 +71,31 @@ pub enum RacialChoicesButtonType {
     FavoredClassOption,
 }
 
+// Common traits displayed in the right panel of race selection in
+// character creation.
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub enum CommonTraits {
+    #[default]
+    Size,
+    Speed,
+    /* more here */
+}
+
+impl CommonTraits {
+    pub fn as_array() -> [CommonTraits; 2] {
+        [Self::Size, Self::Speed]
+    }
+}
+
+impl std::fmt::Display for CommonTraits {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match &self {
+            Self::Size => write!(f, "Size"),
+            Self::Speed => write!(f, "Speed"),
+        }
+    }
+}
+
 impl std::fmt::Display for RacialChoicesButtonType {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &self {
