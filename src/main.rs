@@ -7,9 +7,7 @@ mod system_scheduling;
 mod systems;
 mod technical;
 use bevy::prelude::*;
-use systems::{
-    grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu,
-};
+use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu};
 use technical::default_race_traits::{
     new_print_on_load, new_setup_asset_example, MyDefaultTraitAssetPlugin,
 };

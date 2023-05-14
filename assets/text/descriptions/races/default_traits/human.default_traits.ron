@@ -6,15 +6,15 @@ DefaultTraitAsset(
 	    title: "Ability Score Modifiers",
 	    description: "Human characters gain a +2 racial bonus to one ability score of their choice at creation to represent their varied nature."
 	    ),
-	    (
-	    my_trait_name: SpeedNormal,
-	    title: "Base Speed",
-	    description: "Humans have a base speed of 30 feet.",
-	    ),
     	(
 	    my_trait_name: SizeMedium,
 	    title: "Size",
 	    description: "Humans are Medium creatures and thus receive no bonuses or penalties due to their size.",
+	    ),
+	    (
+	    my_trait_name: SpeedNormal,
+	    title: "Base Speed",
+	    description: "Humans have a base speed of 30 feet.",
 	    ),
     	(
 	    my_trait_name: BaseLanguagesCommonAny,

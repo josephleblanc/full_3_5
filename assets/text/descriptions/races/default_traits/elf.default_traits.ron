@@ -1,0 +1,81 @@
+DefaultTraitAsset(
+	race: Elf,
+	default_traits:
+[
+	(
+	my_trait_name: DexIntMinusConASB,
+	title: 
+	"Ability Score Modifiers",
+	description:
+	"Elves are nimble, both in body and mind, but their form is frail. They gain +2 Dexterity, +2 Intelligence, and –2 Constitution.",
+	),
+	(
+	my_trait_name: SizeMedium,
+	title: 
+	"Size",
+	description:
+	"Elves are Medium creatures and thus receive no bonuses or penalties due to their size.",
+	),
+	(
+	my_trait_name: SpeedNormal,
+	title: "Base Speed",
+	description: "Humans have a base speed of 30 feet.",
+	),
+	(
+	my_trait_name: Humanoid,
+	title: 
+	"Type",
+	description:
+	"Elves are Humanoids",
+	),
+	(
+	my_trait_name: Elf,
+	title: 
+	"Subtype",
+	description:
+	"Elves have the elf subtype.",
+	),
+	(
+	my_trait_name: BaseElfLanguages,
+	title: 
+	"Languages",
+	description:
+	"Elves begin play speaking Common and Elven. Elves with high Intelligence scores can choose from the following: Celestial, Draconic, Gnoll, Gnome, Goblin, Orc, and Sylvan.",
+	),
+	(
+	my_trait_name: ElvenImmunities,
+	title: 
+	"Elven Immunities",
+	description:
+	"Elves are immune to magic sleep effects and gain a +2 racial saving throw bonus against enchantment spells and effects.",
+	),
+	(
+	my_trait_name: KeenSenses,
+	title: 
+	"Keen Senses",
+	description:
+	"Elves receive a +2 racial bonus on Perception checks.",
+	),
+	(
+	my_trait_name: BaseElfElvenMagic,
+	title: 
+	"Elven Magic",
+	description:
+	"Elves receive a +2 racial bonus on caster level checks made to overcome spell resistance. In addition, elves receive a +2 racial bonus on Spellcraft skill checks made to identify the properties of magic items.",
+	),
+	(
+	my_trait_name: BaseElfWeaponFamiliarity,
+	title: 
+	"Weapon Familiarity",
+	description:
+	"Elves are proficient with longbows (including composite longbows), longswords, rapiers, and shortbows (including composite shortbows), and treat any weapon with the word “elven” in its name as a martial weapon.",
+	),
+	(
+	my_trait_name: LowLightVision,
+	title: 
+	"Low-Light Vision",
+	description:
+	"Elves can see twice as far as humans in conditions of dim light.",
+	),
+],
+)
