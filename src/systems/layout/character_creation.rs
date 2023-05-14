@@ -318,7 +318,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     },
                     ScrollingList::default(),
                     AccessibilityNode(NodeBuilder::new(Role::List)),
-                    Name::from("moving panel"),
+                    Name::from("moving panel - flavor text"),
                     Interaction::default(),
                     // Marks parent of the RaceDescriptionNode to be used when
                     // returning the child to the parent.
@@ -353,14 +353,14 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     },
                                 ),
                                 style: Style {
-                                    max_size: Size::width(Val::Px(1200.)),
+                                    max_size: Size::width(Val::Px(1160.)),
                                     ..default()
                                 },
                                 ..default()
                             },
                             DescriptionSection,
                             ActiveRaceDescription(PlayableRace::Human),
-                            Name::new("race: text description"),
+                            Name::new("race: flavor text description"),
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                         ));
                     });

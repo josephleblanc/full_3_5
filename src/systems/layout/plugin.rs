@@ -3,7 +3,10 @@ use crate::{
     system_scheduling::states::AppState,
     systems::{
         layout::character_creation::build_layout,
-        menu::{character_creation::*, mouse::mouse_scroll},
+        menu::{
+            character_creation::*,
+            mouse::{mouse_scroll, scroll_snap_top},
+        },
     },
     technical::{
         default_race_traits::DefaultTraitAsset,
@@ -81,10 +84,18 @@ impl Plugin for CharacterCreationPlugin {
                     selected_default_traits_visibility,
                     selected_race_visibility,
                     display_racial_description_type,
+                    // hide all non-selected nodes
                     hide_racial_trait_text,
                     hide_racial_trait_button,
                 )
                     .in_set(ButtonSet::RacialTab),
+            )
+            // snap scrolling content to top on changing selected race or tab
+            .add_system(
+                scroll_snap_top.run_if(
+                    resource_changed::<SelectedRaceButton>()
+                        .or_else(resource_changed::<SelectedRacialDescriptionType>()),
+                ),
             );
     }
 }

@@ -290,7 +290,6 @@ pub fn selected_race_description_type(
                 if selection_copy != *interacted_button {
                     *color = RACE_BUTTON_COLOR_SELECTED.into();
                     *selected = SelectedRacialDescriptionType(*interacted_button);
-                    println!("{selected:?}");
                 }
             }
             Interaction::Hovered => {
@@ -322,7 +321,6 @@ pub fn race_select_button_system(
                 if selection_copy != *player_race {
                     *color = RACE_BUTTON_COLOR_SELECTED.into();
                     *selected_race = SelectedRaceButton(*player_race);
-                    println!("{selected_race:?}");
                 }
             }
             Interaction::Hovered => {
