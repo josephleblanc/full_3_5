@@ -1,110 +1,16 @@
-use crate::systems::interface::mouse::mouse_left_clicked;
-use crate::{
-    system_scheduling::states::AppState,
-    systems::{
-        game::character::PlayableRace,
-        menu::{
-            character_creation::*,
-            components::{
-                RaceDescriptionNode, RaceDescriptionNodeParent, RaceSelectButton, ScrollingList,
-                StagesOfCreationButton,
-            },
-            mouse::mouse_scroll,
-            styles::{
-                CHARACTER_CREATION_TITLE_STYLE, RACE_BUTTON_COLOR, RACE_BUTTON_COLOR_HOVERED,
-                RACE_BUTTON_COLOR_SELECTED, RACIAL_CHOICES_BUTTON_COLOR, RACIAL_CHOICES_NODE_COLOR,
-                RACIAL_CHOICES_PANEL_COLOR, RACIAL_CHOICES_TEXT_BG_COLOR,
-                STAGES_OF_CREATION_BUTTON, STAGES_OF_CREATION_BUTTON_COLOR,
-                STAGES_OF_CREATION_FONT_SIZE, STAGES_OF_CREATION_TEXT_COLOR,
-                STAGES_OF_CREATION_TEXT_STYLE, TEXT_COLOR,
-            },
+use crate::systems::{
+    game::character::PlayableRace,
+    menu::{
+        character_creation::*,
+        components::{
+            RaceDescriptionNode, RaceDescriptionNodeParent, RaceSelectButton, ScrollingList,
+            StagesOfCreationButton,
         },
-    },
-    technical::{
-        default_race_traits::DefaultTraitAsset,
-        is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
-        race_load::RaceAsset,
+        styles::*,
     },
 };
-use bevy::input::common_conditions::input_just_pressed;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
-const RACE_DESCRIPTION_FOLDER: &str = "text/descriptions/races";
-const RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER: &str = "text/descriptions/races/default_traits";
-
-pub struct CharacterCreationPlugin;
-
-impl Plugin for CharacterCreationPlugin {
-    fn build(&self, app: &mut App) {
-        app
-            //// init resources & build layout
-            .init_resource::<SelectedRaceButton>()
-            .init_resource::<SelectedRacialDescriptionType>()
-            .init_resource::<CustomAssetLoadState<RaceAsset>>()
-            .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
-            .add_system(setup_assets.in_schedule(OnEnter(AppState::CharacterCreation)))
-            .add_system(build_layout.in_schedule(OnEnter(AppState::CharacterCreation)))
-            //// Configure Sets
-            .configure_sets((
-                ButtonSet::Super.run_if(
-                    in_state(AppState::CharacterCreation).and_then(
-                        is_custom_asset_loaded::<RaceAsset>()
-                            .and_then(is_custom_asset_loaded::<DefaultTraitAsset>()),
-                    ),
-                ),
-                ButtonSet::Clicked
-                    .in_set(ButtonSet::Super)
-                    .run_if(on_event::<MouseButtonInput>().and_then(mouse_left_clicked)),
-                ButtonSet::RacialTab
-                    .run_if(
-                        resource_changed::<SelectedRaceButton>()
-                            .or_else(resource_changed::<SelectedRacialDescriptionType>()),
-                    )
-                    .in_set(ButtonSet::Clicked),
-            ))
-            .configure_set(ButtonSet::AnyInteraction.in_set(ButtonSet::Super))
-            //// add systems
-            .add_systems(
-                (race_select_button_system, cleanup_race_select_button)
-                    .chain()
-                    .in_set(ButtonSet::Clicked),
-            )
-            .add_systems(
-                (
-                    selected_race_description_type,
-                    cleanup_selected_race_description_button,
-                )
-                    .chain()
-                    .in_set(ButtonSet::Clicked),
-            )
-            .add_system(mouse_scroll.in_set(OnUpdate(AppState::CharacterCreation)))
-            .add_systems(
-                (
-                    selected_default_traits_visibility,
-                    selected_race_visibility,
-                    display_racial_description_type,
-                    hide_racial_trait_text,
-                    hide_racial_trait_button,
-                )
-                    .in_set(ButtonSet::RacialTab),
-            );
-    }
-}
-
-#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-enum ButtonSet {
-    Super,
-    Clicked,
-    AnyInteraction,
-    RacialTab,
-}
-// Figure out if you can make sure that this only runs once when entering
-// character creation, then use it to hold setup and custom asset loading
-// systems.
-// #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-// enum Layout {
-//     Setup,
-// }
 
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let shared_font = asset_server.load("fonts/simple_font.TTF");
@@ -123,20 +29,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .id();
-
-    //// Hides nodes that don't need to be displayed, but may be viewed again
-    // commands.spawn((
-    //     NodeBundle {
-    //         style: Style {
-    //             size: Size::all(Val::Percent(10.)),
-    //             position: UiRect::bottom(Val::Percent(200.)),
-    //             display: Display::None,
-    //             ..default()
-    //         },
-    //         ..default()
-    //     },
-    //      RacialChoicesNodeContainer,
-    // ));
 
     //// Second level containers
     // Bar near top of screen with title and stages of character creation.

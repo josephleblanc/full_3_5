@@ -8,7 +8,7 @@ mod systems;
 mod technical;
 use bevy::prelude::*;
 use systems::{
-    grid_systems::flex_grid, layout::character_creation::CharacterCreationPlugin, menu::main_menu,
+    grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu,
 };
 use technical::default_race_traits::{
     new_print_on_load, new_setup_asset_example, MyDefaultTraitAssetPlugin,
@@ -58,8 +58,8 @@ fn main() {
         .add_system(main_menu::main_menu_cleanup.in_schedule(OnExit(AppState::MainMenu)))
         .add_system(flex_grid::setup_flex_grid.in_schedule(OnEnter(AppState::Battle)))
         .add_system(systems::interface::mouse::mouse_scroll);
-        // .add_startup_system(new_setup_asset_example)
-        // .add_system(new_print_on_load);
+    // .add_startup_system(new_setup_asset_example)
+    // .add_system(new_print_on_load);
     //
     // For testing character.rs
     //
