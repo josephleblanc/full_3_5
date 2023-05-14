@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 
+use crate::systems::game::magic;
 use crate::systems::game::race::IntoHashMapVecBuilder;
-use crate::systems::game::{magic, skills};
 use crate::systems::game::{magic::*, skills::*};
 
 ////////////////////////////////////////////////////////

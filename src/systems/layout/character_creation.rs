@@ -9,7 +9,6 @@ use crate::systems::{
         styles::*,
     },
 };
-use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
 
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -353,7 +352,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     },
                                 ),
                                 style: Style {
-                                    max_size: Size::width(Val::Px(1160.)),
+                                    max_size: Size::width(Val::Px(1200.)),
                                     ..default()
                                 },
                                 ..default()

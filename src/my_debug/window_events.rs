@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use bevy::window::{
-    CursorEntered, CursorLeft, CursorMoved, ReceivedCharacter, RequestRedraw, WindowCreated,
-    WindowResized, WindowScaleFactorChanged,
-};
+use bevy::window::{CursorEntered, CursorLeft, CursorMoved, WindowCreated, WindowResized};
 
 fn print_window_events(
     created: EventReader<WindowCreated>,

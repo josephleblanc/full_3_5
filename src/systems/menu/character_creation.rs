@@ -34,8 +34,8 @@ pub struct DescriptionSection;
 #[derive(Component, Clone, Copy, Debug)]
 pub struct RacialChoiceButton;
 
-#[derive(Component, Clone, Debug)]
-pub struct RacialChoicesButton;
+// #[derive(Component, Clone, Debug)]
+// pub struct RacialChoicesButton;
 
 #[derive(Component, Clone, Debug)]
 pub struct RightPanel;
@@ -45,6 +45,21 @@ pub struct RacialTraitNameSelections {
     traits_chosen: Vec<RacialTraitName>,
     race: PlayableRace,
 }
+
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct RacialTraitListNumber(pub usize);
+
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct RacialTraitButtonText;
+
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct RacialTraitButton;
+
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct RacialTraitDescriptionText;
+
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct DefaultRacialTraitRace(pub PlayableRace);
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub enum RacialChoicesButtonType {
@@ -79,18 +94,6 @@ impl RacialChoicesButtonType {
         ]
     }
 }
-
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct RacialTraitListNumber(pub usize);
-
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct RacialTraitButtonText;
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct RacialTraitButton;
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct RacialTraitDescriptionText;
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct DefaultRacialTraitRace(pub PlayableRace);
 
 // Keeping this here for debuggin purposes
 // fn print_custom_assets(races_state: Res<RacesLoadState>, assets: Res<Assets<RaceAsset>>) {
@@ -155,14 +158,14 @@ pub fn selected_race_visibility(
 pub fn selected_default_traits_visibility(
     selected_race: Res<SelectedRaceButton>,
     mut query_button: Query<
-        (&mut Text, &RacialTraitListNumber),
+        &mut Text,
         (
             With<RacialTraitButtonText>,
             Without<RacialTraitDescriptionText>,
         ),
     >,
     mut query_text: Query<
-        (&mut Text, &RacialTraitListNumber),
+        &mut Text,
         (
             With<RacialTraitDescriptionText>,
             Without<RacialTraitButtonText>,
@@ -176,7 +179,7 @@ pub fn selected_default_traits_visibility(
     // let mut text = query_text.get_single_mut().unwrap();
     for (_handle, trait_asset) in assets.iter() {
         if trait_asset.race == selected_race.0 {
-            for (race_trait, ((mut button, button_i), (mut text, text_i))) in trait_asset
+            for (race_trait, (mut button, mut text)) in trait_asset
                 .default_traits
                 .iter()
                 .zip(query_button.iter_mut().zip(query_text.iter_mut()))

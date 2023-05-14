@@ -8,11 +8,8 @@ mod systems;
 mod technical;
 use bevy::prelude::*;
 use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu};
-use technical::default_race_traits::{
-    new_print_on_load, new_setup_asset_example, MyDefaultTraitAssetPlugin,
-};
-use technical::race_load::{print_on_load, setup_asset_example, MyRaceAssetPlugin};
-
+use technical::default_race_traits::MyDefaultTraitAssetPlugin;
+use technical::race_load::MyRaceAssetPlugin;
 // #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -24,10 +21,6 @@ pub const GRID_LINE_COLOR: Color = Color::BLUE;
 pub const GRID_Z_POS: f32 = 0.;
 
 fn main() {
-    //// just for testing for now
-    use crate::systems::game::character::PlayableRace;
-    use crate::systems::game::race::*;
-    use RacialTraitName::*;
     ////
     let mut app = App::new();
     app
@@ -60,7 +53,9 @@ fn main() {
     // .add_system(new_print_on_load);
     //
     // For testing character.rs
-    //
+    // use crate::systems::game::race::*;
+    // use crate::systems::game::character::PlayableRace;
+    // use RacialTraitName::*;
     // app.insert_resource(RaceBuilder(
     // RacialTraitName::default_traits(&PlayableRace::Gnome),
     // RacialTraitName::default_traits(&PlayableRace::Elf),
@@ -109,17 +104,8 @@ fn main() {
 
     app.run();
 }
-use bevy::input::common_conditions::input_just_pressed;
 fn check_state(state: Res<State<AppState>>) {
     println!("State: {:?}", state.0);
-}
-
-fn flash_buttons_on_click(query: Query<&Interaction, With<Button>>) {
-    for interaction in query.iter() {
-        if *interaction == Interaction::Clicked {
-            println!("button clicked");
-        }
-    }
 }
 
 fn spawn_player(mut commands: Commands, ascii: Res<AsciiSheet>) {

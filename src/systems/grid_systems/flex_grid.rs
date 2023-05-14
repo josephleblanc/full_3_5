@@ -22,9 +22,9 @@ pub struct FlexGrid {
 
 pub fn setup_flex_grid(
     window_query: Query<&Window>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    commands: Commands,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
 ) {
     FlexGrid::build_2d(
         window_query,

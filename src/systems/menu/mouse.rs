@@ -46,16 +46,8 @@ pub fn mouse_scroll(
     }
 }
 
-pub fn scroll_snap_top(
-    mut query_list: Query<(&mut ScrollingList, &mut Style, &Node, &Parent)>,
-    query_node: Query<&Node>,
-) {
-    for (mut scrolling_list, mut style, list_node, parent) in &mut query_list {
-        let items_height = list_node.size().y;
-        let container_height = query_node.get(parent.get()).unwrap().size().y;
-
-        let max_scroll = (items_height - container_height).max(0.);
-
+pub fn scroll_snap_top(mut query_list: Query<(&mut ScrollingList, &mut Style)>) {
+    for (mut scrolling_list, mut style) in &mut query_list {
         // snap to top
         scrolling_list.position = 0.;
         style.position.top = Val::Px(scrolling_list.position);

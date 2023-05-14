@@ -507,10 +507,6 @@ impl RacialTraitName {
                 //         BaseUndineWaterAffinity,
                 DarkVision,
             ],
-            // }
-            //    }
-            // }
-            _ => vec![],
         }
     }
 }
@@ -787,7 +783,7 @@ pub fn print_weapon_proficiencies(
         for skill in weapon_proficiency.martial.iter() {
             let name_length = skill.0.to_string().len();
             width = 40;
-            if let Some(u32) = width.checked_sub(name_length) {
+            if let Some(_) = width.checked_sub(name_length) {
                 width = width - name_length;
             }
             if !skill.1 {

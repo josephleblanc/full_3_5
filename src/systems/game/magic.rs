@@ -1,5 +1,4 @@
 use crate::systems::game::character;
-use bevy::prelude::*;
 
 //// How Spells will work
 // Spells will each have their own `system` and `Event`. When the spell is
@@ -80,14 +79,6 @@ pub struct Spell {
     descriptor: SpellDescriptor,
     range: SpellRange,
     /* more fields */
-}
-
-use bevy::core::NonSendMarker;
-trait SpellEffect<T>
-where
-    T: IntoSystemAppConfig<NonSendMarker>,
-{
-    fn spell_effect(spell_function: T) {}
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Copy, Hash, Eq)]
