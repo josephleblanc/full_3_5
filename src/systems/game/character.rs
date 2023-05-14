@@ -875,7 +875,9 @@ pub enum SizeType {
     Long,
 }
 
-#[derive(Component, Debug, Copy, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(
+    Component, Debug, Copy, Clone, PartialEq, Default, Serialize, Deserialize, PartialOrd, Hash, Eq,
+)]
 pub enum PlayableRace {
     #[default]
     Human,

@@ -1,5 +1,5 @@
 use crate::systems::menu::components::ScrollingList;
-use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
+use bevy::input::mouse::{MouseButton, MouseButtonInput, MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
 pub fn mouse_scroll(
@@ -32,4 +32,21 @@ pub fn mouse_scroll(
             }
         }
     }
+}
+
+pub fn hovering_over_button(query: Query<&Interaction, With<Button>>) -> bool {
+    if !query.is_empty() {
+        return true;
+    }
+    false
+}
+
+pub fn mouse_left_clicked(mut event: EventReader<MouseButtonInput>) -> bool {
+    for click in event.iter() {
+        println!("{:?}", click);
+        if click.button == MouseButton::Left {
+            return true;
+        }
+    }
+    false
 }

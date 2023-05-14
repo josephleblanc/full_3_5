@@ -5,7 +5,7 @@ use crate::systems::game::equipment::*;
 use crate::systems::game::magic::*;
 use crate::systems::game::skills::*;
 use bevy::prelude::*;
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
 
 ////// Things that need to be revisited when other systems are better understood:
 //  - FloatingSkillBonus: BaseGnomeObsessive: This trait adds +2 to a choice
@@ -20,10 +20,11 @@ use std::collections::HashMap;
 #[derive(Resource, Clone, Debug, PartialEq, Hash, Eq)]
 pub struct RaceBuilder(pub Vec<RacialTraitName>);
 
-#[derive(Clone, Debug, PartialEq, Hash, Eq, Copy)]
+#[derive(Clone, Debug, PartialEq, Hash, Eq, Copy, Deserialize, Serialize, Default)]
 pub enum RacialTraitName {
     //// Traits Common to many races
     //// Size
+    #[default]
     SizeMedium,
     SizeSmall,
     //// Vision
@@ -38,11 +39,12 @@ pub enum RacialTraitName {
     Humanoid,
     Outsider,
     //// Subtype
-    Human,
     Elf,
+    Dwarf,
     Gnome,
-    Native,
     Goblinoid,
+    Human,
+    Native,
     Reptilian,
     //// Skills
     //// Weapon Familiarity
@@ -60,7 +62,6 @@ pub enum RacialTraitName {
     LanguagesCommon, // Only Common, no extras
     // Dwarf Base Traits
     ConWisMinusChaASB,
-    Dwarf,
     BaseDwarfLanguages,
     BaseDwarfHardy,
     BaseDwarfStability,
@@ -74,7 +75,6 @@ pub enum RacialTraitName {
     DexIntMinusConASB,
     BaseElfElvenMagic,
     BaseElfLanguages,
-    // BaseElfType,
     // BaseElfElvenMagic,
     // BaseElfWeaponFamiliarity,
     // // Gnome Base Traits

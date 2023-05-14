@@ -1,0 +1,51 @@
+DefaultTraitAsset(
+    race: Human,
+    default_traits: [
+    	(
+	    my_trait_name: ChooseOneASB,
+	    title: "Ability Score Modifiers",
+	    description: "Human characters gain a +2 racial bonus to one ability score of their choice at creation to represent their varied nature."
+	    ),
+	    (
+	    my_trait_name: SpeedNormal,
+	    title: "Base Speed",
+	    description: "Humans have a base speed of 30 feet.",
+	    ),
+    	(
+	    my_trait_name: SizeMedium,
+	    title: "Size",
+	    description: "Humans are Medium creatures and thus receive no bonuses or penalties due to their size.",
+	    ),
+    	(
+	    my_trait_name: BaseLanguagesCommonAny,
+	    title: "Languages",
+	    description: "Humans begin play speaking Common. Humans with high Intelligence scores can choose any languages they want (except secret languages, such as Druidic).",
+	    ),
+    	(
+	    my_trait_name: BaseHumanBonusFeat,
+	    title: "Bonus Feat",
+	    description: "Humans select one extra feat at 1st level.",
+	    ),
+    	(
+	    my_trait_name: BaseHumanSkilled,
+	    title: "Skilled",
+	    description: "Humans gain an additional skill rank at first level and one additional rank whenever they gain a level.",
+	    ),
+    	(
+	    my_trait_name: NormalVision,
+	    title: "Normal Vision",
+	    description: "Humans can see in daylight, cannot see well in low light, and cannot see in the dark",
+	    ),
+    	(
+	    my_trait_name: Humanoid,
+	    title: "Type",
+	    description: "Humans have the Humanoid type.",
+	    ),
+    	(
+	    my_trait_name: Human,
+	    title: "Subtype",
+	    description: "Humans have the Human subtype.",
+	    ),
+    ]
+)
+

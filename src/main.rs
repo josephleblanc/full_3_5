@@ -10,6 +10,9 @@ use bevy::prelude::*;
 use systems::{
     grid_systems::flex_grid, layout::character_creation::CharacterCreationPlugin, menu::main_menu,
 };
+use technical::default_race_traits::{
+    new_print_on_load, new_setup_asset_example, MyDefaultTraitAssetPlugin,
+};
 use technical::race_load::{print_on_load, setup_asset_example, MyRaceAssetPlugin};
 
 // #[cfg(feature = "debug")]
@@ -44,6 +47,7 @@ fn main() {
         ))
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(MyRaceAssetPlugin)
+        .add_plugin(MyDefaultTraitAssetPlugin)
         .add_system(load_ascii.in_base_set(StartupSet::PreStartup))
         .add_state::<AppState>()
         .add_plugin(CharacterCreationPlugin)
@@ -53,57 +57,57 @@ fn main() {
         .add_system(main_menu::button_system.in_set(OnUpdate(AppState::MainMenu)))
         .add_system(main_menu::main_menu_cleanup.in_schedule(OnExit(AppState::MainMenu)))
         .add_system(flex_grid::setup_flex_grid.in_schedule(OnEnter(AppState::Battle)))
-        .add_system(systems::interface::mouse::mouse_scroll)
-        .add_startup_system(setup_asset_example)
-        .add_system(print_on_load);
+        .add_system(systems::interface::mouse::mouse_scroll);
+        // .add_startup_system(new_setup_asset_example)
+        // .add_system(new_print_on_load);
     //
     // For testing character.rs
     //
-    app.insert_resource(RaceBuilder(
-        // RacialTraitName::default_traits(&PlayableRace::Gnome),
-        RacialTraitName::default_traits(&PlayableRace::Elf),
-        // vec![
-        // Humanoid,
-        // Human,
-        // SizeMedium,
-        // NormalVision,
-        // SpeedNormal,
-        // ChooseOneASM,
-        // BaseLanguagesCommonAny,
-        // BaseHumanBonusFeat,
-        // BaseHumanSkilled,
-        // ElvenImmunities,
-        // BaseElfElvenMagic,
-        // KeenSenses,
-        // BaseElfWeaponFamiliarity,
-        // ]
-    ))
-    .add_system(spawn_player.on_startup())
-    .add_systems(
-        (
-            print_armor_class_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_floating_bonus_feats
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            build_race.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_ability_score_bonuses
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_saving_throw_bonuses
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_caster_level_bonuses
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_floating_ability_bonuses
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_skill_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_builder.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_weapon_proficiencies
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_spell_like_abilities
-                .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_spell_dc_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-            print_attack_roll_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
-        )
-            .chain(),
-    );
+    // app.insert_resource(RaceBuilder(
+    // RacialTraitName::default_traits(&PlayableRace::Gnome),
+    // RacialTraitName::default_traits(&PlayableRace::Elf),
+    // vec![
+    // Humanoid,
+    // Human,
+    // SizeMedium,
+    // NormalVision,
+    // SpeedNormal,
+    // ChooseOneASM,
+    // BaseLanguagesCommonAny,
+    // BaseHumanBonusFeat,
+    // BaseHumanSkilled,
+    // ElvenImmunities,
+    // BaseElfElvenMagic,
+    // KeenSenses,
+    // BaseElfWeaponFamiliarity,
+    // ]
+    // ))
+    //.add_system(spawn_player.on_startup())
+    //.add_systems(
+    //    (
+    //        print_armor_class_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_floating_bonus_feats
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        build_race.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_ability_score_bonuses
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_saving_throw_bonuses
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_caster_level_bonuses
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_floating_ability_bonuses
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_skill_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_builder.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_weapon_proficiencies
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_spell_like_abilities
+    //            .run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_spell_dc_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //        print_attack_roll_bonuses.run_if(input_just_pressed::<MouseButton>(MouseButton::Right)),
+    //    )
+    //        .chain(),
+    //);
 
     app.run();
 }

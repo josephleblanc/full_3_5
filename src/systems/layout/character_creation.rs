@@ -1,15 +1,13 @@
+use crate::systems::interface::mouse::mouse_left_clicked;
 use crate::{
     system_scheduling::states::AppState,
     systems::{
         game::character::PlayableRace,
         menu::{
-            character_creation::{
-                cleanup_race_select_button, race_select_button_system, selected_race_visibility,
-                setup_assets, ActiveRaceDescription, DescriptionSection, RacialChoiceButton,
-                RacialChoicesButtonType, RightPanel, SelectedRaceButton,
-            },
+            character_creation::*,
             components::{
-                RaceDescriptionNode, RaceSelectButton, ScrollingList, StagesOfCreationButton,
+                RaceDescriptionNode, RaceDescriptionNodeParent, RaceSelectButton, ScrollingList,
+                StagesOfCreationButton,
             },
             mouse::mouse_scroll,
             styles::{
@@ -23,37 +21,90 @@ use crate::{
         },
     },
     technical::{
+        default_race_traits::DefaultTraitAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
         race_load::RaceAsset,
     },
 };
+use bevy::input::common_conditions::input_just_pressed;
+use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
 const RACE_DESCRIPTION_FOLDER: &str = "text/descriptions/races";
+const RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER: &str = "text/descriptions/races/default_traits";
 
 pub struct CharacterCreationPlugin;
 
 impl Plugin for CharacterCreationPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SelectedRaceButton::default())
+        app
+            //// init resources & build layout
+            .init_resource::<SelectedRaceButton>()
+            .init_resource::<SelectedRacialDescriptionType>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
+            .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .add_system(setup_assets.in_schedule(OnEnter(AppState::CharacterCreation)))
             .add_system(build_layout.in_schedule(OnEnter(AppState::CharacterCreation)))
+            //// Configure Sets
+            .configure_sets((
+                ButtonSet::Super.run_if(
+                    in_state(AppState::CharacterCreation).and_then(
+                        is_custom_asset_loaded::<RaceAsset>()
+                            .and_then(is_custom_asset_loaded::<DefaultTraitAsset>()),
+                    ),
+                ),
+                ButtonSet::Clicked
+                    .in_set(ButtonSet::Super)
+                    .run_if(on_event::<MouseButtonInput>().and_then(mouse_left_clicked)),
+                ButtonSet::RacialTab
+                    .run_if(
+                        resource_changed::<SelectedRaceButton>()
+                            .or_else(resource_changed::<SelectedRacialDescriptionType>()),
+                    )
+                    .in_set(ButtonSet::Clicked),
+            ))
+            .configure_set(ButtonSet::AnyInteraction.in_set(ButtonSet::Super))
+            //// add systems
             .add_systems(
                 (race_select_button_system, cleanup_race_select_button)
                     .chain()
-                    .in_set(OnUpdate(AppState::CharacterCreation)),
+                    .in_set(ButtonSet::Clicked),
+            )
+            .add_systems(
+                (
+                    selected_race_description_type,
+                    cleanup_selected_race_description_button,
+                )
+                    .chain()
+                    .in_set(ButtonSet::Clicked),
             )
             .add_system(mouse_scroll.in_set(OnUpdate(AppState::CharacterCreation)))
-            .add_system(
-                selected_race_visibility
-                    .run_if(
-                        resource_changed::<SelectedRaceButton>()
-                            .and_then(is_custom_asset_loaded::<RaceAsset>()),
-                    )
-                    .in_set(OnUpdate(AppState::CharacterCreation)),
+            .add_systems(
+                (
+                    selected_default_traits_visibility,
+                    selected_race_visibility,
+                    display_racial_description_type,
+                    hide_racial_trait_text,
+                    hide_racial_trait_button,
+                )
+                    .in_set(ButtonSet::RacialTab),
             );
     }
 }
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum ButtonSet {
+    Super,
+    Clicked,
+    AnyInteraction,
+    RacialTab,
+}
+// Figure out if you can make sure that this only runs once when entering
+// character creation, then use it to hold setup and custom asset loading
+// systems.
+// #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+// enum Layout {
+//     Setup,
+// }
 
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let shared_font = asset_server.load("fonts/simple_font.TTF");
@@ -72,6 +123,20 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .id();
+
+    //// Hides nodes that don't need to be displayed, but may be viewed again
+    // commands.spawn((
+    //     NodeBundle {
+    //         style: Style {
+    //             size: Size::all(Val::Percent(10.)),
+    //             position: UiRect::bottom(Val::Percent(200.)),
+    //             display: Display::None,
+    //             ..default()
+    //         },
+    //         ..default()
+    //     },
+    //      RacialChoicesNodeContainer,
+    // ));
 
     //// Second level containers
     // Bar near top of screen with title and stages of character creation.
@@ -330,6 +395,9 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Setup for Race description area, located in the middle and right,
     // with text descriptions of the selected races.
+    // This contains many nodes, but on startup most will be transformed into the
+    // negative Z direction to hide them until the correct tab is checked.
+    let default_racial_trait_rows = 20_usize;
     let center_area = commands
         .spawn((
             NodeBundle {
@@ -351,6 +419,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         style: Style {
                             flex_direction: FlexDirection::Column,
                             align_items: AlignItems::FlexStart,
+                            size: Size::width(Val::Percent(100.)),
                             ..default()
                         },
                         ..default()
@@ -359,6 +428,9 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     AccessibilityNode(NodeBuilder::new(Role::List)),
                     Name::from("moving panel"),
                     Interaction::default(),
+                    // Marks parent of the RaceDescriptionNode to be used when
+                    // returning the child to the parent.
+                    RaceDescriptionNodeParent,
                 ))
                 .with_children(|list| {
                     list.spawn((
@@ -371,10 +443,14 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             background_color: Color::OLIVE.into(),
                             ..default()
                         },
-                        RaceDescriptionNode,
+                        // Marks the node for use by display_racial_description_type,
+                        // used to switch the content depending on the racial tab
+                        // button pressed, e.g. Description, Racial Traits, etc.
+                        RaceDescriptionNode(RacialChoicesButtonType::RaceDescription),
                     ))
-                    .with_children(|list_button| {
-                        list_button.spawn((
+                    .with_children(|text_area| {
+                        // Holds the flavor text descriptions of various races.
+                        text_area.spawn((
                             TextBundle {
                                 text: Text::from_section(
                                     "",
@@ -396,11 +472,95 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                         ));
                     });
+                })
+                .with_children(|list| {
+                    list.spawn((
+                        NodeBundle {
+                            style: Style {
+                                size: Size::width(Val::Percent(100.)),
+                                padding: UiRect::left(Val::Px(10.)),
+                                flex_direction: FlexDirection::Column,
+                                ..default()
+                            },
+                            background_color: Color::OLIVE.into(),
+                            ..default()
+                        },
+                        // Marks the node for use by display_racial_description_type,
+                        // used to switch the content depending on the racial tab
+                        // button pressed, e.g. Description, Racial Traits, etc.
+                        RaceDescriptionNode(RacialChoicesButtonType::StandardRacialTraitNames),
+                    ))
+                    .with_children(|racial_traits| {
+                        for row_number in 0..default_racial_trait_rows {
+                            racial_traits
+                                .spawn((
+                                    // Button to select or deselect a racial trait
+                                    ButtonBundle {
+                                        style: Style {
+                                            padding: UiRect::all(Val::Px(5.)),
+                                            margin: UiRect::all(Val::Px(10.)),
+                                            ..default()
+                                        },
+                                        background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+                                        ..default()
+                                    },
+                                    RacialTraitButton,
+                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                ))
+                                .with_children(|racial_traits| {
+                                    racial_traits.spawn((
+                                        // Button text
+                                        TextBundle {
+                                            text: Text::from_section(
+                                                "Select",
+                                                TextStyle {
+                                                    font: shared_font.clone(),
+                                                    font_size: 30.,
+                                                    color: TEXT_COLOR,
+                                                },
+                                            ),
+                                            style: Style {
+                                                max_size: Size::width(Val::Px(1200.)),
+                                                margin: UiRect::all(Val::Px(5.)),
+                                                ..default()
+                                            },
+                                            ..default()
+                                        },
+                                        RacialTraitButtonText,
+                                        RacialTraitListNumber(row_number),
+                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                    ));
+                                });
+                            racial_traits.spawn((
+                                // Trait description
+                                TextBundle {
+                                    text: Text::from_section(
+                                        "",
+                                        TextStyle {
+                                            font: shared_font.clone(),
+                                            font_size: 30.,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                    style: Style {
+                                        max_size: Size::width(Val::Px(1200.)),
+                                        margin: UiRect::left(Val::Px(20.)),
+                                        ..default()
+                                    },
+                                    ..default()
+                                },
+                                RacialTraitDescriptionText,
+                                RacialTraitListNumber(row_number),
+                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                            ));
+                        }
+                    });
                 });
         })
         .set_parent(mid_container)
         .id();
     // Panel with chosen racial traits and favored class.
+    // Should be located on the right of the screen
     // This panel should:
     //  - update when new racial traits are chosen
     //  - indicate when it is displaying the default choices
@@ -408,68 +568,69 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     //  - provide a description of the chosen option when hovered over
     //  - include boxes with the displayed changes to stats for the
     //    chosen race.
-    // commands
-    //     .spawn((
-    //         NodeBundle {
-    //             style: Style {
-    //                 flex_direction: FlexDirection::Row,
-    //                 size: Size::new(Val::Px(400.), Val::Percent(100.)),
-    //                 align_self: AlignSelf::Center,
-    //                 justify_content: JustifyContent::Center,
-    //                 max_size: Size::width(Val::Px(400.)),
-    //                 ..default()
-    //             },
-    //             background_color: Color::BEIGE.into(), // RACIAL_CHOICES_NODE_COLOR,
-    //             ..default()
-    //         },
-    //         Name::from("Racial Choices Made Container"),
-    //     ))
-    //     .with_children(|button_container| {
-    //         button_container
-    //             .spawn((
-    //                 NodeBundle {
-    //                     background_color: Color::BISQUE.into(), // RACIAL_CHOICES_PANEL_COLOR,
-    //                     ..default()
-    //                 },
-    //                 Name::from("Container Panel - Racial Choices Made Buttons"),
-    //             ))
-    //             .with_children(|list| {
-    //                 for racial_choices_made_button_type in racial_choices_button_titles {
-    //                     list.spawn((
-    //                         ButtonBundle {
-    //                             style: Style {
-    //                                 padding: UiRect::all(Val::Px(5.)),
-    //                                 margin: UiRect::all(Val::Px(5.)),
-    //                                 ..default()
-    //                             },
-    //                             background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-    //                             ..default()
-    //                         },
-    //                         RacialChoiceButton,
-    //                         Name::from("Racial Choices Made Button"),
-    //                     ))
-    //                     .with_children(|list_button| {
-    //                         list_button.spawn((
-    //                             TextBundle {
-    //                                 text: Text::from_section(
-    //                                     racial_choices_made_button_type.to_string(),
-    //                                     TextStyle {
-    //                                         font: shared_font.clone(),
-    //                                         font_size: 25.,
-    //                                         color: TEXT_COLOR,
-    //                                     },
-    //                                 ),
-    //                                 background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
-    //                                 ..default()
-    //                             },
-    //                             racial_choices_made_button_type,
-    //                             Name::new("Racial Choices Made Display Text"),
-    //                         ));
-    //                     });
-    //                 }
-    //             });
-    //     })
-    //     .set_parent(high_container);
+
+    let displayed_racial_stats = ["Ability Score Modifiers"];
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    size: Size::new(Val::Px(400.), Val::Percent(100.)),
+                    align_self: AlignSelf::Center,
+                    justify_content: JustifyContent::Center,
+                    max_size: Size::width(Val::Px(400.)),
+                    ..default()
+                },
+                background_color: Color::BEIGE.into(), // RACIAL_CHOICES_NODE_COLOR,
+                ..default()
+            },
+            Name::from("Current Racial Trait Stat Effects"),
+        ))
+        .with_children(|button_container| {
+            button_container
+                .spawn((
+                    NodeBundle {
+                        background_color: Color::YELLOW_GREEN.into(), // RACIAL_CHOICES_PANEL_COLOR,
+                        ..default()
+                    },
+                    Name::from("Container Panel - Racial Choices Made Buttons"),
+                ))
+                .with_children(|list| {
+                    for racial_choices_made_button_type in displayed_racial_stats {
+                        list.spawn((
+                            ButtonBundle {
+                                style: Style {
+                                    padding: UiRect::all(Val::Px(5.)),
+                                    margin: UiRect::all(Val::Px(5.)),
+                                    ..default()
+                                },
+                                background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+                                ..default()
+                            },
+                            RacialChoiceButton,
+                            Name::from("Racial Choices Made Button"),
+                        ))
+                        .with_children(|list_button| {
+                            list_button.spawn((
+                                TextBundle {
+                                    text: Text::from_section(
+                                        racial_choices_made_button_type.to_string(),
+                                        TextStyle {
+                                            font: shared_font.clone(),
+                                            font_size: 25.,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                    background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
+                                    ..default()
+                                },
+                                // Name::new("Racial Choices Made Display Text"),
+                            ));
+                        });
+                    }
+                });
+        })
+        .set_parent(mid_container);
 
     // Button panel with selections for which details of the selected race should
     // be displayed in the central description area.
@@ -477,72 +638,70 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     //  - Race Description
     //  - Standard Racial Traits
     //  - Alternate Racial Traits
-    //  - Racial Subtypes
+    //  - Racial Subtypes (maybe?)
     //  - Favored Class Options
     //  - Racial Feats
     // let racial_choices_button_titles = RacialChoicesButtonType::array();
-    // commands
-    //     .spawn((
-    //         NodeBundle {
-    //             style: Style {
-    //                 flex_direction: FlexDirection::Row,
-    //                 size: Size::new(Val::Percent(100.), Val::Px(50.)),
-    //                 align_self: AlignSelf::Center,
-    //                 justify_content: JustifyContent::Center,
-    //                 ..default()
-    //             },
-    //             background_color: Color::BEIGE.into(), // RACIAL_CHOICES_NODE_COLOR,
-    //             ..default()
-    //         },
-    //         Name::from("Racial Description Selection Panel"),
-    //     ))
-    //     .with_children(|scrolling_list_container| {
-    //         scrolling_list_container
-    //             .spawn((
-    //                 NodeBundle {
-    //                     style: Style {
-    //                         align_items: AlignItems::Center,
-    //                         ..default()
-    //                     },
-    //                     background_color: Color::BISQUE.into(), // RACIAL_CHOICES_PANEL_COLOR,
-    //                     ..default()
-    //                 },
-    //                 Name::from("Container Panel - Wide - Buttons"),
-    //             ))
-    //             .with_children(|list| {
-    //                 for racial_choices_button_type in racial_choices_button_titles {
-    //                     list.spawn((
-    //                         ButtonBundle {
-    //                             style: Style {
-    //                                 padding: UiRect::all(Val::Px(5.)),
-    //                                 margin: UiRect::all(Val::Px(5.)),
-    //                                 ..default()
-    //                             },
-    //                             background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-    //                             ..default()
-    //                         },
-    //                         RacialChoiceButton,
-    //                     ))
-    //                     .with_children(|list_button| {
-    //                         list_button.spawn((
-    //                             TextBundle {
-    //                                 text: Text::from_section(
-    //                                     racial_choices_button_type.to_string(),
-    //                                     TextStyle {
-    //                                         font: shared_font.clone(),
-    //                                         font_size: 25.,
-    //                                         color: TEXT_COLOR,
-    //                                     },
-    //                                 ),
-    //                                 background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
-    //                                 ..default()
-    //                             },
-    //                             racial_choices_button_type,
-    //                             Name::new("racial description selection button text"),
-    //                         ));
-    //                     });
-    //                 }
-    //             });
-    //     })
-    //     .set_parent(high_container);
+    let description_select_buttons = RacialChoicesButtonType::array();
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                    align_self: AlignSelf::Center,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                background_color: Color::BEIGE.into(), // RACIAL_CHOICES_NODE_COLOR,
+                ..default()
+            },
+            Name::from("Current Racial Trait Stat Effects"),
+        ))
+        .with_children(|button_container| {
+            button_container
+                .spawn((
+                    NodeBundle {
+                        background_color: Color::YELLOW_GREEN.into(), // RACIAL_CHOICES_PANEL_COLOR,
+                        ..default()
+                    },
+                    Name::from("Container Panel - Choose Description Content"),
+                ))
+                .with_children(|list| {
+                    for description_button in description_select_buttons {
+                        list.spawn((
+                            ButtonBundle {
+                                style: Style {
+                                    padding: UiRect::all(Val::Px(5.)),
+                                    margin: UiRect::all(Val::Px(5.)),
+                                    ..default()
+                                },
+                                background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+                                ..default()
+                            },
+                            description_button,
+                            Name::from("Choose Description Content"),
+                        ))
+                        .with_children(|list_button| {
+                            list_button.spawn((
+                                TextBundle {
+                                    text: Text::from_section(
+                                        description_button.to_string(),
+                                        TextStyle {
+                                            font: shared_font.clone(),
+                                            font_size: 25.,
+                                            color: TEXT_COLOR,
+                                        },
+                                    ),
+                                    background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
+                                    ..default()
+                                },
+                                // Name::new("Racial Choices Made Display Text"),
+                            ));
+                        });
+                    }
+                });
+        })
+        .set_parent(high_container);
 }

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::systems::menu::character_creation::*;
+
 #[derive(Component, Debug)]
 pub enum Container {
     Central,
@@ -32,7 +34,15 @@ pub enum StagesOfCreationButton {
 pub struct RaceSelectButton;
 
 #[derive(Component, Debug, Copy, Clone, PartialEq, Eq)]
-pub struct RaceDescriptionNode;
+pub struct RaceDescriptionNode(pub RacialChoicesButtonType);
+impl RaceDescriptionNode {
+    pub fn inner(&self) -> RacialChoicesButtonType {
+        self.0
+    }
+}
+
+#[derive(Component, Debug, Copy, Clone, PartialEq, Eq)]
+pub struct RaceDescriptionNodeParent;
 
 #[derive(Component, Debug, Copy, Clone, Default)]
 pub struct ScrollingList {
