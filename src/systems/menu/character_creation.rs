@@ -47,20 +47,20 @@ pub struct RacialTraitNameSelections {
 }
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct RacialTraitListNumber(pub usize);
-
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct RacialTraitButtonText;
 
+// Label for buttons that let you select a racial trait to replace a default
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct RacialTraitButton;
 
+// Label for default race description text bundles
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct RacialTraitDescriptionText;
+pub struct DefaultTraitDescriptionText;
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct DefaultRacialTraitRace(pub PlayableRace);
 
+// Enum for the tabs of the race section of character creation.
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub enum RacialChoicesButtonType {
     #[default]
@@ -95,17 +95,7 @@ impl RacialChoicesButtonType {
     }
 }
 
-// Keeping this here for debuggin purposes
-// fn print_custom_assets(races_state: Res<RacesLoadState>, assets: Res<Assets<RaceAsset>>) {
-//     for handle in races_state.handles.iter() {
-//         let loaded_text = &assets
-//             .get(&handle.clone().typed::<RaceAsset>())
-//             .unwrap()
-//             .text;
-//         println!("{loaded_text}");
-//     }
-// }
-
+// Makes sure custom assets are loaded before other functions try to use them.
 pub fn setup_assets(
     mut races_asset_struct: ResMut<CustomAssetLoadState<RaceAsset>>,
     mut default_trait_struct: ResMut<CustomAssetLoadState<DefaultTraitAsset>>,
@@ -130,6 +120,9 @@ pub fn setup_assets(
     }
 }
 
+// Manages the displayed flavor text for the selected race.
+// Loads in text from a custom asset, which is ensured to be loaded by other
+// systems earlier in the plugin.
 pub fn selected_race_visibility(
     selected_race: Res<SelectedRaceButton>,
 
@@ -155,19 +148,20 @@ pub fn selected_race_visibility(
     }
 }
 
+// Manages the selected race's default trait text description content.
 pub fn selected_default_traits_visibility(
     selected_race: Res<SelectedRaceButton>,
     mut query_button: Query<
         &mut Text,
         (
             With<RacialTraitButtonText>,
-            Without<RacialTraitDescriptionText>,
+            Without<DefaultTraitDescriptionText>,
         ),
     >,
     mut query_text: Query<
         &mut Text,
         (
-            With<RacialTraitDescriptionText>,
+            With<DefaultTraitDescriptionText>,
             Without<RacialTraitButtonText>,
         ),
     >,
@@ -211,7 +205,10 @@ pub fn hide_racial_trait_text(
     selected_race: Res<SelectedRaceButton>,
     mut query_text: Query<
         (&mut Style, &DefaultRacialTraitRace),
-        (With<RacialTraitDescriptionText>, Without<RacialTraitButton>),
+        (
+            With<DefaultTraitDescriptionText>,
+            Without<RacialTraitButton>,
+        ),
     >,
 ) {
     for (mut style, race) in query_text.iter_mut() {
@@ -229,7 +226,10 @@ pub fn hide_racial_trait_button(
     selected_race: Res<SelectedRaceButton>,
     mut query_button: Query<
         (&mut Style, &DefaultRacialTraitRace),
-        (With<RacialTraitButton>, Without<RacialTraitDescriptionText>),
+        (
+            With<RacialTraitButton>,
+            Without<DefaultTraitDescriptionText>,
+        ),
     >,
 ) {
     for (mut style, race) in query_button.iter_mut() {
@@ -241,6 +241,7 @@ pub fn hide_racial_trait_button(
     }
 }
 
+// Display the selected race tab.
 use super::components::RaceDescriptionNode;
 pub fn display_racial_description_type(
     mut query: Query<(&mut Style, &RaceDescriptionNode)>,
@@ -271,6 +272,7 @@ pub fn cleanup_selected_race_description_button(
     }
 }
 
+// Holds the currently selected race for reference by other functions.
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd)]
 pub struct SelectedRacialDescriptionType(RacialChoicesButtonType);
 impl SelectedRacialDescriptionType {
@@ -279,6 +281,7 @@ impl SelectedRacialDescriptionType {
     }
 }
 
+// Changes the color of the selected racial tab button
 pub fn selected_race_description_type(
     mut selected: ResMut<SelectedRacialDescriptionType>,
     mut interaction_query: Query<

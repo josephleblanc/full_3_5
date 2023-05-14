@@ -382,7 +382,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         RaceDescriptionNode(RacialChoicesButtonType::StandardRacialTraitNames),
                     ))
                     .with_children(|racial_traits| {
-                        for row_number in 0..default_racial_trait_rows {
+                        // _row_number is only used to make the containers which will
+                        // be filled by the systems that manage the trait description
+                        // text
+                        for _row_number in 0..default_racial_trait_rows {
                             racial_traits
                                 .spawn((
                                     // Button to select or deselect a racial trait
@@ -418,7 +421,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                             ..default()
                                         },
                                         RacialTraitButtonText,
-                                        RacialTraitListNumber(row_number),
                                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                     ));
                                 });
@@ -440,8 +442,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     },
                                     ..default()
                                 },
-                                RacialTraitDescriptionText,
-                                RacialTraitListNumber(row_number),
+                                DefaultTraitDescriptionText,
                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                             ));
                         }
