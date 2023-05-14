@@ -3,10 +3,7 @@ use crate::{
     system_scheduling::states::AppState,
     systems::{
         layout::character_creation::build_layout,
-        menu::{
-            character_creation::*,
-            mouse::mouse_scroll,
-        },
+        menu::{character_creation::*, mouse::mouse_scroll},
     },
     technical::{
         default_race_traits::DefaultTraitAsset,
@@ -30,7 +27,7 @@ enum ButtonSet {
 impl Plugin for CharacterCreationPlugin {
     fn build(&self, app: &mut App) {
         app
-            //// init resources & build layout
+            //// init resources, load custom assets, & build layout
             .init_resource::<SelectedRaceButton>()
             .init_resource::<SelectedRacialDescriptionType>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
@@ -39,15 +36,23 @@ impl Plugin for CharacterCreationPlugin {
             .add_system(build_layout.in_schedule(OnEnter(AppState::CharacterCreation)))
             //// Configure Sets
             .configure_sets((
+                // Super set contains other sets, requires assets to be loaded so the other
+                // functions don't break.
                 ButtonSet::Super.run_if(
                     in_state(AppState::CharacterCreation).and_then(
                         is_custom_asset_loaded::<RaceAsset>()
                             .and_then(is_custom_asset_loaded::<DefaultTraitAsset>()),
                     ),
                 ),
+                // LeftClicked for systems that only need to run when left mouse button
+                // is clicked.
                 ButtonSet::Clicked
                     .in_set(ButtonSet::Super)
                     .run_if(on_event::<MouseButtonInput>().and_then(mouse_left_clicked)),
+                // RacialTab set for systems that manage what content is displayed when
+                // navigation buttons are left-clicked.
+                // e.g. changing displayed text when clicking a different race,
+                //      same when clicking the 'racial traits' tab
                 ButtonSet::RacialTab
                     .run_if(
                         resource_changed::<SelectedRaceButton>()
