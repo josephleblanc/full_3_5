@@ -1,7 +1,9 @@
 use crate::systems::interface::mouse::mouse_left_clicked;
 use crate::{
+    my_debug::print::*,
     system_scheduling::states::AppState,
     systems::{
+        game::race::{build_race, RaceBuilder},
         layout::character_creation::build_layout,
         menu::{
             character_creation::*,
@@ -21,11 +23,29 @@ pub struct CharacterCreationPlugin;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 enum ButtonSet {
-    Super,
-    Clicked,
-    AnyInteraction,
-    RacialTab,
+    LeftClicked,
 }
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum Changed {
+    Race,
+    RaceTab,
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum SuperSet {
+    Super,
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum Build {
+    Super,
+    PreBuild,
+    Build,
+    PostBuild,
+}
+
+use bevy::input::common_conditions::input_just_pressed;
 
 impl Plugin for CharacterCreationPlugin {
     fn build(&self, app: &mut App) {
@@ -33,69 +53,99 @@ impl Plugin for CharacterCreationPlugin {
             //// init resources, load custom assets, & build layout
             .init_resource::<SelectedRaceButton>()
             .init_resource::<SelectedRacialDescriptionType>()
+            .init_resource::<FlavorTextSetup>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
-            .add_system(setup_assets.in_schedule(OnEnter(AppState::CharacterCreation)))
-            .add_system(build_layout.in_schedule(OnEnter(AppState::CharacterCreation)))
-            //// Configure Sets
-            .configure_sets((
-                // Super set contains other sets, requires assets to be loaded so the other
-                // functions don't break.
-                ButtonSet::Super.run_if(
-                    in_state(AppState::CharacterCreation).and_then(
-                        is_custom_asset_loaded::<RaceAsset>()
-                            .and_then(is_custom_asset_loaded::<DefaultTraitAsset>()),
-                    ),
-                ),
-                // LeftClicked for systems that only need to run when left mouse button
-                // is clicked.
-                ButtonSet::Clicked
-                    .in_set(ButtonSet::Super)
-                    .run_if(on_event::<MouseButtonInput>().and_then(mouse_left_clicked)),
-                // RacialTab set for systems that manage what content is displayed when
-                // navigation buttons are left-clicked.
-                // e.g. changing displayed text when clicking a different race,
-                //      same when clicking the 'racial traits' tab
-                ButtonSet::RacialTab
-                    .run_if(
-                        resource_changed::<SelectedRaceButton>()
-                            .or_else(resource_changed::<SelectedRacialDescriptionType>()),
-                    )
-                    .in_set(ButtonSet::Clicked),
-            ))
-            .configure_set(ButtonSet::AnyInteraction.in_set(ButtonSet::Super))
-            //// add systems
+            .init_resource::<RaceBuilder>()
             .add_systems(
-                (race_select_button_system, cleanup_race_select_button)
+                (setup_assets, build_layout, apply_system_buffers)
                     .chain()
-                    .in_set(ButtonSet::Clicked),
+                    .in_schedule(OnEnter(AppState::CharacterCreation)),
             )
+            // .add_system(setup_assets.in_schedule(OnEnter(AppState::CharacterCreation)))
+            // .add_system(build_layout.in_schedule(OnEnter(AppState::CharacterCreation)))
+            // .add_system(
+            //     setup_flavor_text
+            //         .after(build_layout)
+            //         .run_if(is_custom_asset_loaded::<RaceAsset>())
+            //         .in_schedule(OnEnter(AppState::CharacterCreation)),
+            // )
+            .configure_set(
+                // Ensure custom assets loaded, only run in character creation
+                SuperSet::Super
+                    .run_if(is_custom_asset_loaded::<RaceAsset>())
+                    .run_if(is_custom_asset_loaded::<DefaultTraitAsset>())
+                    .in_set(OnUpdate(AppState::CharacterCreation)),
+            )
+            .configure_sets(
+                (
+                    Build::Super.run_if(resource_changed::<SelectedRaceButton>()),
+                    Build::PreBuild
+                        .run_if(resource_changed::<SelectedRaceButton>())
+                        .before(Build::Build),
+                    Build::Build.run_if(resource_changed::<RaceBuilder>()),
+                    Changed::Race.run_if(resource_changed::<SelectedRaceButton>()),
+                    Changed::RaceTab.run_if(resource_changed::<SelectedRacialDescriptionType>()),
+                )
+                    .in_set(SuperSet::Super),
+            )
+            .configure_set(
+                ButtonSet::LeftClicked
+                    .in_set(SuperSet::Super)
+                    .run_if(input_just_pressed(bevy::input::mouse::MouseButton::Left)),
+            )
+            // Add default flavor text
+            .add_system(setup_flavor_text.in_set(SuperSet::Super))
+            // Mouse Scroll systems
+            .add_system(mouse_scroll.in_set(SuperSet::Super))
+            // Race select button management
             .add_systems(
                 (
+                    race_select_button_system,
+                    cleanup_race_select_button,
                     selected_race_description_type,
-                    cleanup_selected_race_description_button,
+                    cleanup_race_description_type_button,
                 )
-                    .chain()
-                    .in_set(ButtonSet::Clicked),
+                    .in_set(SuperSet::Super),
             )
-            .add_system(mouse_scroll.in_set(OnUpdate(AppState::CharacterCreation)))
+            // Manages displayed racial descriptions in the central area
             .add_systems(
                 (
-                    selected_default_traits_visibility,
                     selected_race_visibility,
-                    display_racial_description_type,
-                    // hide all non-selected nodes
-                    hide_racial_trait_text,
-                    hide_racial_trait_button,
+                    scroll_snap_top,
+                    selected_default_traits_visibility,
                 )
-                    .in_set(ButtonSet::RacialTab),
+                    .in_set(Changed::Race),
             )
-            // snap scrolling content to top on changing selected race or tab
-            .add_system(
-                scroll_snap_top.run_if(
-                    resource_changed::<SelectedRaceButton>()
-                        .or_else(resource_changed::<SelectedRacialDescriptionType>()),
-                ),
+            // Changes central area based on which tab is selected
+            .add_system(display_racial_tab.in_set(Changed::RaceTab))
+            .add_system(update_race_builder.in_set(Build::PreBuild))
+            .add_systems(
+                (
+                    reset_race,
+                    apply_system_buffers,
+                    build_race,
+                    apply_system_buffers,
+                    print_builder,
+                    print_floating_ability_bonuses,
+                    print_floating_bonus_feats,
+                    print_floating_skill_bonuses,
+                    print_saving_throw_bonuses,
+                    print_caster_level_bonuses,
+                    print_armor_class_bonuses,
+                    print_spell_like_abilities,
+                    print_spell_dc_bonuses,
+                    print_attack_roll_bonuses,
+                    update_common_traits_display,
+                )
+                    .chain()
+                    .in_set(Build::Build),
             );
+        // .add_systems(
+        //     (
+        //     )
+        //         .chain()
+        //         .in_set(ButtonSet::LeftClicked),
+        // );
     }
 }

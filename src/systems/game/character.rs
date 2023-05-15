@@ -639,9 +639,33 @@ impl BonusType {
 #[derive(Component, Clone, Debug, PartialEq, PartialOrd)]
 pub struct CreatureSubtypes(pub Vec<CreatureSubtype>);
 
+impl Display for CreatureSubtypes {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut text_subtypes: String = self
+            .inner()
+            .iter()
+            .map(|subtype| {
+                let mut subtype_string = subtype.to_string();
+                subtype_string.push_str(", ");
+                subtype_string
+            })
+            .collect();
+        text_subtypes.pop();
+        text_subtypes.pop();
+
+        write!(f, "{}", text_subtypes)
+    }
+}
+
 impl CreatureSubtypes {
     pub fn push(&mut self, other: CreatureSubtype) {
         self.0.push(other);
+    }
+    pub fn inner(&self) -> &Vec<CreatureSubtype> {
+        &self.0
+    }
+    pub fn inner_mut(&mut self) -> &Vec<CreatureSubtype> {
+        &mut self.0
     }
 }
 
@@ -692,6 +716,12 @@ pub struct BaseLanguages {
 // Normal speed over ground, as opposed to fly, burrow, and swim speed.
 #[derive(Component, Clone, Debug, PartialEq, PartialOrd, Copy)]
 pub struct GroundSpeed(pub f32);
+
+impl Display for GroundSpeed {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.0}", self.0)
+    }
+}
 
 pub trait RemovesSelf
 where

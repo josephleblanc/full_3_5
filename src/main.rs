@@ -7,6 +7,7 @@ mod system_scheduling;
 mod systems;
 mod technical;
 use bevy::prelude::*;
+use bevy::winit::WinitSettings;
 use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu};
 use technical::default_race_traits::MyDefaultTraitAssetPlugin;
 use technical::race_load::MyRaceAssetPlugin;
@@ -36,6 +37,7 @@ fn main() {
                 ..default()
             },
         ))
+        .insert_resource(WinitSettings::desktop_app())
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(MyRaceAssetPlugin)
         .add_plugin(MyDefaultTraitAssetPlugin)
@@ -47,8 +49,8 @@ fn main() {
         .add_system(main_menu::setup_main_menu.in_schedule(OnEnter(AppState::MainMenu)))
         .add_system(main_menu::button_system.in_set(OnUpdate(AppState::MainMenu)))
         .add_system(main_menu::main_menu_cleanup.in_schedule(OnExit(AppState::MainMenu)))
-        .add_system(flex_grid::setup_flex_grid.in_schedule(OnEnter(AppState::Battle)))
-        .add_system(systems::interface::mouse::mouse_scroll);
+        .add_system(flex_grid::setup_flex_grid.in_schedule(OnEnter(AppState::Battle)));
+    // .add_system(systems::interface::mouse::mouse_scroll);
     // .add_startup_system(new_setup_asset_example)
     // .add_system(new_print_on_load);
     //

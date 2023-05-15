@@ -43,9 +43,9 @@ impl Plugin for MyRaceAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<State>()
             .add_asset::<RaceAsset>()
-            .init_asset_loader::<RaceAssetLoader>();
-        // .add_startup_system(setup)
-        // .add_system(print_on_load);
+            .init_asset_loader::<RaceAssetLoader>()
+            .add_startup_system(setup_asset_example)
+            .add_system(print_on_load);
     }
 }
 
@@ -56,7 +56,7 @@ pub struct State {
 }
 
 pub fn setup_asset_example(mut state: ResMut<State>, asset_server: Res<AssetServer>) {
-    state.handle = asset_server.load("text/descriptions/races/human.race");
+    state.handle = asset_server.load("text/descriptions/races/human.race.ron");
 }
 
 pub fn print_on_load(mut state: ResMut<State>, text_assets: ResMut<Assets<RaceAsset>>) {

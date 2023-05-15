@@ -1,5 +1,5 @@
 use crate::systems::{
-    game::character::PlayableRace,
+    game::{character::PlayableRace, race::CharacterBuilder},
     menu::{
         character_creation::*,
         components::{
@@ -11,8 +11,11 @@ use crate::systems::{
 };
 use bevy::prelude::*;
 
+pub const COMMON_TRAIT_FONT_SIZE: f32 = 25.;
+
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let shared_font = asset_server.load("fonts/simple_font.TTF");
+    commands.spawn(CharacterBuilder);
 
     //// First level Container
     // Top-level container
@@ -251,6 +254,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ))
                 .with_children(|list| {
                     for race_enum in PlayableRace::iterator() {
+                        let mut color = RACE_BUTTON_COLOR;
+                        if race_enum == PlayableRace::Human {
+                            color = RACE_BUTTON_COLOR_SELECTED;
+                        }
                         list.spawn((
                             ButtonBundle {
                                 style: Style {
@@ -258,7 +265,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     padding: UiRect::left(Val::Percent(7.)),
                                     ..default()
                                 },
-                                background_color: RACE_BUTTON_COLOR.into(),
+                                background_color: color.into(),
                                 ..default()
                             },
                             race_enum,
@@ -301,7 +308,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 background_color: Color::DARK_GREEN.into(),
                 ..default()
             },
-            Name::from("Scrolling text container"),
+            Name::from("Central content area"),
         ))
         .with_children(|scrolling_list_container| {
             scrolling_list_container
@@ -329,6 +336,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             style: Style {
                                 size: Size::width(Val::Percent(100.)),
                                 padding: UiRect::left(Val::Percent(7.)),
+                                display: Display::Flex,
                                 ..default()
                             },
                             background_color: Color::OLIVE.into(),
@@ -344,7 +352,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         text_area.spawn((
                             TextBundle {
                                 text: Text::from_section(
-                                    "",
+                                    "Something",
                                     TextStyle {
                                         font: shared_font.clone(),
                                         font_size: 30.,
@@ -371,6 +379,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 size: Size::width(Val::Percent(100.)),
                                 padding: UiRect::left(Val::Px(10.)),
                                 flex_direction: FlexDirection::Column,
+                                display: Display::None,
                                 ..default()
                             },
                             background_color: Color::OLIVE.into(),
@@ -569,24 +578,47 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         .set_parent(right_panel_id)
         .id();
     // First row with Size and Speed
+    let trait_column = NodeBundle {
+        style: Style {
+            flex_direction: FlexDirection::Column,
+            size: Size::width(Val::Percent(100.)),
+            ..default()
+        },
+        background_color: Color::YELLOW_GREEN.into(),
+        ..default()
+    };
+    let trait_row = NodeBundle {
+        style: Style {
+            size: Size::width(Val::Percent(100.)),
+            margin: UiRect::all(Val::Px(8.)),
+            flex_direction: FlexDirection::Row,
+            gap: Size::width(Val::Px(20.)),
+            ..default()
+        },
+        background_color: Color::YELLOW_GREEN.into(),
+        ..default()
+    };
+    let common_trait_title_style = Style {
+        padding: UiRect::all(Val::Px(8.)),
+        align_self: AlignSelf::Start,
+        ..default()
+    };
+    let common_trait_value_style = Style {
+        align_self: AlignSelf::End,
+        padding: UiRect::right(Val::Px(20.)),
+        ..default()
+    };
+    let common_trait_text_style = TextStyle {
+        font: shared_font.clone(),
+        font_size: COMMON_TRAIT_FONT_SIZE,
+        color: TEXT_COLOR,
+    };
     let common_traits_col_1_id = commands
-        .spawn((
-            NodeBundle {
-                background_color: Color::YELLOW_GREEN.into(),
-                ..default()
-            },
-            Name::from("Column 1 - Common Traits"),
-        ))
+        .spawn((trait_column.clone(), Name::from("Column 1 - Common Traits")))
         .set_parent(common_traits_container_id)
         .id();
     let common_traits_col_2_id = commands
-        .spawn((
-            NodeBundle {
-                background_color: Color::YELLOW_GREEN.into(),
-                ..default()
-            },
-            Name::from("Column 1 - Common Traits"),
-        ))
+        .spawn((trait_column.clone(), Name::from("Column 2 - Common Traits")))
         .set_parent(common_traits_container_id)
         .id();
 
@@ -596,13 +628,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     for (common_trait, _) in common_traits.iter().zip(0..col_1_traits_index) {
         commands
             // Row 1
-            .spawn((
-                NodeBundle {
-                    background_color: Color::YELLOW_GREEN.into(),
-                    ..default()
-                },
-                Name::from("Column 1 - Common Traits"),
-            ))
+            .spawn((trait_row.clone(), Name::from("Row - Common Traits")))
             .set_parent(common_traits_col_1_id)
             .with_children(|col1_row1| {
                 col1_row1.spawn((
@@ -615,6 +641,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 color: TEXT_COLOR,
                             },
                         ),
+                        style: common_trait_title_style.clone(),
                         background_color: Color::VIOLET.into(),
                         ..default()
                     },
@@ -633,6 +660,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 color: TEXT_COLOR,
                             },
                         ),
+                        style: common_trait_value_style.clone(),
                         background_color: Color::VIOLET.into(),
                         ..default()
                     },
@@ -646,13 +674,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     for common_trait in col_2_traits {
         commands
             // Row 1
-            .spawn((
-                NodeBundle {
-                    background_color: Color::YELLOW_GREEN.into(),
-                    ..default()
-                },
-                Name::from("Column 1 - Common Traits"),
-            ))
+            .spawn((trait_row.clone(), Name::from("Column 1 - Common Traits")))
             .set_parent(common_traits_col_2_id)
             .with_children(|col1_row1| {
                 // Size Title
@@ -666,6 +688,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 color: TEXT_COLOR,
                             },
                         ),
+                        style: common_trait_title_style.clone(),
                         background_color: Color::VIOLET.into(),
                         ..default()
                     },
@@ -684,6 +707,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 color: TEXT_COLOR,
                             },
                         ),
+                        style: common_trait_value_style.clone(),
                         background_color: Color::VIOLET.into(),
                         ..default()
                     },

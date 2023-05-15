@@ -13,14 +13,14 @@ use crate::{
 };
 use bevy::prelude::*;
 const RACE_DESCRIPTION_FOLDER: &str = "text/descriptions/races";
-const RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER: &str = "text/descriptions/race/default_traits/";
+const RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER: &str = "text/descriptions/race/default_traits";
 // Stores the race selected by the player
 // Also used to make sure only one selected button has its background changed.
 #[derive(Resource, Copy, Clone, Debug, Default)]
 pub struct SelectedRaceButton(pub PlayableRace);
 
 impl SelectedRaceButton {
-    fn copy_inner(&self) -> PlayableRace {
+    fn inner(&self) -> PlayableRace {
         self.0
     }
 }
@@ -45,6 +45,10 @@ pub struct RacialTraitNameSelections {
     traits_chosen: Vec<RacialTraitName>,
     race: PlayableRace,
 }
+
+use crate::systems::game::character::AbilityScore;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct RacialABSDisplay(AbilityScore);
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct RacialTraitButtonText;
@@ -78,12 +82,14 @@ pub enum CommonTraits {
     #[default]
     Size,
     Speed,
+    Type,
+    Subtype,
     /* more here */
 }
 
 impl CommonTraits {
-    pub fn as_array() -> [CommonTraits; 2] {
-        [Self::Size, Self::Speed]
+    pub fn as_array() -> [CommonTraits; 4] {
+        [Self::Size, Self::Speed, Self::Type, Self::Subtype]
     }
 }
 
@@ -92,6 +98,8 @@ impl std::fmt::Display for CommonTraits {
         match &self {
             Self::Size => write!(f, "Size"),
             Self::Speed => write!(f, "Speed"),
+            Self::Type => write!(f, "Type"),
+            Self::Subtype => write!(f, "Subtype"),
         }
     }
 }
@@ -128,20 +136,58 @@ pub fn setup_assets(
 ) {
     let finding_assets = asset_server.load_folder(RACE_DESCRIPTION_FOLDER);
     if let Ok(found_assets) = finding_assets {
+        println!("------->race asset found at {}", RACE_DESCRIPTION_FOLDER);
         for handle in found_assets {
             races_asset_struct.add_untyped(&handle);
         }
+    } else {
+        println!("-----race asset not found at {}", RACE_DESCRIPTION_FOLDER);
     }
     let finding_assets = asset_server.load_folder(RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER);
     if let Ok(found_assets) = finding_assets {
+        println!(
+            "------->trait asset found at {}",
+            RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER
+        );
         for handle in found_assets {
             default_trait_struct.add_untyped(&handle);
         }
     } else {
         println!(
-            "trait asset not found at {}",
+            "-----trait asset not found at {}",
             RACIAL_DEFAULT_TRAITS_DESCRIPTION_FOLDER
         );
+    }
+}
+
+#[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd)]
+pub struct FlavorTextSetup(bool);
+pub fn setup_flavor_text(
+    mut query_text: Query<&mut Text, With<DescriptionSection>>,
+    asset_server: Res<AssetServer>,
+    assets: Res<Assets<RaceAsset>>,
+    mut has_run: ResMut<FlavorTextSetup>,
+) {
+    if !has_run.0 {
+        println!("{:-<40}", "Starting flavor text setup");
+        let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+        let mut text = query_text.get_single_mut().unwrap();
+        println!("--- Assets {:#?}", assets.iter().next());
+        for (_handle, race_asset) in assets.iter() {
+            println!("inside loop");
+            if race_asset.race == PlayableRace::Human {
+                println!("{:-<50}", "Setting startup flavor text");
+                *text = Text::from_section(
+                    race_asset.text.clone(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 30.,
+                        color: Color::WHITE,
+                    },
+                )
+            }
+        }
+        has_run.0 = true;
     }
 }
 
@@ -156,7 +202,7 @@ pub fn selected_race_visibility(
     //     asset_handles: Res<RacesLoadState>,
     assets: Res<Assets<RaceAsset>>,
 ) {
-    println!("selected_race_visibility: {:?}", selected_race.0);
+    println!("selected_race_visibility: {:?}", selected_race.inner());
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let mut text = query_text.get_single_mut().unwrap();
     for (_handle, race_asset) in assets.iter() {
@@ -193,7 +239,7 @@ pub fn selected_default_traits_visibility(
     asset_server: Res<AssetServer>,
     assets: Res<Assets<DefaultTraitAsset>>,
 ) {
-    println!("selected_race_visibility: {:?}", selected_race.0);
+    println!("selected_race_visibility: {:?}", selected_race.inner());
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     // let mut text = query_text.get_single_mut().unwrap();
     for (_handle, trait_asset) in assets.iter() {
@@ -237,7 +283,7 @@ pub fn hide_racial_trait_text(
     >,
 ) {
     for (mut style, race) in query_text.iter_mut() {
-        if selected_race.copy_inner() == race.0 {
+        if selected_race.inner() == race.0 {
             style.display = bevy::ui::Display::Flex;
         } else {
             style.display = bevy::ui::Display::None;
@@ -258,7 +304,7 @@ pub fn hide_racial_trait_button(
     >,
 ) {
     for (mut style, race) in query_button.iter_mut() {
-        if selected_race.copy_inner() == race.0 {
+        if selected_race.inner() == race.0 {
             style.display = bevy::ui::Display::Flex;
         } else {
             style.display = bevy::ui::Display::None;
@@ -268,7 +314,7 @@ pub fn hide_racial_trait_button(
 
 // Display the selected race tab.
 use super::components::RaceDescriptionNode;
-pub fn display_racial_description_type(
+pub fn display_racial_tab(
     mut query: Query<(&mut Style, &RaceDescriptionNode)>,
     selected: Res<SelectedRacialDescriptionType>,
 ) {
@@ -297,9 +343,117 @@ pub fn cleanup_selected_race_description_button(
     }
 }
 
+// Size,
+// Speed,
+// Type,
+// Subtype,
+use crate::systems::game::character::{CharacterSize, CreatureSubtypes, CreatureType, GroundSpeed};
+use crate::systems::layout::character_creation::COMMON_TRAIT_FONT_SIZE;
+use crate::systems::menu::styles::TEXT_COLOR;
+pub fn update_common_traits_display(
+    mut query: Query<(&mut Text, &CommonTraits)>,
+    selected_race: Query<
+        (
+            &CreatureType,
+            &CreatureSubtypes,
+            &GroundSpeed,
+            &CharacterSize,
+        ),
+        With<CharacterBuilder>,
+    >,
+    asset_server: Res<AssetServer>,
+) {
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let (creature_type, creature_subtypes, speed, size) = selected_race.get_single().unwrap();
+    for (mut text, my_trait) in &mut query {
+        match my_trait {
+            // CommonTraits::Size => build_text(size.category.to_string(), font.clone()),
+            // CommonTraits::Speed => build_text(speed.to_string(), font.clone()),
+            // CommonTraits::Type => build_text(creature_type.to_string(), font.clone()),
+            // // Subtype is a little trickier because Subtypes is a
+            // // vec and a creature can have more than one subtype.
+            // // Check the Display impl of CreatureSubtype if there
+            // // are problems later.
+            // // Returns a String in the form
+            // // "Subtype1, Subtype2, Subtype3"
+            // CommonTraits::Subtype => build_text(creature_subtypes.to_string(), font.clone()),
+            CommonTraits::Size => {
+                *text = Text::from_section(
+                    size.category.to_string(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: COMMON_TRAIT_FONT_SIZE,
+                        color: TEXT_COLOR,
+                    },
+                )
+            }
+            CommonTraits::Speed => {
+                *text = Text::from_section(
+                    speed.to_string(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: COMMON_TRAIT_FONT_SIZE,
+                        color: TEXT_COLOR,
+                    },
+                )
+            }
+            CommonTraits::Type => {
+                *text = Text::from_section(
+                    creature_type.to_string(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: COMMON_TRAIT_FONT_SIZE,
+                        color: TEXT_COLOR,
+                    },
+                )
+            }
+            CommonTraits::Subtype => {
+                *text = Text::from_section(
+                    creature_subtypes.to_string(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: COMMON_TRAIT_FONT_SIZE,
+                        color: TEXT_COLOR,
+                    },
+                )
+            }
+            _ => (),
+        }
+    }
+}
+pub fn reset_race(builder: Query<Entity, With<CharacterBuilder>>, mut commands: Commands) {
+    let race = builder.get_single().unwrap();
+    commands.get_entity(race).unwrap().despawn();
+    commands.spawn(CharacterBuilder);
+}
+fn build_text(string: String, font: Handle<Font>) -> Text {
+    // use crate::systems::layout::character_creation::COMMON_TRAIT_FONT_SIZE;
+    Text::from_section(
+        string.to_string(),
+        TextStyle {
+            font: font.clone(),
+            font_size: COMMON_TRAIT_FONT_SIZE,
+            color: TEXT_COLOR,
+        },
+    )
+}
+
+// Add default race traits to RaceBuilder when race is changed.
+// This is required for the build_race system.
+use crate::systems::game::race::{CharacterBuilder, RaceBuilder};
+pub fn update_race_builder(
+    mut race_builder: ResMut<RaceBuilder>,
+    selected_race: Res<SelectedRaceButton>,
+) {
+    race_builder.inner_mut().clear();
+    race_builder
+        .inner_mut()
+        .append(&mut RacialTraitName::default_traits(&selected_race.inner()));
+}
+
 // Holds the currently selected race for reference by other functions.
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd)]
-pub struct SelectedRacialDescriptionType(RacialChoicesButtonType);
+pub struct SelectedRacialDescriptionType(pub RacialChoicesButtonType);
 impl SelectedRacialDescriptionType {
     fn inner(&self) -> RacialChoicesButtonType {
         self.0
@@ -345,7 +499,7 @@ pub fn race_select_button_system(
     >,
     mut selected_race: ResMut<SelectedRaceButton>,
 ) {
-    let selection_copy = (*selected_race).copy_inner();
+    let selection_copy = (*selected_race).inner();
     for (interaction, player_race, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {
@@ -370,7 +524,8 @@ pub fn race_select_button_system(
 
 // Makes sure other race buttons are the default color.
 pub fn cleanup_race_select_button(
-    query_change: Query<(&Interaction, &PlayableRace, &RaceSelectButton)>,
+    // query_change: Query<(&Interaction, &PlayableRace, &RaceSelectButton)>,
+    query_change: Query<&RaceSelectButton, Changed<Interaction>>,
     mut query_others: Query<(
         &PlayableRace,
         &Interaction,
@@ -382,6 +537,22 @@ pub fn cleanup_race_select_button(
     if !query_change.is_empty() {
         for (player_race, interaction, mut color, _) in query_others.iter_mut() {
             if *interaction == Interaction::None && *player_race != selected_race.0 {
+                *color = RACE_BUTTON_COLOR.into();
+            }
+        }
+    }
+}
+
+pub fn cleanup_race_description_type_button(
+    query_change: Query<&RacialChoicesButtonType, Changed<Interaction>>,
+    mut query_others: Query<(&RacialChoicesButtonType, &Interaction, &mut BackgroundColor)>,
+    selected_description_type: Res<SelectedRacialDescriptionType>,
+) {
+    if !query_change.is_empty() {
+        for (description_button, interaction, mut color) in query_others.iter_mut() {
+            if *interaction == Interaction::None
+                && *description_button != selected_description_type.inner()
+            {
                 *color = RACE_BUTTON_COLOR.into();
             }
         }

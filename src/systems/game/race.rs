@@ -17,8 +17,16 @@ use serde::{Deserialize, Serialize};
 //      and effects.
 //      [0001]
 
-#[derive(Resource, Clone, Debug, PartialEq, Hash, Eq)]
+#[derive(Resource, Clone, Debug, PartialEq, Hash, Eq, Default)]
 pub struct RaceBuilder(pub Vec<RacialTraitName>);
+impl RaceBuilder {
+    pub fn inner(&self) -> &Vec<RacialTraitName> {
+        &self.0
+    }
+    pub fn inner_mut(&mut self) -> &mut Vec<RacialTraitName> {
+        &mut self.0
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Copy, Deserialize, Serialize, Default)]
 pub enum RacialTraitName {
@@ -100,7 +108,7 @@ pub enum RacialTraitName {
     // BaseHalfOrcOrcBlood,
     // // Halfling Base Traits
     DexChaMinusStrASB,
-    // BaseHalflingType,
+    Halfling,
     BaseHalflingLanguages,
     // BaseHalflingFearless,
     // BaseHalflingHalflingLuck,
@@ -114,7 +122,7 @@ pub enum RacialTraitName {
     // BaseAasimarSLA, // Spell-like Ability
     // // Catfolk Base Traits
     DexChaMinusWisASB,
-    // BaseCatfolkType,
+    Catfolk,
     BaseCatfolkLanguages,
     // BaseCatfolkCatsLuck,
     // BaseCatfolkNaturalHunter,
@@ -266,11 +274,12 @@ impl RacialTraitName {
                 LowLightVision,
             ],
             PlayableRace::HalfElf => vec![
-                ChooseOneASB,
                 Humanoid,
                 Elf,
                 Human,
                 SizeMedium,
+                SpeedNormal,
+                ChooseOneASB,
                 BaseHalfElfLanguages,
                 ElvenImmunities,
                 // BaseHalfElfAdaptability,
@@ -287,6 +296,7 @@ impl RacialTraitName {
                 Human,
                 Orc,
                 SizeMedium,
+                SpeedNormal,
                 BaseHalfOrcLanguages,
                 //         BaseHalfOrcIntimidating,
                 //         BaseHalfOrcOrcFerocity,
@@ -297,7 +307,8 @@ impl RacialTraitName {
             PlayableRace::Halfling => vec![
                 DexChaMinusStrASB,
                 SizeSmall,
-                //         BaseHalflingType,
+                Humanoid,
+                Halfling,
                 SpeedSlow,
                 //         BaseHalflingLanguages,
                 //         BaseHalflingFearless,
@@ -320,9 +331,10 @@ impl RacialTraitName {
             ],
             PlayableRace::Catfolk => vec![
                 DexChaMinusWisASB,
-                //         BaseCatfolkType,
+                Catfolk,
                 SpeedNormal,
                 SizeMedium,
+                Humanoid,
                 //         BaseCatfolkLanguages,
                 //         BaseCatfolkCatsLuck,
                 //         BaseCatfolkNaturalHunter,
@@ -368,6 +380,7 @@ impl RacialTraitName {
                 Outsider,
                 Native,
                 SizeMedium,
+                SpeedNormal,
                 //         BaseFetchlingLanguages,
                 //         BaseFetchlingShadowBlending,
                 //         BaseFetchlingShadowyResistance,
@@ -511,7 +524,13 @@ impl RacialTraitName {
     }
 }
 // BaseElfWeaponFamiliarity,
-pub struct CharacterTraits(Vec<RacialTraitName>);
+// #[derive(Component, Clone, Debug, PartialEq, Hash, Eq, Deserialize, Serialize, Default)]
+// pub struct CharacterTraits(pub Vec<RacialTraitName>);
+// impl CharacterTraits {
+//     pub fn new() -> Self {
+//         Self(vec![])
+//     }
+// }
 ///////////////////////////////////////////////////////////////////////////////
 //// This trait is used to transform a semi-unique RacialTraitName into Components
 //     that are ready to be inserted into a player's Entity.
@@ -583,25 +602,24 @@ pub fn build_race(
     race: Res<RaceBuilder>,
     mut commands: Commands,
     query_builder: Query<Entity, With<CharacterBuilder>>,
-    mut q_floating_bonus_feats: Query<&mut FloatingBonusFeats>,
-    mut q_floating_ability_bonuses: Query<&mut FloatingAbilityBonuses>,
-    mut q_creature_subtypes: Query<&mut CreatureSubtypes>,
-    mut q_skill_bonuses: Query<&mut SkillBonuses>,
-    mut q_ability_score_bonuses: Query<&mut AbilityScoreBonuses>,
-    mut q_saving_throw_bonuses: Query<&mut SavingThrowBonuses>,
-    mut q_caster_level_bonuses: Query<&mut CasterLevelBonuses>,
-    mut q_ac_bonuses: Query<&mut ArmorClassBonuses>,
-    mut q_floating_skill_bonuses: Query<&mut FloatingSkillBonuses>,
-    mut q_spell_like_abilities: Query<&mut SpellLikeAbilities>,
-    mut q_spell_dc_bonuses: Query<&mut SpellDCBonuses>,
-    mut q_attack_roll_bonuses: Query<&mut AttackRollBonuses>,
+    mut q_floating_bonus_feats: Query<&mut FloatingBonusFeats, With<CharacterBuilder>>,
+    mut q_floating_ability_bonuses: Query<&mut FloatingAbilityBonuses, With<CharacterBuilder>>,
+    mut q_creature_subtypes: Query<&mut CreatureSubtypes, With<CharacterBuilder>>,
+    mut q_skill_bonuses: Query<&mut SkillBonuses, With<CharacterBuilder>>,
+    mut q_ability_score_bonuses: Query<&mut AbilityScoreBonuses, With<CharacterBuilder>>,
+    mut q_saving_throw_bonuses: Query<&mut SavingThrowBonuses, With<CharacterBuilder>>,
+    mut q_caster_level_bonuses: Query<&mut CasterLevelBonuses, With<CharacterBuilder>>,
+    mut q_ac_bonuses: Query<&mut ArmorClassBonuses, With<CharacterBuilder>>,
+    mut q_floating_skill_bonuses: Query<&mut FloatingSkillBonuses, With<CharacterBuilder>>,
+    mut q_spell_like_abilities: Query<&mut SpellLikeAbilities, With<CharacterBuilder>>,
+    mut q_spell_dc_bonuses: Query<&mut SpellDCBonuses, With<CharacterBuilder>>,
+    mut q_attack_roll_bonuses: Query<&mut AttackRollBonuses, With<CharacterBuilder>>,
 ) {
     let builder_entity = query_builder.get_single().unwrap();
     let mut entity_commands = &mut commands.get_entity(builder_entity).unwrap();
     for racial_trait_name in race.0.iter() {
         //// RacialTraitNames with a corresponding IntoComponentBuilder impl
         // CreatureType
-        // CreatureSubtype
         // CharacterSize
         // BaseLanguages
         // BonusSkillPerLevel
@@ -612,9 +630,6 @@ pub fn build_race(
         // CharacterWeaponProficiency
         if let Ok(creature_type) = CreatureType::from_name(racial_trait_name) {
             entity_commands = entity_commands.insert(creature_type);
-        };
-        if let Ok(creature_subtype) = CreatureSubtype::from_name(racial_trait_name) {
-            entity_commands = entity_commands.insert(creature_subtype);
         };
         if let Ok(character_size) = CharacterSize::from_name(racial_trait_name) {
             entity_commands = entity_commands.insert(character_size);
@@ -645,7 +660,7 @@ pub fn build_race(
         // FloatingBonusFeat
         // FloatingAbilityBonus
         // FloatingSkillBonus
-        // CreatureSubtype (slight variation from above)
+        // CreatureSubtype
         if let Ok(floating_bonus_feat) = FloatingBonusFeat::from_name(racial_trait_name) {
             if let Ok(mut floating_feats) = q_floating_bonus_feats.get_mut(builder_entity) {
                 floating_feats.push(floating_bonus_feat);
@@ -820,96 +835,6 @@ pub fn print_weapon_proficiencies(
         println!("\tnot proficient: {not_prof_exotic}, total: {total_exotic}");
     }
 }
-pub fn print_floating_bonus_feats(q_floating_bonus_feats: Query<&FloatingBonusFeats>) {
-    if let Ok(bonuses) = q_floating_bonus_feats.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "Floating Feat Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_floating_ability_bonuses(query: Query<&FloatingAbilityBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "Floating Ability Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_ability_score_bonuses(query: Query<&AbilityScoreBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "Ability Score Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_saving_throw_bonuses(query: Query<&SavingThrowBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "SavingThrow Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_caster_level_bonuses(query: Query<&CasterLevelBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "Caster Level Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_armor_class_bonuses(query: Query<&ArmorClassBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "Armor Class Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_floating_skill_bonuses(query: Query<&FloatingSkillBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "Floating Skill Bonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_spell_like_abilities(query: Query<&SpellLikeAbilities>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "SpellLikeAbilities"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_spell_dc_bonuses(query: Query<&SpellDCBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "SpellDCBonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
-pub fn print_attack_roll_bonuses(query: Query<&AttackRollBonuses>) {
-    if let Ok(bonuses) = query.get_single() {
-        let width: usize = 80;
-        println!("{}", format!("{:-^width$}", "AttackRollBonuses"));
-        for bonus in bonuses.0.iter() {
-            println!("{:#?}", bonus);
-        }
-    }
-}
 //     mut q_caster_level_bonus: Query<&mut CasterLevelBonuses>,
 
 //// The reciprocal trait to IntoComponentBuilder and IntoCharBuilderHash above,
@@ -1047,6 +972,8 @@ impl IntoComponentBuilder for CreatureSubtype {
             RacialTraitName::Ratfolk => Ok(Self::Ratfolk),
             RacialTraitName::Tengu => Ok(Self::Tengu),
             RacialTraitName::Dhampir => Ok(Self::Dhampir),
+            RacialTraitName::Halfling => Ok(Self::Halfling),
+            RacialTraitName::Catfolk => Ok(Self::Catfolk),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for CreatureSubtype in from_name() \
                 method of trait IntoComponentBuilder",
