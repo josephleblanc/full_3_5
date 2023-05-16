@@ -57,8 +57,8 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .init_resource::<RaceBuilder>()
-            .insert_resource::<TooltipTimer>(TooltipTimer(
-                Timer::from_seconds(0.5,
+            .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
+                0.5,
                 TimerMode::Once,
             )))
             .add_systems(

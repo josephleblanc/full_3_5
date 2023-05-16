@@ -25,6 +25,30 @@ impl SelectedRaceButton {
     }
 }
 
+//// Alt Trait description screen labels
+// Node containing a whole row
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct AltRacialTraitNode;
+
+// Title of alt trait
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct AltRacialTraitTitle;
+
+// Button to select the alt racial trait
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct AltTraitSelectButton;
+// Text in button to select the alt racial trait,
+// should be the title of the racial trait
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct AltTraitSelectButtonText;
+// A vec of the standard traits this alternate trait replaces.
+#[derive(Component, Clone, Debug, PartialEq, Eq, Hash)]
+pub struct AltTraitReplaces(pub Vec<RacialTraitName>);
+
+// Text with the description content of the alt trait
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct AltTraitDescription;
+
 // Bottom container buttons
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct CharacterSheetButton;
