@@ -47,6 +47,12 @@ pub struct ChosenStandardTrait;
 pub struct ChosenAlternateTrait;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct FavoredClassValueText;
+// Manage visibility of chosen racial traits located in the right panel.
+// It should:
+//  - Copy loaded racial trait title into an already constructed TextBundle's
+//      Text field,
+//  - Set display to Display::Flex if the text is present
+//  - Otherwise Display::None,
 pub fn standard_traits_visibility(
     selected_race: Res<SelectedRaceButton>,
     mut query_title: Query<
@@ -54,7 +60,7 @@ pub fn standard_traits_visibility(
         (With<ChosenStandardTraitTitle>, Without<ChosenStandardTrait>),
     >,
     mut query_trait: Query<
-        (&mut Style, &mut Text),
+        (&mut Style, &mut Text, &mut TooltipText),
         (With<ChosenStandardTrait>, Without<ChosenStandardTraitTitle>),
     >,
     asset_server: Res<AssetServer>,
@@ -67,7 +73,9 @@ pub fn standard_traits_visibility(
         println!("--------------------trait asset loaded--------------------------");
         if trait_asset.race == selected_race.inner() {
             let selected_traits = trait_asset;
-            for (i, (mut trait_style, mut trait_text)) in query_trait.iter_mut().enumerate() {
+            for (i, (mut trait_style, mut trait_text, mut tooltip_text)) in
+                query_trait.iter_mut().enumerate()
+            {
                 if i < selected_traits.default_traits.len() {
                     *trait_text = Text::from_section(
                         selected_traits.default_traits[i].title.clone(),
@@ -77,19 +85,68 @@ pub fn standard_traits_visibility(
                             color: Color::WHITE,
                         },
                     );
+                    tooltip_text.0 = Text::from_section(
+                        selected_traits.default_traits[i].description.clone(),
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 20.,
+                            color: Color::WHITE,
+                        },
+                    );
                     (*trait_style).display = Display::Flex;
                 } else {
-                    // *trait_text = Text::from_section(
-                    //     "",
-                    //     TextStyle {
-                    //         font: font.clone(),
-                    //         font_size: 25.,
-                    //         color: Color::WHITE,
-                    //     },
-                    // );
                     (*trait_style).display = Display::None;
                 }
             }
+        }
+    }
+}
+
+#[derive(Component, Clone, Debug, Copy)]
+pub struct Tooltip;
+#[derive(Component, Clone, Debug)]
+pub struct TooltipText(pub Text);
+#[derive(Resource, Clone)]
+pub struct TooltipTimer(pub Timer);
+impl TooltipTimer {
+    pub fn inner_mut(&mut self) -> &mut Timer {
+        &mut self.0
+    }
+}
+pub fn chosen_trait_tooltip(
+    query_trait: Query<(&Interaction, &TooltipText)>,
+    query_change: Query<&Interaction, (Changed<Interaction>, With<TooltipText>)>,
+    mut timer: ResMut<TooltipTimer>,
+    time: Res<Time>,
+    mut event_reader: EventReader<CursorMoved>,
+    mut query_tooltip: Query<(&mut Style, &mut Text), With<Tooltip>>,
+) {
+    for (interaction, tooltip_text) in &query_trait {
+        if *interaction == Interaction::Hovered && timer.inner_mut().tick(time.delta()).finished() {
+            if let Some(cursor_event) = event_reader.iter().last() {
+                let (mut tooltip_style, mut tooltip) = query_tooltip.get_single_mut().unwrap();
+                tooltip_style.display = Display::Flex;
+                let mut calculated_tooltip_left = Val::Px(cursor_event.position.x - 20.);
+                calculated_tooltip_left
+                    .try_sub_assign(tooltip_style.size.width)
+                    .unwrap();
+                tooltip_style.position = UiRect {
+                    left: calculated_tooltip_left,
+                    bottom: Val::Px(cursor_event.position.y),
+                    ..default()
+                };
+                *tooltip = tooltip_text.0.clone();
+                println!("tooltip position: {:#?}", tooltip_style.position);
+                println!("tooltip position: {:#?}", cursor_event.position);
+            }
+        }
+    }
+    for changed_interaction in &query_change {
+        if *changed_interaction == Interaction::None {
+            let (mut tooltip_style, mut tooltip) = query_tooltip.get_single_mut().unwrap();
+            tooltip_style.display = Display::None;
+            *tooltip = Text::default();
+            timer.inner_mut().reset();
         }
     }
 }

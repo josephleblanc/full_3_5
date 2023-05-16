@@ -10,12 +10,35 @@ use crate::systems::{
     },
 };
 use bevy::prelude::*;
+use bevy::ui::FocusPolicy;
 
 pub const COMMON_TRAIT_FONT_SIZE: f32 = 25.;
 
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let shared_font = asset_server.load("fonts/simple_font.TTF");
     commands.spawn(CharacterBuilder);
+    // empty tooltip, insert text as needed.
+    commands.spawn((
+        Tooltip,
+        TextBundle {
+            focus_policy: FocusPolicy::Pass,
+            background_color: Color::BLACK.into(),
+            style: Style {
+                position_type: PositionType::Absolute,
+                size: Size::width(Val::Px(300.)),
+                ..default()
+            },
+            text: Text::from_section(
+                "Tooltip",
+                TextStyle {
+                    font: shared_font.clone(),
+                    font_size: 20.,
+                    color: Color::WHITE,
+                },
+            ),
+            ..default()
+        },
+    ));
 
     //// First level Container
     // Top-level container
@@ -761,6 +784,14 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         font_size: 25.,
         color: TEXT_COLOR,
     };
+    let chosen_trait_tooltip_text = Text::from_section(
+        "Tooltip text",
+        TextStyle {
+            font: shared_font.clone(),
+            font_size: 20.,
+            color: Color::WHITE,
+        },
+    );
     let chosen_standard_traits_id = commands
         .spawn((
             //     chosen_traits_title_node.clone(),
@@ -778,7 +809,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     display: Display::None,
                     ..default()
                 },
-
                 ..default()
             },
             Name::from("Chosen Standard Trait Title - Right Panel"),
@@ -814,12 +844,15 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     },);
     //  Chosen Standard Traits - make 20 and use as needed
+    use bevy::ui::RelativeCursorPosition;
     for i in 0..20 {
         commands
             .spawn((
                 chosen_trait_text.clone(),
                 ChosenStandardTrait,
+                Interaction::None,
                 Name::from(format!("Chosen Standard Trait Name Text {}", i)),
+                TooltipText(chosen_trait_tooltip_text.clone()),
             )) // ;
             //     })
             .set_parent(chosen_traits_id);
@@ -847,6 +880,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ),
                 ..default()
             },
+            Interaction::None,
             // Label, shared with node above
             ChosenAlternateTraitTitle,
             Name::from("Chosen Alternate Trait Title Text"),

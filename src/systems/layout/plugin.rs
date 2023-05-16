@@ -57,6 +57,10 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .init_resource::<RaceBuilder>()
+            .insert_resource::<TooltipTimer>(TooltipTimer(
+                Timer::from_seconds(0.5,
+                TimerMode::Once,
+            )))
             .add_systems(
                 (setup_assets, build_layout, apply_system_buffers)
                     .chain()
@@ -145,7 +149,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(Build::Build),
             )
             .add_system(standard_traits_visibility.in_set(Changed::Race))
-            .add_system(track_trait.in_set(SuperSet::Super));
+            .add_system(chosen_trait_tooltip.in_set(SuperSet::Super));
         // .add_systems(
         //     (
         //     )
