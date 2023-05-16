@@ -83,8 +83,6 @@ pub enum RacialTraitName {
     DexIntMinusConASB,
     BaseElfElvenMagic,
     BaseElfLanguages,
-    // BaseElfElvenMagic,
-    // BaseElfWeaponFamiliarity,
     // // Gnome Base Traits
     ConChaMinusStrASB,
     // BaseGnomeType,

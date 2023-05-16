@@ -84,13 +84,16 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 style: Style {
                     display: Display::Flex,
                     size: Size::new(Val::Percent(100.), Val::Auto),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    gap: Size::width(Val::Px(30.)),
                     margin: UiRect {
                         top: Val::Percent(3.),
                         ..default()
                     },
                     ..default()
                 },
-                background_color: Color::GREEN.into(),
+                background_color: Color::DARK_GREEN.into(),
                 ..default()
             },
             Name::from("low container"),
@@ -293,8 +296,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Setup for Race description area, located in the middle and right,
     // with text descriptions of the selected races.
-    // This contains many nodes, but on startup most will be transformed into the
-    // negative Z direction to hide them until the correct tab is checked.
+    // This contains many nodes, but on startup most will be set to
+    // Display::None until the correct tab is checked.
     let default_racial_trait_rows = 20_usize;
     let center_area = commands
         .spawn((
@@ -398,7 +401,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             racial_traits
                                 .spawn((
                                     // Button to select or deselect a racial trait
-                                    ButtonBundle {
+                                    NodeBundle {
                                         style: Style {
                                             padding: UiRect::all(Val::Px(5.)),
                                             margin: UiRect::all(Val::Px(10.)),
@@ -415,7 +418,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                         // Button text
                                         TextBundle {
                                             text: Text::from_section(
-                                                "Select",
+                                                "Select Me!",
                                                 TextStyle {
                                                     font: shared_font.clone(),
                                                     font_size: 30.,
@@ -471,7 +474,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     //  - include boxes with the displayed changes to stats for the
     //    chosen race.
     use crate::systems::game::character::AbilityScore;
-    let displayed_racial_stats = ["Ability Score Modifiers"];
     let displayed_ability_scores = AbilityScore::as_array();
     let right_panel_id = commands
         .spawn((
@@ -487,6 +489,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 background_color: Color::DARK_GRAY.into(), // RACIAL_CHOICES_NODE_COLOR,
                 ..default()
             },
+            ScrollingList::default(),
             Name::from("Current Racial Trait Stat Effects"),
         ))
         .set_parent(mid_container)
@@ -703,7 +706,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             "-".to_string(),
                             TextStyle {
                                 font: shared_font.clone(),
-                                font_size: 25.,
+                                font_size: 20.,
                                 color: TEXT_COLOR,
                             },
                         ),
@@ -721,47 +724,201 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let chosen_traits_id = commands
         .spawn((
             NodeBundle {
-                background_color: Color::YELLOW_GREEN.into(), // RACIAL_CHOICES_PANEL_COLOR,
+                background_color: Color::YELLOW_GREEN.into(),
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+
                 ..default()
             },
             Name::from("Container Panel - Racial Choices Made Buttons"),
         ))
         .set_parent(right_panel_id)
         .id();
-    for racial_choices_made_button_type in displayed_racial_stats {
-        commands
-            .spawn((
-                ButtonBundle {
-                    style: Style {
-                        padding: UiRect::all(Val::Px(5.)),
-                        margin: UiRect::all(Val::Px(5.)),
-                        ..default()
-                    },
-                    background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+
+    // Chosen standard traits, without description, located in the right panel.
+    // Make 20 of these, then set Display::None, and set Display::Flex when
+    // updating with content in a system.
+    // These should:
+    //  - update when selecting a race,
+    //  - become grayed out when replaced by an alternate racial trait,
+    //  - provide description on hover
+    //
+    //  Title
+    let chosen_traits_title_node = NodeBundle {
+        style: Style {
+            padding: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(5.)),
+            display: Display::Flex,
+            ..default()
+        },
+        background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+        ..default()
+    };
+    let chosen_traits_title_style = TextStyle {
+        font: shared_font.clone(),
+        font_size: 25.,
+        color: TEXT_COLOR,
+    };
+    let chosen_standard_traits_id = commands
+        .spawn((
+            //     chosen_traits_title_node.clone(),
+            //     Name::from("Chosen Standard Trait Title - Right Panel"),
+            // ))
+            // .with_children(|list_button| {
+            //     list_button.spawn((
+            TextBundle {
+                text: Text::from_section(
+                    "Standard Traits".to_string(),
+                    chosen_traits_title_style.clone(),
+                ),
+                background_color: Color::VIOLET.into(),
+                style: Style {
+                    display: Display::None,
                     ..default()
                 },
-                RacialChoiceButton,
-                Name::from("Racial Choices Made Button"),
-            ))
-            .with_children(|list_button| {
-                list_button.spawn((
-                    TextBundle {
-                        text: Text::from_section(
-                            racial_choices_made_button_type.to_string(),
-                            TextStyle {
-                                font: shared_font.clone(),
-                                font_size: 25.,
-                                color: TEXT_COLOR,
-                            },
-                        ),
-                        background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
-                        ..default()
-                    },
-                    // Name::new("Racial Choices Made Display Text"),
-                ));
-            })
+
+                ..default()
+            },
+            Name::from("Chosen Standard Trait Title - Right Panel"),
+            ChosenStandardTraitTitle,
+        )) // ;
+        // })
+        .set_parent(chosen_traits_id)
+        .id();
+    let chosen_trait_node = (NodeBundle {
+        style: Style {
+            padding: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(5.)),
+            display: Display::None,
+            ..default()
+        },
+        background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+        ..default()
+    },);
+    let chosen_trait_text = (TextBundle {
+        text: Text::from_section(
+            "",
+            TextStyle {
+                font: shared_font.clone(),
+                font_size: 25.,
+                color: TEXT_COLOR,
+            },
+        ),
+        style: Style {
+            display: Display::None,
+            ..default()
+        },
+        background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
+        ..default()
+    },);
+    //  Chosen Standard Traits - make 20 and use as needed
+    for i in 0..20 {
+        commands
+            .spawn((
+                chosen_trait_text.clone(),
+                ChosenStandardTrait,
+                Name::from(format!("Chosen Standard Trait Name Text {}", i)),
+            )) // ;
+            //     })
             .set_parent(chosen_traits_id);
     }
+    //  Alternate Racial Traits
+    //  This should be the list of chosen alternate traits, they should:
+    //  - Say which traits they are replacing,
+    //  - Have a button that removes them and replaces the default traits
+    //  - Provide description when hovered over
+    //
+    //  Alternate Racial Traits Title
+    let alternate_chosen_racial_traits_id = commands
+        .spawn((
+            //     chosen_traits_title_node.clone(),
+            //     // Label, shared with text below
+            //     ChosenAlternateTraitTitle,
+            //     Name::from("Chosen Alternate Trait Title Node"),
+            // ))
+            // .with_children(|list_button| {
+            //     list_button.spawn((
+            TextBundle {
+                text: Text::from_section(
+                    "Alternate Traits".to_string(),
+                    chosen_traits_title_style.clone(),
+                ),
+                ..default()
+            },
+            // Label, shared with node above
+            ChosenAlternateTraitTitle,
+            Name::from("Chosen Alternate Trait Title Text"),
+        )) // ;
+        // })
+        .set_parent(chosen_traits_id)
+        .id();
+    //  Alternate Racial Traits
+    for i in 0..20 {
+        commands
+            .spawn((
+                //         chosen_trait_node.clone(),
+                //         // Label, shared with text below
+                //         ChosenAlternateTrait,
+                //         Name::from(format!("Chosen Alternate Trait Name {}", i)),
+                //     ))
+                //     .with_children(|list_button| {
+                //         list_button.spawn((
+                chosen_trait_text.clone(),
+                // Label, shared with node above
+                ChosenAlternateTrait,
+                Name::from(format!("Chosen Standard Trait Name Text {}", i)),
+            )) // ;
+            //     })
+            .set_parent(chosen_traits_id);
+    }
+    //  Favored Class
+    //  This should update when chosen, and provide a text description when hovered over.
+    let favored_class_id = commands
+        .spawn((
+            //     chosen_traits_title_node.clone(),
+            //     Name::from("Favored Class Title"),
+            //     FavoredClassTitle,
+            // ))
+            // .with_children(|list_button| {
+            //     list_button.spawn((
+            TextBundle {
+                text: Text::from_section(
+                    "Favored Class".to_string(),
+                    chosen_traits_title_style.clone(),
+                ),
+                background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
+                ..default()
+            },
+            FavoredClassTitle,
+            Name::new("Favored Class Title Text - Right Panel"),
+        )) // ;
+        // })
+        .set_parent(chosen_traits_id)
+        .id();
+
+    commands
+        .spawn((
+            //     chosen_traits_title_node.clone(),
+            //     Name::from("Favored Class Value"),
+            //     FavoredClassValueText,
+            // ))
+            // .with_children(|list_button| {
+            //     list_button.spawn((
+            TextBundle {
+                text: Text::from_section(
+                    "Favored Class Here".to_string(),
+                    chosen_traits_title_style.clone(),
+                ),
+                background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
+                ..default()
+            },
+            FavoredClassValueText,
+            Name::new("Favored Class Title Text - Right Panel"),
+        )) // ;
+        // })
+        .set_parent(chosen_traits_id);
 
     // Button panel with selections for which details of the selected race should
     // be displayed in the central description area.
@@ -788,7 +945,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 background_color: Color::BEIGE.into(), // RACIAL_CHOICES_NODE_COLOR,
                 ..default()
             },
-            Name::from("Current Racial Trait Stat Effects"),
+            Name::from("Choose Description Content Container"),
         ))
         .with_children(|button_container| {
             button_container
@@ -797,7 +954,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         background_color: Color::YELLOW_GREEN.into(), // RACIAL_CHOICES_PANEL_COLOR,
                         ..default()
                     },
-                    Name::from("Container Panel - Choose Description Content"),
+                    Name::from("Button Container - Choose Description Content"),
                 ))
                 .with_children(|list| {
                     for description_button in description_select_buttons {
@@ -812,7 +969,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             },
                             description_button,
-                            Name::from("Choose Description Content"),
+                            Name::from("Button: Choose Description Content"),
                         ))
                         .with_children(|list_button| {
                             list_button.spawn((
@@ -835,4 +992,61 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 });
         })
         .set_parent(high_container);
+
+    let bottom_button = ButtonBundle {
+        style: Style {
+            padding: UiRect::all(Val::Px(20.)),
+            margin: UiRect::all(Val::Px(20.)),
+            ..default()
+        },
+        background_color: RACE_BUTTON_COLOR.into(),
+        ..default()
+    };
+    let bottom_button_text_style = TextStyle {
+        font: shared_font.clone(),
+        font_size: 25.,
+        color: TEXT_COLOR,
+    };
+    commands
+        .spawn((bottom_button.clone(), Name::from("Previous Button")))
+        .with_children(|previous_button| {
+            previous_button.spawn((
+                TextBundle {
+                    text: Text::from_section(
+                        "Previous".to_string(),
+                        bottom_button_text_style.clone(),
+                    ),
+                    ..default()
+                },
+                PreviousButton,
+            ));
+        })
+        .set_parent(bottom_container);
+    commands
+        .spawn((bottom_button.clone(), Name::from("Character Sheet Button")))
+        .with_children(|previous_button| {
+            previous_button.spawn((
+                TextBundle {
+                    text: Text::from_section(
+                        "Character Sheet".to_string(),
+                        bottom_button_text_style.clone(),
+                    ),
+                    ..default()
+                },
+                CharacterSheetButton,
+            ));
+        })
+        .set_parent(bottom_container);
+    commands
+        .spawn((bottom_button.clone(), Name::from("Next Button")))
+        .with_children(|previous_button| {
+            previous_button.spawn((
+                TextBundle {
+                    text: Text::from_section("Next".to_string(), bottom_button_text_style.clone()),
+                    ..default()
+                },
+                NextButton,
+            ));
+        })
+        .set_parent(bottom_container);
 }

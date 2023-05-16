@@ -126,6 +126,8 @@ impl Plugin for CharacterCreationPlugin {
                     apply_system_buffers,
                     build_race,
                     apply_system_buffers,
+                    // only for testing, remove later
+                    // --------------------------
                     print_builder,
                     print_floating_ability_bonuses,
                     print_floating_bonus_feats,
@@ -136,11 +138,14 @@ impl Plugin for CharacterCreationPlugin {
                     print_spell_like_abilities,
                     print_spell_dc_bonuses,
                     print_attack_roll_bonuses,
+                    // --------------------------
                     update_common_traits_display,
                 )
                     .chain()
                     .in_set(Build::Build),
-            );
+            )
+            .add_system(standard_traits_visibility.in_set(Changed::Race))
+            .add_system(track_trait.in_set(SuperSet::Super));
         // .add_systems(
         //     (
         //     )

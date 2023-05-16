@@ -25,6 +25,75 @@ impl SelectedRaceButton {
     }
 }
 
+// Bottom container buttons
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct CharacterSheetButton;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct PreviousButton;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct NextButton;
+
+// Right Panel Titles
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ChosenStandardTraitTitle;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ChosenAlternateTraitTitle;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct FavoredClassTitle;
+// Right Panel Values
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ChosenStandardTrait;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ChosenAlternateTrait;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct FavoredClassValueText;
+pub fn standard_traits_visibility(
+    selected_race: Res<SelectedRaceButton>,
+    mut query_title: Query<
+        &mut Style,
+        (With<ChosenStandardTraitTitle>, Without<ChosenStandardTrait>),
+    >,
+    mut query_trait: Query<
+        (&mut Style, &mut Text),
+        (With<ChosenStandardTrait>, Without<ChosenStandardTraitTitle>),
+    >,
+    asset_server: Res<AssetServer>,
+    assets: Res<Assets<DefaultTraitAsset>>,
+) {
+    println!("selected_race_visibility: {:?}", selected_race.inner());
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    // let mut text = query_text.get_single_mut().unwrap();
+    for (_handle, trait_asset) in assets.iter() {
+        println!("--------------------trait asset loaded--------------------------");
+        if trait_asset.race == selected_race.inner() {
+            let selected_traits = trait_asset;
+            for (i, (mut trait_style, mut trait_text)) in query_trait.iter_mut().enumerate() {
+                if i < selected_traits.default_traits.len() {
+                    *trait_text = Text::from_section(
+                        selected_traits.default_traits[i].title.clone(),
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 25.,
+                            color: Color::WHITE,
+                        },
+                    );
+                    (*trait_style).display = Display::Flex;
+                } else {
+                    // *trait_text = Text::from_section(
+                    //     "",
+                    //     TextStyle {
+                    //         font: font.clone(),
+                    //         font_size: 25.,
+                    //         color: Color::WHITE,
+                    //     },
+                    // );
+                    (*trait_style).display = Display::None;
+                }
+            }
+        }
+    }
+}
+
 #[derive(Component, Clone, Debug)]
 pub struct ActiveRaceDescription(pub PlayableRace);
 
@@ -284,6 +353,7 @@ pub fn hide_racial_trait_text(
 ) {
     for (mut style, race) in query_text.iter_mut() {
         if selected_race.inner() == race.0 {
+            println!("Setting Display::Flex for DefaultTraitDescriptionText");
             style.display = bevy::ui::Display::Flex;
         } else {
             style.display = bevy::ui::Display::None;
@@ -305,6 +375,7 @@ pub fn hide_racial_trait_button(
 ) {
     for (mut style, race) in query_button.iter_mut() {
         if selected_race.inner() == race.0 {
+            println!("Setting Display::Flex for RacialTraitButton");
             style.display = bevy::ui::Display::Flex;
         } else {
             style.display = bevy::ui::Display::None;
@@ -321,6 +392,7 @@ pub fn display_racial_tab(
     let active_button = selected.inner();
     for (mut style, description_node) in query.iter_mut() {
         if description_node.inner() == active_button {
+            println!("Setting Display::Flex for RaceDescriptionNode");
             style.display = bevy::ui::Display::Flex;
         } else if style.display == bevy::ui::Display::Flex {
             style.display = bevy::ui::Display::None;
@@ -556,5 +628,14 @@ pub fn cleanup_race_description_type_button(
                 *color = RACE_BUTTON_COLOR.into();
             }
         }
+    }
+}
+
+#[derive(Component, Copy, Clone)]
+pub struct TestChosenStandardTrait;
+
+pub fn track_trait(query: Query<&Style, (With<TestChosenStandardTrait>, Changed<Style>)>) {
+    for changed_style in &query {
+        println!("{:?}", changed_style.display);
     }
 }
