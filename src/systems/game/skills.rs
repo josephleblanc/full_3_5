@@ -52,6 +52,18 @@ pub enum SkillName {
     UseMagicDevice,
 }
 
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq)]
+pub enum SkillUse {
+    IntimidateUse(IntimidateUse),
+    /* more here */
+}
+
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq)]
+pub enum IntimidateUse {
+    Demoralize,
+    /* more here */
+}
+
 impl SkillName {
     pub fn iterator(&self) -> impl Iterator<Item = SkillName> {
         use SkillName::*;
@@ -94,6 +106,22 @@ impl SkillName {
         ]
         .iter()
         .copied()
+    }
+
+    pub fn knowledge_array() -> [SkillName; 10] {
+        use SkillName::*;
+        [
+            KnowledgeArcana,
+            KnowledgeDungeoneering,
+            KnowledgeEngineering,
+            KnowledgeGeography,
+            KnowledgeHistory,
+            KnowledgeLocal,
+            KnowledgeNature,
+            KnowledgeNobility,
+            KnowledgePlanes,
+            KnowledgeReligion,
+        ]
     }
 }
 

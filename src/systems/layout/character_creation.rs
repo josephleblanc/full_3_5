@@ -497,6 +497,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             background_color: Color::OLIVE.into(),
                             ..default()
                         },
+                        AltTraitParent,
                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                         // Marks the node for use by display_racial_description_type,
                         // used to switch the content depending on the racial tab
@@ -532,7 +533,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     },
                                     Name::from("Race Trait description"),
                                     // Label
-                                    AltRacialTraitNode,
+                                    AltTraitNode,
+                                    ListNode,
                                     AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                 ))
                                 .with_children(|alt_racial_trait_container| {
@@ -555,6 +557,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                             ..default()
                                         },
                                         AltRacialTraitTitle,
+                                        ListTitle,
                                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                     ));
                                 })
@@ -587,7 +590,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                                             justify_content: JustifyContent::Center,
                                                             ..default()
                                                         },
-                                                        background_color: Color::GRAY.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+                                                        background_color: Color::GRAY.into(),
                                                         ..default()
                                                     },
                                                     AccessibilityNode(NodeBuilder::new(
@@ -629,6 +632,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                                                         color: TEXT_COLOR,
                                                                     },
                                                                 ),
+                                                                ButtonText,
                                                                 Name::new("race: moving list item"),
                                                                 AltTraitSelectButtonText,
                                                                 AccessibilityNode(
@@ -687,6 +691,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                                     ..default()
                                                 },
                                                 AltTraitDescription,
+                                                Description,
                                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
                                         });

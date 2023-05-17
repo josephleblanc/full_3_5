@@ -28,7 +28,7 @@ impl SelectedRaceButton {
 //// Alt Trait description screen labels
 // Node containing a whole row
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
-pub struct AltRacialTraitNode;
+pub struct AltTraitNode;
 
 // Title of alt trait
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
@@ -48,6 +48,178 @@ pub struct AltTraitReplaces(pub Vec<RacialTraitName>);
 // Text with the description content of the alt trait
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct AltTraitDescription;
+
+// Labels for shared components of trait lists
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct AltTraitParent;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ListNode;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ListTitle;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ButtonText;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct Description;
+
+// #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+// pub struct AlternateTrait;
+
+use crate::technical::alternate_traits::{AltTraitAsset, AltTraitDisplay};
+pub fn alt_traits_visibility(
+    selected_race: Res<SelectedRaceButton>,
+    mut set: ParamSet<(
+        // query parent node
+        Query<(Entity, &mut Style), With<AltTraitParent>>,
+        // query title
+        Query<&mut Text, With<ListTitle>>,
+        // query replaces text & list
+        Query<&mut AltTraitReplaces, With<AltTraitReplaces>>,
+        // query description text
+        Query<&mut Text, With<Description>>,
+        // query row node
+        Query<&mut Style, With<ListNode>>,
+        // query_children
+        Query<&Children>,
+    )>,
+    asset_server: Res<AssetServer>,
+    assets: Res<Assets<AltTraitAsset>>,
+) {
+    println!("-------------------------starting alt_trait_visibility-----------------------");
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let mut alt_traits: Vec<AltTraitDisplay> = Vec::new();
+    for (_handle, alt_trait_asset) in assets.iter() {
+        println!(
+            "is alt_trait a match? {}",
+            alt_trait_asset.race == selected_race.inner()
+        );
+        if alt_trait_asset.race == selected_race.inner() {
+            alt_traits = alt_trait_asset.alternate_traits.clone();
+
+            let mut traits_len = alt_traits.len();
+            println!("traits_len = {}", traits_len);
+            let titles: Vec<String>;
+            let replacements: Vec<Vec<RacialTraitName>>;
+            let descriptions: Vec<String>;
+            (titles, (replacements, descriptions)) = alt_traits
+                .into_iter()
+                .map(|alt_display| {
+                    (
+                        alt_display.title,
+                        (alt_display.replaces, alt_display.description),
+                    )
+                })
+                .unzip();
+
+            let mut children: Vec<Entity> = Vec::new();
+            let mut parent_entity: Option<Entity> = None;
+            if let Ok((entity, mut node_style)) = set.p0().get_single_mut() {
+                println!("inside parent node display");
+                // change display
+                node_style.display = Display::Flex;
+                parent_entity = Some(entity);
+            }
+            let parent_entity = parent_entity.unwrap();
+            let children: Vec<Entity> = set
+                .p5()
+                .iter_descendants(parent_entity)
+                .collect::<Vec<Entity>>();
+                // .clone();
+
+            let mut titles_iter = titles.into_iter();
+            if let mut iter = set.p1().iter_many_mut(&children) {
+                println!("--> inside first param if let");
+                while let Some(mut title) = iter.fetch_next() {
+                    println!("----> inside first param loop");
+                    // change title text
+                    if let Some(trait_title) = titles_iter.next() {
+                        println!(
+                            "------> inside first alt_trait if let, title = {}",
+                            trait_title.clone()
+                        );
+                        *title = Text::from_section(
+                            trait_title,
+                            TextStyle {
+                                font: font.clone(),
+                                font_size: 25.,
+                                color: Color::WHITE,
+                            },
+                        );
+                    }
+                }
+            }
+
+            let mut replacements_iter = replacements.into_iter();
+            if let mut iter = set.p2().iter_many_mut(&children) {
+                while let Some(mut replaces_list) = iter.fetch_next() {
+                    if let Some(trait_replaces) = replacements_iter.next() {
+                        // change replacement list
+                        *replaces_list = AltTraitReplaces(trait_replaces);
+                    }
+                }
+            }
+
+            let mut descriptions_iter = descriptions.into_iter();
+            if let mut iter = set.p3().iter_many_mut(&children) {
+                while let Some(mut text) = iter.fetch_next() {
+                    if let Some(trait_description) = descriptions_iter.next() {
+                        *text = Text::from_section(
+                            trait_description,
+                            TextStyle {
+                                font: font.clone(),
+                                font_size: 25.,
+                                color: Color::WHITE,
+                            },
+                        );
+                    }
+                    // change text description
+                }
+            }
+
+            if let mut iter = set.p4().iter_many_mut(&children) {
+                while let Some(mut node_style) = iter.fetch_next() {
+                    if traits_len > 0 {
+                        traits_len -= 1;
+                        node_style.display = Display::Flex;
+                    } else {
+                        node_style.display = Display::None;
+                    }
+                }
+            }
+        }
+    }
+
+    // let mut text = query_text.get_single_mut().unwrap();
+    // for (_handle, trait_asset) in assets.iter() {
+    //     if trait_asset.race == selected_race.inner() {
+    //         let selected_traits = trait_asset;
+    //         for (i, (mut trait_style, mut trait_text, mut tooltip_text)) in
+    //             query_trait.iter_mut().enumerate()
+    //         {
+    //             if i < selected_traits.alternate_traits.len() {
+    //                 *trait_text = Text::from_section(
+    //                     selected_traits.alternate_traits[i].title.clone(),
+    //                     TextStyle {
+    //                         font: font.clone(),
+    //                         font_size: 25.,
+    //                         color: Color::WHITE,
+    //                     },
+    //                 );
+    //                 tooltip_text.0 = Text::from_section(
+    //                     selected_traits.alternate_traits[i].description.clone(),
+    //                     TextStyle {
+    //                         font: font.clone(),
+    //                         font_size: 20.,
+    //                         color: Color::WHITE,
+    //                     },
+    //                 );
+    //                 (*trait_style).display = Display::Flex;
+    //             } else {
+    //                 (*trait_style).display = Display::None;
+    //             }
+    //         }
+    //     }
+    // }
+}
 
 // Bottom container buttons
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
@@ -94,7 +266,6 @@ pub fn standard_traits_visibility(
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     // let mut text = query_text.get_single_mut().unwrap();
     for (_handle, trait_asset) in assets.iter() {
-        println!("--------------------trait asset loaded--------------------------");
         if trait_asset.race == selected_race.inner() {
             let selected_traits = trait_asset;
             for (i, (mut trait_style, mut trait_text, mut tooltip_text)) in

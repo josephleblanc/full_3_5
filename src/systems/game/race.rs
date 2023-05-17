@@ -216,6 +216,15 @@ pub enum RacialTraitName {
     // BaseUndineWaterAffinity,
     AlchemicallyEnhanced,
     DualTalent,
+    //////////////////////////////////////////////////////////////////////////
+    ///////////////////// Alternate Traits ///////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    HumanAwareness,
+    HumanComprehensiveEducation,
+    HumanDualTalent,
+    //
+    ElfAquaticMastery,
+    ElfCreepy,
 }
 
 impl RacialTraitName {
@@ -1249,6 +1258,11 @@ impl IntoVecBuilder for FloatingAbilityBonus {
                 choices: AbilityScore::as_array().to_vec(),
                 choices_num: 1,
             }),
+            RacialTraitName::HumanDualTalent => Ok(Self {
+                val: 2,
+                choices: AbilityScore::as_array().to_vec(),
+                choices_num: 2,
+            }),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for FloatingAbilityBonus in \
                 from_name() method of trait IntoComponentBuilder",
@@ -1310,6 +1324,26 @@ impl IntoHashMapVecBuilder<SavingThrowBonuses> for SavingThrowBonus {
                     limitation: LimitationEnum::PoisonAndSpells(Poison {}, Magic {}),
                 },
             ]),
+            RacialTraitName::HumanAwareness => Ok(vec![
+                Self {
+                    bonus: 1,
+                    bonus_type: BonusType::Racial,
+                    saving_throw: SavingThrowName::Will,
+                    limitation: LimitationEnum::None,
+                },
+                Self {
+                    bonus: 1,
+                    bonus_type: BonusType::Racial,
+                    saving_throw: SavingThrowName::Reflex,
+                    limitation: LimitationEnum::None,
+                },
+                Self {
+                    bonus: 1,
+                    bonus_type: BonusType::Racial,
+                    saving_throw: SavingThrowName::Fort,
+                    limitation: LimitationEnum::None,
+                },
+            ]),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for SavingThrowBonus in from_name() \
                 method of trait IntoComponentBuilder",
@@ -1348,6 +1382,26 @@ impl IntoHashMapVecBuilder<SpellDCBonuses> for SpellDCBonus {
                 key: BonusType::Racial,
                 bonus_type: BonusType::Racial,
                 limitation: vec![LimitationEnum::SpellSchool(SpellSchool::Illusion)],
+            }]),
+            RacialTraitName::ElfAquaticMastery => Ok(vec![Self {
+                bonus: 2,
+                key: BonusType::Racial,
+                bonus_type: BonusType::Racial,
+                limitation: vec![LimitationEnum::SpellDescriptor(SpellDescriptor::Water)],
+            }]),
+            RacialTraitName::ElfCreepy => Ok(vec![Self {
+                bonus: 1,
+                key: BonusType::Racial,
+                bonus_type: BonusType::Racial,
+                limitation: vec![
+                    // (Confusion and fear and humanoid) and NOT elf.
+                    // Adjust this once you figure out how to combine
+                    // limitations.
+                    LimitationEnum::SpellCauses(SpellCauses::Confusion),
+                    LimitationEnum::SpellCauses(SpellCauses::Fear),
+                    LimitationEnum::TargetingType(CreatureType::Humanoid),
+                    LimitationEnum::TargetingSubtype(CreatureSubtype::Elf),
+                ],
             }]),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for SpellDCBonus in from_name() \
@@ -1405,6 +1459,26 @@ impl IntoHashMapVecBuilder<SkillBonuses> for SkillBonus {
                     limitation: vec![LimitationEnum::None],
                 },
             ]),
+            RacialTraitName::HumanComprehensiveEducation => Ok({
+                let mut vec: Vec<SkillBonus> = Vec::new();
+                for knowledge_skill in SkillName::knowledge_array() {
+                    vec.push(Self {
+                        bonus: 1,
+                        bonus_type: BonusType::Racial,
+                        skill_name: knowledge_skill,
+                        limitation: vec![LimitationEnum::ClassSkill],
+                    });
+                }
+                vec
+            }),
+            RacialTraitName::ElfCreepy => Ok(vec![Self {
+                bonus: 4,
+                bonus_type: BonusType::Racial,
+                skill_name: Intimidate,
+                limitation: vec![LimitationEnum::SkillUse(SkillUse::IntimidateUse(
+                    IntimidateUse::Demoralize,
+                ))],
+            }]),
 
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
@@ -1615,6 +1689,11 @@ impl IntoHashMapVecBuilder<CasterLevelBonuses> for CasterLevelBonus {
                 bonus_type: BonusType::Racial,
                 limitation: CasterLevelUse::OvercomeSpellResistance,
             }]),
+            RacialTraitName::HumanAwareness => Ok(vec![Self {
+                bonus: 1,
+                bonus_type: BonusType::Racial,
+                limitation: CasterLevelUse::Concentration,
+            }]),
             _ => Err(format!(
                 "Invalid RacialTraitName: {:?} for CasterLevelBonus in from_name() \
                 method of trait IntoComponentBuilder",
@@ -1743,7 +1822,7 @@ impl IntoComponentBuilder for GnomeMagicBuilder {
                 ],
             }),
             _ => Err(format!(
-                "Invalid RacialTraitName: {:?} for SkillBonus in from_name() \
+                "Invalid RacialTraitName: {:?} for GnomeMagicBuilder in from_name() \
                 method of trait IntoComponentBuilder",
                 racial_trait_name
             )

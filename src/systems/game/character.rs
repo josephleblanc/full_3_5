@@ -540,13 +540,19 @@ pub enum LimitationEnum {
     Spellcraft(SpellcraftUses),
     AttacksByCreatureSubtype(CreatureSubtype),
     SpellSchool(magic::SpellSchool),
+    SpellDescriptor(magic::SpellDescriptor),
+    SpellCauses(magic::SpellCauses),
     PlayerState(PlayerState),
     AbilityScoreAbove(AbilityScore, u32),
     AttackingTargetTypeAndSubtype(CreatureType, CreatureSubtype),
+    TargetingType(CreatureType),
+    TargetingSubtype(CreatureSubtype),
     // Poison and magic are placeholder until I get around to those systems
     PoisonAndSpells(Poison, Magic),
     CombatManeuverName(CombatManeuverName),
     ItemContains(ItemContains),
+    SkillUse(SkillUse),
+    ClassSkill,
     None,
 }
 

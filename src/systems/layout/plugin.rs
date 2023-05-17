@@ -11,6 +11,7 @@ use crate::{
         },
     },
     technical::{
+        alternate_traits::AltTraitAsset,
         default_race_traits::DefaultTraitAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
         race_load::RaceAsset,
@@ -56,6 +57,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
+            .init_resource::<CustomAssetLoadState<AltTraitAsset>>()
             .init_resource::<RaceBuilder>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
@@ -79,6 +81,7 @@ impl Plugin for CharacterCreationPlugin {
                 SuperSet::Super
                     .run_if(is_custom_asset_loaded::<RaceAsset>())
                     .run_if(is_custom_asset_loaded::<DefaultTraitAsset>())
+                    .run_if(is_custom_asset_loaded::<AltTraitAsset>())
                     .in_set(OnUpdate(AppState::CharacterCreation)),
             )
             .configure_sets(
@@ -149,7 +152,8 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(Build::Build),
             )
             .add_system(standard_traits_visibility.in_set(Changed::Race))
-            .add_system(chosen_trait_tooltip.in_set(SuperSet::Super));
+            .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
+            .add_system(alt_traits_visibility.in_set(Changed::Race));
         // .add_systems(
         //     (
         //     )

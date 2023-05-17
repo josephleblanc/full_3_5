@@ -58,6 +58,7 @@ pub enum CasterLevelUse {
     Cast,
     Dispel,
     OvercomeSpellResistance,
+    Concentration,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq, Ord)]
@@ -91,6 +92,16 @@ pub enum SpellSchool {
     Illusion,
     Necromancy,
     Tranmutation,
+}
+
+// The effects that the spell causes.
+// This is a rough implementation for now, just to cover my
+// bases for making alternate traits work with LimitiationsEnum.
+#[derive(Clone, Debug, PartialEq, PartialOrd, Copy, Hash, Eq)]
+pub enum SpellCauses {
+    Fear,
+    Confusion,
+    /* more here */
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Copy, Hash, Eq)]
@@ -147,6 +158,7 @@ pub enum SpellDescriptor {
     Ruse,   // PZO1134
     Shadow, // PZO1117
     Sonic,
+    Water, // used in Aquatic Mastery
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Copy, Hash, Eq)]
