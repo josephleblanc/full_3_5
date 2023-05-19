@@ -322,12 +322,18 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     // This contains many nodes, but on startup most will be set to
     // Display::None until the correct tab is checked.
     let default_racial_trait_rows = 20_usize;
-    let center_area = commands
+    let central_node = commands
         .spawn((
             NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
                     size: Size::new(Val::Percent(100.), Val::Percent(90.)),
+                    padding: UiRect {
+                        top: Val::Px(8.),
+                        bottom: Val::Px(8.),
+                        left: Val::Px(0.),
+                        right: Val::Px(0.),
+                    },
                     overflow: (Overflow::Hidden),
                     ..default()
                 },
@@ -336,372 +342,236 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Name::from("Central content area"),
         ))
-        .with_children(|scrolling_list_container| {
-            scrolling_list_container
-                .spawn((
-                    NodeBundle {
-                        style: Style {
-                            flex_direction: FlexDirection::Column,
-                            align_items: AlignItems::FlexStart,
-                            size: Size::width(Val::Percent(100.)),
-                            ..default()
-                        },
-                        ..default()
+        .set_parent(mid_container)
+        .id();
+    let central_scroll_list = commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::FlexStart,
+                    size: Size::width(Val::Percent(100.)),
+                    padding: UiRect {
+                        left: Val::Px(20.),
+                        right: Val::Px(20.),
+                        top: Val::Px(8.),
+                        bottom: Val::Px(0.),
                     },
-                    ScrollingList::default(),
-                    AccessibilityNode(NodeBuilder::new(Role::List)),
-                    Name::from("moving panel - flavor text"),
-                    Interaction::default(),
-                    // Marks parent of the RaceDescriptionNode to be used when
-                    // returning the child to the parent.
-                    RaceDescriptionNodeParent,
-                ))
-                .with_children(|list| {
-                    list.spawn((
-                        NodeBundle {
-                            style: Style {
-                                size: Size::width(Val::Percent(100.)),
-                                padding: UiRect::left(Val::Percent(7.)),
-                                display: Display::Flex,
-                                ..default()
-                            },
-                            background_color: Color::OLIVE.into(),
-                            ..default()
-                        },
-                        // Marks the node for use by display_racial_description_type,
-                        // used to switch the content depending on the racial tab
-                        // button pressed, e.g. Description, Racial Traits, etc.
-                        RaceDescriptionNode(RacialChoicesButtonType::RaceDescription),
+                    gap: Size::height(Val::Px(8.)),
+                    ..default()
+                },
+                ..default()
+            },
+            ScrollingList::default(),
+            AccessibilityNode(NodeBuilder::new(Role::List)),
+            Name::from("moving panel - flavor text"),
+            Interaction::default(),
+            // Marks parent of the RaceDescriptionNode to be used when
+            // returning the child to the parent.
+            // RaceDescriptionNodeParent,
+            ListParent,
+        ))
+        .set_parent(central_node)
+        .id();
+
+    // List nodes and text
+    let list_node = NodeBundle {
+        style: Style {
+            // padding: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(10.)),
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        background_color: Color::BLACK.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+        ..default()
+    };
+    let list_item_title = TextBundle {
+        text: Text::from_section(
+            "Select Me!",
+            TextStyle {
+                font: shared_font.clone(),
+                font_size: 30.,
+                color: TEXT_COLOR,
+            },
+        ),
+        style: Style {
+            max_size: Size::width(Val::Px(1200.)),
+            margin: UiRect::all(Val::Px(5.)),
+            ..default()
+        },
+        ..default()
+    };
+    let list_row_node = NodeBundle {
+        style: Style {
+            // padding: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(10.)),
+            flex_direction: FlexDirection::Row,
+            ..default()
+        },
+        background_color: Color::GRAY.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+        ..default()
+    };
+    let list_col_node = NodeBundle {
+        style: Style {
+            // padding: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(10.)),
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        background_color: Color::GRAY.into(),
+        ..default()
+    };
+    let list_button = ButtonBundle {
+        style: Style {
+            size: Size::width(Val::Percent(100.)),
+            // padding: UiRect::left(Val::Percent(7.)),
+            ..default()
+        },
+        background_color: Color::DARK_GREEN.into(),
+        ..default()
+    };
+    let list_button_text = TextBundle::from_section(
+        "List Button Text".to_string(),
+        TextStyle {
+            font: shared_font.clone(),
+            font_size: LIST_BUTTON_TEXT_SIZE,
+            color: TEXT_COLOR,
+        },
+    );
+    let skill_replaces_text = TextBundle::from_section(
+        "Replaces".to_string(),
+        TextStyle {
+            font: shared_font.clone(),
+            font_size: 30.,
+            color: TEXT_COLOR,
+        },
+    );
+    let skill_replacement_item_text = TextBundle {
+        text: Text::from_section(
+            "Alt Race Replaces:".to_string(),
+            TextStyle {
+                font: shared_font.clone(),
+                font_size: 30.,
+                color: TEXT_COLOR,
+            },
+        ),
+        style: Style {
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        ..default()
+    };
+    let list_description_text = TextBundle {
+        text: Text::from_section(
+            "",
+            TextStyle {
+                font: shared_font.clone(),
+                font_size: 30.,
+                color: TEXT_COLOR,
+            },
+        ),
+        style: Style {
+            max_size: Size::width(Val::Px(900.)),
+            margin: UiRect::left(Val::Px(20.)),
+            ..default()
+        },
+        ..default()
+    };
+    // Prepopulate the list items to be filled or hidden by systems
+    for _ in 0..default_racial_trait_rows {
+        commands
+            .spawn((
+                // Each of these nodes is one row. The AltRacialTrait Component
+                // can be used to identify this node in a systems and set
+                // Display::Flex to show the alt trait and all it's children.
+                Name::from("Race Trait description"),
+                list_node.clone(),
+                // Label
+                AltTraitNode,
+                ListNode,
+                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+            ))
+            .with_children(|alt_racial_trait_container| {
+                alt_racial_trait_container.spawn((
+                    // Alternate Racial Trait Title
+                    list_item_title.clone(),
+                    AltRacialTraitTitle,
+                    ListTitle,
+                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                ));
+            })
+            .with_children(|row_node| {
+                row_node
+                    .spawn((
+                        list_row_node.clone(),
+                        // Container node for select button and alt racial
+                        // trait description
+                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                     ))
-                    .with_children(|text_area| {
-                        // Holds the flavor text descriptions of various races.
-                        text_area.spawn((
-                            TextBundle {
-                                text: Text::from_section(
-                                    "Something",
-                                    TextStyle {
-                                        font: shared_font.clone(),
-                                        font_size: 30.,
-                                        color: TEXT_COLOR,
-                                    },
-                                ),
-                                style: Style {
-                                    max_size: Size::width(Val::Px(1200.)),
-                                    ..default()
-                                },
-                                ..default()
-                            },
-                            DescriptionSection,
-                            ActiveRaceDescription(PlayableRace::Human),
-                            Name::new("race: flavor text description"),
+                    // Node Containing button to select trait and list of
+                    // traits it replaces.
+                    //  Show during:
+                    //  - Alternate Traits
+                    //  - Favored Skill
+                    .with_children(|button_and_descr_node| {
+                        button_and_descr_node
+                            .spawn((
+                                list_col_node.clone(),
+                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                            ))
+                            // Selection button
+                            // Show during:
+                            // - Alternate Trait
+                            // - Favored Skill
+                            .with_children(|button_and_replace_node| {
+                                button_and_replace_node
+                                    .spawn((
+                                        list_button.clone(),
+                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                        AltTraitSelectButton,
+                                    ))
+                                    .with_children(|alt_race_select_button| {
+                                        alt_race_select_button.spawn((
+                                            list_button_text.clone(),
+                                            ButtonText,
+                                            Name::new("race: moving list item"),
+                                            AltTraitSelectButtonText,
+                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                        ));
+                                    });
+                                // List of the traits this trait will replace.
+                                // Used to load the titles of the traits it will replace, and
+                                // select them below the racial trait button.
+                                button_and_replace_node.spawn((
+                                    skill_replaces_text.clone(),
+                                    Name::new("Text names of replaced traits"),
+                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                ));
+                                button_and_replace_node.spawn((
+                                    skill_replacement_item_text.clone(),
+                                    Name::new("Text names of replaced traits"),
+                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                    AltTraitReplaces(Vec::new()),
+                                ));
+                            });
+                        // Text with descrition of selected content, can be
+                        // - Flavor Text,
+                        // - Standard trait description
+                        // - Alternate Trait description
+                        // - Favored Class description
+                        button_and_descr_node.spawn((
+                            // Trait description
+                            list_description_text.clone(),
+                            AltTraitDescription,
+                            Description,
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                         ));
                     });
-                })
-                .with_children(|list| {
-                    list.spawn((
-                        NodeBundle {
-                            style: Style {
-                                size: Size::width(Val::Percent(100.)),
-                                padding: UiRect::left(Val::Px(10.)),
-                                flex_direction: FlexDirection::Column,
-                                display: Display::None,
-                                ..default()
-                            },
-                            background_color: Color::OLIVE.into(),
-                            ..default()
-                        },
-                        // Marks the node for use by display_racial_description_type,
-                        // used to switch the content depending on the racial tab
-                        // button pressed, e.g. Description, Racial Traits, etc.
-                        RaceDescriptionNode(RacialChoicesButtonType::StandardRacialTraitNames),
-                    ))
-                    .with_children(|racial_traits| {
-                        // _row_number is only used to make the containers which will
-                        // be filled by the systems that manage the trait description
-                        // text
-                        for _row_number in 0..default_racial_trait_rows {
-                            racial_traits
-                                .spawn((
-                                    // Button to select or deselect a racial trait
-                                    NodeBundle {
-                                        style: Style {
-                                            padding: UiRect::all(Val::Px(5.)),
-                                            margin: UiRect::all(Val::Px(10.)),
-                                            ..default()
-                                        },
-                                        background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-                                        ..default()
-                                    },
-                                    Name::from("Race Trait description"),
-                                    RacialTraitButton,
-                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                ))
-                                .with_children(|racial_traits| {
-                                    racial_traits.spawn((
-                                        // Button text
-                                        TextBundle {
-                                            text: Text::from_section(
-                                                "Select Me!",
-                                                TextStyle {
-                                                    font: shared_font.clone(),
-                                                    font_size: 30.,
-                                                    color: TEXT_COLOR,
-                                                },
-                                            ),
-                                            style: Style {
-                                                max_size: Size::width(Val::Px(1200.)),
-                                                margin: UiRect::all(Val::Px(5.)),
-                                                ..default()
-                                            },
-                                            ..default()
-                                        },
-                                        RacialTraitButtonText,
-                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                    ));
-                                });
-                            racial_traits.spawn((
-                                // Trait description
-                                TextBundle {
-                                    text: Text::from_section(
-                                        "",
-                                        TextStyle {
-                                            font: shared_font.clone(),
-                                            font_size: 30.,
-                                            color: TEXT_COLOR,
-                                        },
-                                    ),
-                                    style: Style {
-                                        max_size: Size::width(Val::Px(1200.)),
-                                        margin: UiRect::left(Val::Px(20.)),
-                                        ..default()
-                                    },
-                                    ..default()
-                                },
-                                DefaultTraitDescriptionText,
-                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                            ));
-                        }
-                    });
-                })
-                .with_children(|list| {
-                    list.spawn((
-                        NodeBundle {
-                            style: Style {
-                                size: Size::width(Val::Percent(100.)),
-                                padding: UiRect::left(Val::Px(10.)),
-                                flex_direction: FlexDirection::Column,
-                                display: Display::None,
-                                ..default()
-                            },
-                            background_color: Color::OLIVE.into(),
-                            ..default()
-                        },
-                        AltTraitParent,
-                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                        // Marks the node for use by display_racial_description_type,
-                        // used to switch the content depending on the racial tab
-                        // button pressed, e.g. Description, Racial Traits, etc.
-                        RaceDescriptionNode(RacialChoicesButtonType::AlternateRacialTraitNames),
-                    ))
-                    .with_children(|racial_traits| {
-                        // _row_number is only used to make the containers which will
-                        // be filled by the systems that manage the trait description
-                        // text
-                        //// This is the alternate racial traits section, which should have
-                        //   each row in three parts -
-                        //   1) A bar with 100% width with the alternate racial trait title,
-                        //   2) A row split vertically, composed of:
-                        //      3) A button to select the racial trait, with the traits it
-                        //          will replace below the button in plain text
-                        //      4) A description of the racial trait
-                        for _row_number in 0..default_racial_trait_rows {
-                            racial_traits
-                                .spawn((
-                                    // Each of these nodes is one row. The AltRacialTrait Component
-                                    // can be used to identify this node in a systems and set
-                                    // Display::Flex to show the alt trait and all it's children.
-                                    NodeBundle {
-                                        style: Style {
-                                            padding: UiRect::all(Val::Px(5.)),
-                                            margin: UiRect::all(Val::Px(10.)),
-                                            flex_direction: FlexDirection::Column,
-                                            ..default()
-                                        },
-                                        background_color: Color::BLACK.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-                                        ..default()
-                                    },
-                                    Name::from("Race Trait description"),
-                                    // Label
-                                    AltTraitNode,
-                                    ListNode,
-                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                ))
-                                .with_children(|alt_racial_trait_container| {
-                                    alt_racial_trait_container.spawn((
-                                        // Alternate Racial Trait Title
-                                        TextBundle {
-                                            text: Text::from_section(
-                                                "Select Me!",
-                                                TextStyle {
-                                                    font: shared_font.clone(),
-                                                    font_size: 30.,
-                                                    color: TEXT_COLOR,
-                                                },
-                                            ),
-                                            style: Style {
-                                                max_size: Size::width(Val::Px(1200.)),
-                                                margin: UiRect::all(Val::Px(5.)),
-                                                ..default()
-                                            },
-                                            ..default()
-                                        },
-                                        AltRacialTraitTitle,
-                                        ListTitle,
-                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                    ));
-                                })
-                                .with_children(|row_node| {
-                                    row_node
-                                        .spawn((
-                                            // Container node for select button and alt racial
-                                            // trait description
-                                            NodeBundle {
-                                                style: Style {
-                                                    padding: UiRect::all(Val::Px(5.)),
-                                                    margin: UiRect::all(Val::Px(10.)),
-                                                    flex_direction: FlexDirection::Row,
-                                                    ..default()
-                                                },
-                                                background_color: Color::GRAY.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-                                                ..default()
-                                            },
-                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                        ))
-                                        .with_children(|button_and_descr_node| {
-                                            button_and_descr_node
-                                                .spawn((
-                                                    NodeBundle {
-                                                        style: Style {
-                                                            padding: UiRect::all(Val::Px(5.)),
-                                                            margin: UiRect::all(Val::Px(10.)),
-                                                            flex_direction: FlexDirection::Column,
-                                                            align_items: AlignItems::Center,
-                                                            justify_content: JustifyContent::Center,
-                                                            ..default()
-                                                        },
-                                                        background_color: Color::GRAY.into(),
-                                                        ..default()
-                                                    },
-                                                    AccessibilityNode(NodeBuilder::new(
-                                                        Role::ListItem,
-                                                    )),
-                                                ))
-                                                .with_children(|button_and_replace_node| {
-                                                    button_and_replace_node
-                                                        .spawn((
-                                                            ButtonBundle {
-                                                                style: Style {
-                                                                    size: Size::width(
-                                                                        Val::Percent(100.),
-                                                                    ),
-                                                                    padding: UiRect::left(
-                                                                        Val::Percent(7.),
-                                                                    ),
-                                                                    ..default()
-                                                                },
-                                                                background_color: Color::DARK_GREEN
-                                                                    .into(),
-                                                                ..default()
-                                                            },
-                                                            AccessibilityNode(NodeBuilder::new(
-                                                                Role::ListItem,
-                                                            )),
-                                                            // List of the traits this trait will replace.
-                                                            // Used to load the titles of the traits it will replace, and
-                                                            // select them below the racial trait button.
-                                                            AltTraitSelectButton,
-                                                        ))
-                                                        .with_children(|alt_race_select_button| {
-                                                            alt_race_select_button.spawn((
-                                                                TextBundle::from_section(
-                                                                    "Alt Race Select".to_string(),
-                                                                    TextStyle {
-                                                                        font: shared_font.clone(),
-                                                                        font_size: 30.,
-                                                                        color: TEXT_COLOR,
-                                                                    },
-                                                                ),
-                                                                ButtonText,
-                                                                Name::new("race: moving list item"),
-                                                                AltTraitSelectButtonText,
-                                                                AccessibilityNode(
-                                                                    NodeBuilder::new(
-                                                                        Role::ListItem,
-                                                                    ),
-                                                                ),
-                                                            ));
-                                                        });
-                                                    button_and_replace_node.spawn((
-                                                        TextBundle::from_section(
-                                                            "Replaces".to_string(),
-                                                            TextStyle {
-                                                                font: shared_font.clone(),
-                                                                font_size: 30.,
-                                                                color: TEXT_COLOR,
-                                                            },
-                                                        ),
-                                                        Name::new("Text names of replaced traits"),
-                                                        AccessibilityNode(NodeBuilder::new(
-                                                            Role::ListItem,
-                                                        )),
-                                                    ));
-                                                    button_and_replace_node.spawn((
-                                                        TextBundle::from_section(
-                                                            "Alt Race Replaces:".to_string(),
-                                                            TextStyle {
-                                                                font: shared_font.clone(),
-                                                                font_size: 30.,
-                                                                color: TEXT_COLOR,
-                                                            },
-                                                        ),
-                                                        Name::new("Text names of replaced traits"),
-                                                        AccessibilityNode(NodeBuilder::new(
-                                                            Role::ListItem,
-                                                        )),
-                                                        AltTraitReplaces(Vec::new()),
-                                                    ));
-                                                });
-                                            button_and_descr_node.spawn((
-                                                // Trait description
-                                                TextBundle {
-                                                    text: Text::from_section(
-                                                        "",
-                                                        TextStyle {
-                                                            font: shared_font.clone(),
-                                                            font_size: 30.,
-                                                            color: TEXT_COLOR,
-                                                        },
-                                                    ),
-                                                    style: Style {
-                                                        max_size: Size::width(Val::Px(1200.)),
-                                                        margin: UiRect::left(Val::Px(20.)),
-                                                        ..default()
-                                                    },
-                                                    ..default()
-                                                },
-                                                AltTraitDescription,
-                                                Description,
-                                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                            ));
-                                        });
-                                });
-                        }
-                    });
-                });
-        })
-        .set_parent(mid_container)
-        .id();
+            })
+            .set_parent(central_scroll_list);
+    }
 
     // Panel with chosen racial traits and favored class.
     // Should be located on the right of the screen
@@ -1180,7 +1050,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     //  - Favored Class Options
     //  - Racial Feats
     // let racial_choices_button_titles = RacialChoicesButtonType::array();
-    let description_select_buttons = RacialChoicesButtonType::array();
+    let description_select_buttons = RaceTab::array();
     commands
         .spawn((
             NodeBundle {

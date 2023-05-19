@@ -4,7 +4,10 @@ use crate::{
         game::race::RacialTraitName,
         menu::{
             components::RaceSelectButton,
-            styles::{RACE_BUTTON_COLOR, RACE_BUTTON_COLOR_HOVERED, RACE_BUTTON_COLOR_SELECTED},
+            styles::{
+                LIST_BUTTON_TEXT_SIZE, RACE_BUTTON_COLOR, RACE_BUTTON_COLOR_HOVERED,
+                RACE_BUTTON_COLOR_SELECTED,
+            },
         },
     },
     technical::default_race_traits::DefaultTraitAsset,
@@ -41,7 +44,7 @@ pub struct AltTraitSelectButton;
 // should be the title of the racial trait
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct AltTraitSelectButtonText;
-// A vec of the standard traits this alternate trait replaces.
+// A vec of the standard traits this alternate trait replaces_names.
 #[derive(Component, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct AltTraitReplaces(pub Vec<RacialTraitName>);
 
@@ -52,6 +55,9 @@ pub struct AltTraitDescription;
 // Labels for shared components of trait lists
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct AltTraitParent;
+
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ListParent;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ListNode;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
@@ -64,15 +70,336 @@ pub struct Description;
 // #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 // pub struct AlternateTrait;
 
-use crate::technical::alternate_traits::{AltTraitAsset, AltTraitDisplay};
-pub fn alt_traits_visibility(
+pub fn display_alt_traits(
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_parent_style: Query<(&mut Style), With<ListParent>>,
+) {
+    let mut parent_style = query_parent_style.get_single_mut().unwrap();
+    if selected_race_tab.0 == RaceTab::AltTraitTab {
+        parent_style.display = Display::Flex;
+    } else {
+        parent_style.display = Display::None;
+    }
+}
+
+pub fn set_list_node_display(
     selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_node: Query<&mut Style, With<ListNode>>,
+    asset_server: Res<AssetServer>,
+    descr_asset: Res<Assets<RaceAsset>>,
+    std_trait_asset: Res<Assets<DefaultTraitAsset>>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let len = match selected_race_tab.0 {
+        RaceTab::RaceDescription => Some(1_usize),
+        RaceTab::StandardTraitTab => {
+            let mut len = 0_usize;
+            if let Some((_handle, asset)) = std_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.default_traits.len())
+            } else {
+                None
+            }
+        }
+        RaceTab::AltTraitTab => {
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.alternate_traits.len())
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(len) = len {
+        for (i, mut style) in query_node.iter_mut().enumerate() {
+            println!("i: {}", i);
+            if i < len {
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    }
+}
+
+pub fn set_list_title(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_title: Query<(&mut Style, &mut Text), With<ListTitle>>,
+    asset_server: Res<AssetServer>,
+    descr_asset: Res<Assets<RaceAsset>>,
+    std_trait_asset: Res<Assets<DefaultTraitAsset>>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let titles = match selected_race_tab.0 {
+        RaceTab::RaceDescription => Some(vec!["Description".to_string()]),
+        RaceTab::StandardTraitTab => {
+            let titles: Vec<String>;
+            if let Some((_handle, asset)) = std_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                titles = asset
+                    .default_traits
+                    .iter()
+                    .map(|traits| traits.title.clone())
+                    .collect();
+                Some(titles)
+            } else {
+                None
+            }
+        }
+        RaceTab::AltTraitTab => {
+            let mut titles = Vec::new();
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                titles = asset
+                    .alternate_traits
+                    .iter()
+                    .map(|traits| traits.title.clone())
+                    .collect();
+                Some(titles)
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(titles) = titles {
+        let mut titles_iter = titles.iter();
+        for ((mut style, mut text), title) in query_title.iter_mut().zip(titles_iter) {
+            *text = Text::from_section(
+                title,
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 25.,
+                    color: Color::WHITE,
+                },
+            );
+        }
+    }
+}
+
+pub fn set_button_display(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_node: Query<(&mut Style, &mut Text), With<ListNode>>,
+    asset_server: Res<AssetServer>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let len = match selected_race_tab.0 {
+        RaceTab::RaceDescription => Some(1_usize),
+        RaceTab::StandardTraitTab => None,
+        RaceTab::AltTraitTab => {
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.alternate_traits.len())
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(len) = len {
+        for (i, (mut style, mut text)) in query_node.iter_mut().enumerate() {
+            if i < len {
+                *text = Text::from_section(
+                    "Select",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: LIST_BUTTON_TEXT_SIZE,
+                        color: TEXT_COLOR,
+                    },
+                );
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    } else {
+        for (mut style, _) in &mut query_node {
+            style.display = Display::None;
+        }
+    }
+}
+
+pub fn set_skill_replacement_text(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_node: Query<(&mut Style, &mut Text), With<ListNode>>,
+    asset_server: Res<AssetServer>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let len = match selected_race_tab.0 {
+        RaceTab::RaceDescription => Some(1_usize),
+        RaceTab::StandardTraitTab => None,
+        RaceTab::AltTraitTab => {
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.alternate_traits.len())
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(len) = len {
+        for (i, (mut style, mut text)) in query_node.iter_mut().enumerate() {
+            if i < len {
+                *text = Text::from_section(
+                    "Replaces",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: LIST_BUTTON_TEXT_SIZE,
+                        color: TEXT_COLOR,
+                    },
+                );
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    } else {
+        for (mut style, _) in &mut query_node {
+            style.display = Display::None;
+        }
+    }
+}
+
+pub fn set_replace_display(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_node: Query<(&mut Style), With<ListNode>>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    let len = match selected_race_tab.0 {
+        RaceTab::RaceDescription => Some(1_usize),
+        RaceTab::StandardTraitTab => None,
+        RaceTab::AltTraitTab => {
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.alternate_traits.len())
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(len) = len {
+        for (i, mut style) in query_node.iter_mut().enumerate() {
+            if i < len {
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    } else {
+        for mut style in &mut query_node {
+            style.display = Display::None;
+        }
+    }
+}
+
+pub fn set_replaced_content_display(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_node: Query<(&mut Style, &mut Text, &mut AltTraitReplaces)>,
+    asset_server: Res<AssetServer>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    println!("running set_replaces_display");
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let traits = match selected_race_tab.0 {
+        RaceTab::RaceDescription => None,
+        RaceTab::StandardTraitTab => None,
+        RaceTab::AltTraitTab => {
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.alternate_traits.iter().map(|alt_trait| {
+                    (
+                        alt_trait.replaces_names.iter(),
+                        alt_trait.replaces_strings.iter(),
+                    )
+                }))
+                // Some(
+                //     asset
+                //         .alternate_traits
+                //         .iter()
+                //         .map(|alt_trait| (alt_trait.replaces_names, alt_trait.replaces_strings))
+                //         .unzip(),
+                // )
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(mut traits_iter) = traits {
+        for (i, (mut style, mut text, mut displayed_replaces)) in query_node.iter_mut().enumerate()
+        {
+            println!("i: {}", i);
+            if let Some((trait_names, replaces_strings)) = traits_iter.next() {
+                *text = Text::from_sections(replaces_strings.map(|trait_name| {
+                    TextSection::new(
+                        trait_name,
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: LIST_BUTTON_TEXT_SIZE,
+                            color: TEXT_COLOR,
+                        },
+                    )
+                }));
+                style.display = Display::Flex;
+                displayed_replaces.0.extend(trait_names);
+            } else {
+                style.display = Display::None;
+            }
+        }
+    } else {
+        for (mut style, _, _) in &mut query_node {
+            style.display = Display::None;
+        }
+    }
+}
+
+use crate::technical::alternate_traits::{AltTraitAsset, AltTraitDisplay};
+pub fn fill_alt_traits(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
     mut set: ParamSet<(
         // query parent node
-        Query<(Entity, &mut Style), With<AltTraitParent>>,
+        Query<Entity, /* &mut Style),*/ With<ListParent>>,
         // query title
         Query<&mut Text, With<ListTitle>>,
-        // query replaces text & list
+        // query replaces_names text & list
         Query<&mut AltTraitReplaces, With<AltTraitReplaces>>,
         // query description text
         Query<&mut Text, With<Description>>,
@@ -82,143 +409,128 @@ pub fn alt_traits_visibility(
         Query<&Children>,
     )>,
     asset_server: Res<AssetServer>,
-    assets: Res<Assets<AltTraitAsset>>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
     println!("-------------------------starting alt_trait_visibility-----------------------");
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let mut alt_traits: Vec<AltTraitDisplay> = Vec::new();
-    for (_handle, alt_trait_asset) in assets.iter() {
-        println!(
-            "is alt_trait a match? {}",
-            alt_trait_asset.race == selected_race.inner()
-        );
-        if alt_trait_asset.race == selected_race.inner() {
-            alt_traits = alt_trait_asset.alternate_traits.clone();
 
-            let mut traits_len = alt_traits.len();
-            println!("traits_len = {}", traits_len);
-            let titles: Vec<String>;
-            let replacements: Vec<Vec<RacialTraitName>>;
-            let descriptions: Vec<String>;
-            (titles, (replacements, descriptions)) = alt_traits
-                .into_iter()
-                .map(|alt_display| {
-                    (
-                        alt_display.title,
-                        (alt_display.replaces, alt_display.description),
-                    )
-                })
-                .unzip();
+    let mut children: Vec<Entity> = Vec::new();
+    let mut parent_entity: Option<Entity> = None;
+    if let Ok(entity /*mut node_style)*/) = set.p0().get_single_mut() {
+        println!("inside parent node display");
+        // get parent_entity copied out of this context
+        parent_entity = Some(entity);
+    }
+    let parent_entity = parent_entity.unwrap();
+    let children: Vec<Entity> = set
+        .p5()
+        .iter_descendants(parent_entity)
+        .collect::<Vec<Entity>>();
 
-            let mut children: Vec<Entity> = Vec::new();
-            let mut parent_entity: Option<Entity> = None;
-            if let Ok((entity, mut node_style)) = set.p0().get_single_mut() {
-                println!("inside parent node display");
-                // change display
-                node_style.display = Display::Flex;
-                parent_entity = Some(entity);
+    // If no asset is loaded, set display to Display::None for all alt trait nodes
+    // This prevents the previously selected race's alt traits from being displayed
+    // when no alt traits are found.
+    if !alt_trait_asset
+        .iter()
+        .any(|(_handle, list_asset)| list_asset.race == selected_race.0)
+    {
+        if let mut iter = set.p4().iter_many_mut(&children) {
+            while let Some(mut node_style) = iter.fetch_next() {
+                node_style.display = Display::None;
             }
-            let parent_entity = parent_entity.unwrap();
-            let children: Vec<Entity> = set
-                .p5()
-                .iter_descendants(parent_entity)
-                .collect::<Vec<Entity>>();
-                // .clone();
+        }
+    } else {
+        // If a match for the selected race is found in the loaded alt_trait_asset, then
+        // iterate over all the alt trait nodes and set the titles, replacement traits,
+        // and description text.
+        for (_handle, list_asset) in alt_trait_asset.iter() {
+            println!(
+                "is alt_trait a match? {}",
+                list_asset.race == selected_race.inner()
+            );
 
-            let mut titles_iter = titles.into_iter();
-            if let mut iter = set.p1().iter_many_mut(&children) {
-                println!("--> inside first param if let");
-                while let Some(mut title) = iter.fetch_next() {
-                    println!("----> inside first param loop");
-                    // change title text
-                    if let Some(trait_title) = titles_iter.next() {
-                        println!(
-                            "------> inside first alt_trait if let, title = {}",
-                            trait_title.clone()
-                        );
-                        *title = Text::from_section(
-                            trait_title,
-                            TextStyle {
-                                font: font.clone(),
-                                font_size: 25.,
-                                color: Color::WHITE,
-                            },
-                        );
+            if list_asset.race == selected_race.inner() {
+                alt_traits = list_asset.alternate_traits.clone();
+
+                let mut traits_len = alt_traits.len();
+                println!("traits_len = {}", traits_len);
+                let titles: Vec<String>;
+                let replacements: Vec<Vec<RacialTraitName>>;
+                let descriptions: Vec<String>;
+                (titles, (replacements, descriptions)) = alt_traits
+                    .into_iter()
+                    .map(|alt_display| {
+                        (
+                            alt_display.title,
+                            (alt_display.replaces_names, alt_display.description),
+                        )
+                    })
+                    .unzip();
+
+                let mut titles_iter = titles.into_iter();
+                if let mut iter = set.p1().iter_many_mut(&children) {
+                    println!("--> inside first param if let");
+                    while let Some(mut title) = iter.fetch_next() {
+                        println!("----> inside first param loop");
+                        // change title text
+                        if let Some(trait_title) = titles_iter.next() {
+                            println!(
+                                "------> inside first alt_trait if let, title = {}",
+                                trait_title.clone()
+                            );
+                            *title = Text::from_section(
+                                trait_title,
+                                TextStyle {
+                                    font: font.clone(),
+                                    font_size: 25.,
+                                    color: Color::WHITE,
+                                },
+                            );
+                        }
                     }
                 }
-            }
 
-            let mut replacements_iter = replacements.into_iter();
-            if let mut iter = set.p2().iter_many_mut(&children) {
-                while let Some(mut replaces_list) = iter.fetch_next() {
-                    if let Some(trait_replaces) = replacements_iter.next() {
-                        // change replacement list
-                        *replaces_list = AltTraitReplaces(trait_replaces);
+                let mut replacements_iter = replacements.into_iter();
+                if let mut iter = set.p2().iter_many_mut(&children) {
+                    while let Some(mut replaces_names_list) = iter.fetch_next() {
+                        if let Some(trait_replaces_names) = replacements_iter.next() {
+                            // change replacement list
+                            *replaces_names_list = AltTraitReplaces(trait_replaces_names);
+                        }
                     }
                 }
-            }
 
-            let mut descriptions_iter = descriptions.into_iter();
-            if let mut iter = set.p3().iter_many_mut(&children) {
-                while let Some(mut text) = iter.fetch_next() {
-                    if let Some(trait_description) = descriptions_iter.next() {
-                        *text = Text::from_section(
-                            trait_description,
-                            TextStyle {
-                                font: font.clone(),
-                                font_size: 25.,
-                                color: Color::WHITE,
-                            },
-                        );
+                let mut descriptions_iter = descriptions.into_iter();
+                if let mut iter = set.p3().iter_many_mut(&children) {
+                    while let Some(mut text) = iter.fetch_next() {
+                        if let Some(trait_description) = descriptions_iter.next() {
+                            *text = Text::from_section(
+                                trait_description,
+                                TextStyle {
+                                    font: font.clone(),
+                                    font_size: 25.,
+                                    color: Color::WHITE,
+                                },
+                            );
+                        }
+                        // change text description
                     }
-                    // change text description
                 }
-            }
 
-            if let mut iter = set.p4().iter_many_mut(&children) {
-                while let Some(mut node_style) = iter.fetch_next() {
-                    if traits_len > 0 {
-                        traits_len -= 1;
-                        node_style.display = Display::Flex;
-                    } else {
-                        node_style.display = Display::None;
+                if let mut iter = set.p4().iter_many_mut(&children) {
+                    while let Some(mut node_style) = iter.fetch_next() {
+                        if traits_len > 0 {
+                            traits_len -= 1;
+                            node_style.display = Display::Flex;
+                        } else {
+                            node_style.display = Display::None;
+                        }
                     }
                 }
             }
         }
     }
-
-    // let mut text = query_text.get_single_mut().unwrap();
-    // for (_handle, trait_asset) in assets.iter() {
-    //     if trait_asset.race == selected_race.inner() {
-    //         let selected_traits = trait_asset;
-    //         for (i, (mut trait_style, mut trait_text, mut tooltip_text)) in
-    //             query_trait.iter_mut().enumerate()
-    //         {
-    //             if i < selected_traits.alternate_traits.len() {
-    //                 *trait_text = Text::from_section(
-    //                     selected_traits.alternate_traits[i].title.clone(),
-    //                     TextStyle {
-    //                         font: font.clone(),
-    //                         font_size: 25.,
-    //                         color: Color::WHITE,
-    //                     },
-    //                 );
-    //                 tooltip_text.0 = Text::from_section(
-    //                     selected_traits.alternate_traits[i].description.clone(),
-    //                     TextStyle {
-    //                         font: font.clone(),
-    //                         font_size: 20.,
-    //                         color: Color::WHITE,
-    //                     },
-    //                 );
-    //                 (*trait_style).display = Display::Flex;
-    //             } else {
-    //                 (*trait_style).display = Display::None;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 // Bottom container buttons
@@ -265,6 +577,7 @@ pub fn standard_traits_visibility(
     println!("selected_race_visibility: {:?}", selected_race.inner());
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     // let mut text = query_text.get_single_mut().unwrap();
+
     for (_handle, trait_asset) in assets.iter() {
         if trait_asset.race == selected_race.inner() {
             let selected_traits = trait_asset;
@@ -387,13 +700,12 @@ pub struct DefaultRacialTraitRace(pub PlayableRace);
 
 // Enum for the tabs of the race section of character creation.
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub enum RacialChoicesButtonType {
+pub enum RaceTab {
     #[default]
     RaceDescription,
-    StandardRacialTraitNames,
-    AlternateRacialTraitNames,
-    RacialSubtypes,
-    FavoredClassOption,
+    StandardTraitTab,
+    AltTraitTab,
+    FavoredClassTab,
 }
 
 // Common traits displayed in the right panel of race selection in
@@ -425,26 +737,24 @@ impl std::fmt::Display for CommonTraits {
     }
 }
 
-impl std::fmt::Display for RacialChoicesButtonType {
+impl std::fmt::Display for RaceTab {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &self {
             Self::RaceDescription => write!(f, "Race Description"),
-            Self::StandardRacialTraitNames => write!(f, "Standard Racial Traits"),
-            Self::AlternateRacialTraitNames => write!(f, "Alternate Racial Traits"),
-            Self::RacialSubtypes => write!(f, "Racial Subtypes"),
-            Self::FavoredClassOption => write!(f, "Favored Class Option"),
+            Self::StandardTraitTab => write!(f, "Standard Racial Traits"),
+            Self::AltTraitTab => write!(f, "Alternate Racial Traits"),
+            Self::FavoredClassTab => write!(f, "Favored Class Option"),
         }
     }
 }
 
-impl RacialChoicesButtonType {
-    pub fn array() -> [RacialChoicesButtonType; 5] {
+impl RaceTab {
+    pub fn array() -> [RaceTab; 4] {
         [
             Self::RaceDescription,
-            Self::StandardRacialTraitNames,
-            Self::AlternateRacialTraitNames,
-            Self::RacialSubtypes,
-            Self::FavoredClassOption,
+            Self::StandardTraitTab,
+            Self::AltTraitTab,
+            Self::FavoredClassTab,
         ]
     }
 }
@@ -544,14 +854,14 @@ pub fn selected_race_visibility(
 pub fn selected_default_traits_visibility(
     selected_race: Res<SelectedRaceButton>,
     mut query_button: Query<
-        &mut Text,
+        (&mut Text, &mut Style),
         (
             With<RacialTraitButtonText>,
             Without<DefaultTraitDescriptionText>,
         ),
     >,
     mut query_text: Query<
-        &mut Text,
+        (&mut Text, &mut Style),
         (
             With<DefaultTraitDescriptionText>,
             Without<RacialTraitButtonText>,
@@ -565,30 +875,47 @@ pub fn selected_default_traits_visibility(
     // let mut text = query_text.get_single_mut().unwrap();
     for (_handle, trait_asset) in assets.iter() {
         if trait_asset.race == selected_race.0 {
-            for (race_trait, (mut button, mut text)) in trait_asset
-                .default_traits
-                .iter()
-                .zip(query_button.iter_mut().zip(query_text.iter_mut()))
+            let traits_len = trait_asset.default_traits.len();
+
+            for (i, ((mut button_text, mut button_style), (mut descr_text, mut descr_style))) in
+                query_button
+                    .iter_mut()
+                    .zip(query_text.iter_mut())
+                    .enumerate()
             {
-                *text = Text::from_section(
-                    race_trait.description.clone(),
-                    TextStyle {
-                        font: font.clone(),
-                        font_size: 30.,
-                        color: Color::WHITE,
-                    },
-                );
-                *button = Text::from_section(
-                    race_trait.title.clone(),
-                    TextStyle {
-                        font: font.clone(),
-                        font_size: 30.,
-                        color: Color::WHITE,
-                    },
-                );
+                if i < traits_len {
+                    let race_trait = &trait_asset.default_traits[i];
+                    *descr_text = Text::from_section(
+                        race_trait.description.clone(),
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 30.,
+                            color: Color::WHITE,
+                        },
+                    );
+                    *button_text = Text::from_section(
+                        race_trait.title.clone(),
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 30.,
+                            color: Color::WHITE,
+                        },
+                    );
+                } else {
+                    descr_style.display = Display::None;
+                    button_style.display = Display::None;
+                }
             }
         }
     }
+}
+
+pub fn cleanup_standard_trait_nodes(
+    selected_race: Res<SelectedRaceButton>,
+    asset_server: Res<AssetServer>,
+    assets: Res<Assets<DefaultTraitAsset>>,
+    node_style: Query<&mut Style, With<RaceDescriptionNode>>,
+) {
 }
 
 // Hides the default racial trait description text when the race is not selected
@@ -639,7 +966,7 @@ pub fn hide_racial_trait_button(
 use super::components::RaceDescriptionNode;
 pub fn display_racial_tab(
     mut query: Query<(&mut Style, &RaceDescriptionNode)>,
-    selected: Res<SelectedRacialDescriptionType>,
+    selected: Res<SelectedRaceTab>,
 ) {
     let active_button = selected.inner();
     for (mut style, description_node) in query.iter_mut() {
@@ -654,9 +981,9 @@ pub fn display_racial_tab(
 
 // Makes sure other race buttons are the default color.
 pub fn cleanup_selected_race_description_button(
-    query_change: Query<(&Interaction, &RacialChoicesButtonType)>,
-    mut query_others: Query<(&Interaction, &mut BackgroundColor, &RacialChoicesButtonType)>,
-    selected_race: Res<SelectedRacialDescriptionType>,
+    query_change: Query<(&Interaction, &RaceTab)>,
+    mut query_others: Query<(&Interaction, &mut BackgroundColor, &RaceTab)>,
+    selected_race: Res<SelectedRaceTab>,
 ) {
     if !query_change.is_empty() {
         for (interaction, mut color, button_type) in query_others.iter_mut() {
@@ -777,18 +1104,18 @@ pub fn update_race_builder(
 
 // Holds the currently selected race for reference by other functions.
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd)]
-pub struct SelectedRacialDescriptionType(pub RacialChoicesButtonType);
-impl SelectedRacialDescriptionType {
-    fn inner(&self) -> RacialChoicesButtonType {
+pub struct SelectedRaceTab(pub RaceTab);
+impl SelectedRaceTab {
+    fn inner(&self) -> RaceTab {
         self.0
     }
 }
 
 // Changes the color of the selected racial tab button
 pub fn selected_race_description_type(
-    mut selected: ResMut<SelectedRacialDescriptionType>,
+    mut selected: ResMut<SelectedRaceTab>,
     mut interaction_query: Query<
-        (&Interaction, &RacialChoicesButtonType, &mut BackgroundColor),
+        (&Interaction, &RaceTab, &mut BackgroundColor),
         Changed<Interaction>,
     >,
 ) {
@@ -798,7 +1125,7 @@ pub fn selected_race_description_type(
             Interaction::Clicked => {
                 if selection_copy != *interacted_button {
                     *color = RACE_BUTTON_COLOR_SELECTED.into();
-                    *selected = SelectedRacialDescriptionType(*interacted_button);
+                    *selected = SelectedRaceTab(*interacted_button);
                 }
             }
             Interaction::Hovered => {
@@ -868,9 +1195,9 @@ pub fn cleanup_race_select_button(
 }
 
 pub fn cleanup_race_description_type_button(
-    query_change: Query<&RacialChoicesButtonType, Changed<Interaction>>,
-    mut query_others: Query<(&RacialChoicesButtonType, &Interaction, &mut BackgroundColor)>,
-    selected_description_type: Res<SelectedRacialDescriptionType>,
+    query_change: Query<&RaceTab, Changed<Interaction>>,
+    mut query_others: Query<(&RaceTab, &Interaction, &mut BackgroundColor)>,
+    selected_description_type: Res<SelectedRaceTab>,
 ) {
     if !query_change.is_empty() {
         for (description_button, interaction, mut color) in query_others.iter_mut() {

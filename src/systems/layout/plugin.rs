@@ -11,7 +11,7 @@ use crate::{
         },
     },
     technical::{
-        alternate_traits::AltTraitAsset,
+        alternate_traits::{AltTraitAsset, AltTraitDisplay},
         default_race_traits::DefaultTraitAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
         race_load::RaceAsset,
@@ -31,6 +31,7 @@ enum ButtonSet {
 enum Changed {
     Race,
     RaceTab,
+    RaceAndTab,
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -53,7 +54,7 @@ impl Plugin for CharacterCreationPlugin {
         app
             //// init resources, load custom assets, & build layout
             .init_resource::<SelectedRaceButton>()
-            .init_resource::<SelectedRacialDescriptionType>()
+            .init_resource::<SelectedRaceTab>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
@@ -92,7 +93,11 @@ impl Plugin for CharacterCreationPlugin {
                         .before(Build::Build),
                     Build::Build.run_if(resource_changed::<RaceBuilder>()),
                     Changed::Race.run_if(resource_changed::<SelectedRaceButton>()),
-                    Changed::RaceTab.run_if(resource_changed::<SelectedRacialDescriptionType>()),
+                    Changed::RaceTab.run_if(resource_changed::<SelectedRaceTab>()),
+                    Changed::RaceAndTab.run_if(
+                        resource_changed::<SelectedRaceButton>()
+                            .or_else(resource_changed::<SelectedRaceTab>()),
+                    ),
                 )
                     .in_set(SuperSet::Super),
             )
@@ -102,7 +107,7 @@ impl Plugin for CharacterCreationPlugin {
                     .run_if(input_just_pressed(bevy::input::mouse::MouseButton::Left)),
             )
             // Add default flavor text
-            .add_system(setup_flavor_text.in_set(SuperSet::Super))
+            // .add_system(setup_flavor_text.in_set(SuperSet::Super))
             // Mouse Scroll systems
             .add_system(mouse_scroll.in_set(SuperSet::Super))
             // Race select button management
@@ -118,14 +123,14 @@ impl Plugin for CharacterCreationPlugin {
             // Manages displayed racial descriptions in the central area
             .add_systems(
                 (
-                    selected_race_visibility,
+                    // selected_race_visibility,
                     scroll_snap_top,
-                    selected_default_traits_visibility,
+                    // selected_default_traits_visibility,
                 )
                     .in_set(Changed::Race),
             )
             // Changes central area based on which tab is selected
-            .add_system(display_racial_tab.in_set(Changed::RaceTab))
+            // .add_systems((display_racial_tab, display_alt_traits).in_set(Changed::RaceTab))
             .add_system(update_race_builder.in_set(Build::PreBuild))
             .add_systems(
                 (
@@ -135,25 +140,47 @@ impl Plugin for CharacterCreationPlugin {
                     apply_system_buffers,
                     // only for testing, remove later
                     // --------------------------
-                    print_builder,
-                    print_floating_ability_bonuses,
-                    print_floating_bonus_feats,
-                    print_floating_skill_bonuses,
-                    print_saving_throw_bonuses,
-                    print_caster_level_bonuses,
-                    print_armor_class_bonuses,
-                    print_spell_like_abilities,
-                    print_spell_dc_bonuses,
-                    print_attack_roll_bonuses,
+                    // print_builder,
+                    // print_floating_ability_bonuses,
+                    // print_floating_bonus_feats,
+                    // print_floating_skill_bonuses,
+                    // print_saving_throw_bonuses,
+                    // print_caster_level_bonuses,
+                    // print_armor_class_bonuses,
+                    // print_spell_like_abilities,
+                    // print_spell_dc_bonuses,
+                    // print_attack_roll_bonuses,
                     // --------------------------
                     update_common_traits_display,
                 )
                     .chain()
                     .in_set(Build::Build),
             )
-            .add_system(standard_traits_visibility.in_set(Changed::Race))
+            // .add_system(standard_traits_visibility.in_set(Changed::Race))
             .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
-            .add_system(alt_traits_visibility.in_set(Changed::Race));
+            // .add_system(fill_alt_traits.in_set(Changed::Race));
+            .add_systems(
+                (
+                    set_list_node_display,
+                    set_list_title,
+                    set_replace_display,
+                    set_replaced_content_display,
+                    // .run_if(
+                    //     resource_changed::<SelectedRaceButton>()
+                    //         .or_else(resource_changed::<SelectedRaceTab>()),
+                    // ),
+                )
+                    .chain()
+                    .in_set(Changed::RaceAndTab),
+            );
+
+        // .add_systems(
+        //     (
+        //         alt_traits_visibility,
+        //         hide_racial_trait_button,
+        //     )
+        //         .in_set(Changed::Race),
+        // );
         // .add_systems(
         //     (
         //     )

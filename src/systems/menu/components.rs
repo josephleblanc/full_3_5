@@ -34,9 +34,9 @@ pub enum StagesOfCreationButton {
 pub struct RaceSelectButton;
 
 #[derive(Component, Debug, Copy, Clone, PartialEq, Eq)]
-pub struct RaceDescriptionNode(pub RacialChoicesButtonType);
+pub struct RaceDescriptionNode(pub RaceTab);
 impl RaceDescriptionNode {
-    pub fn inner(&self) -> RacialChoicesButtonType {
+    pub fn inner(&self) -> RaceTab {
         self.0
     }
 }

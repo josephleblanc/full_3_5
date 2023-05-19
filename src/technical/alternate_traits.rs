@@ -17,7 +17,8 @@ pub struct AltTraitDisplay {
     pub my_trait_name: RacialTraitName,
     pub title: String,
     pub description: String,
-    pub replaces: Vec<RacialTraitName>,
+    pub replaces_names: Vec<RacialTraitName>,
+    pub replaces_strings: Vec<String>,
     pub source: String,
 }
 

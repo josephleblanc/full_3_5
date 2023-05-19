@@ -97,6 +97,10 @@ pub const RACE_BUTTON_COLOR_HOVERED: Color = Color::GRAY;
 pub const RACE_BUTTON_COLOR_SELECTED: Color = Color::SEA_GREEN;
 pub const RACE_BUTTON_COLOR: Color = Color::DARK_GRAY;
 
+// List button for central area, used for things like Alt traits select
+pub const LIST_BUTTON_COLOR: Color = Color::DARK_GREEN;
+pub const LIST_BUTTON_TEXT_SIZE: f32 = 30.;
+
 pub const STAGES_OF_CREATION_FONT_SIZE: f32 = 30.;
 pub const STAGES_OF_CREATION_TEXT_COLOR: Color = Color::WHITE;
 pub const STAGES_OF_CREATION_TEXT_STYLE: Style = Style { ..Style::DEFAULT };
