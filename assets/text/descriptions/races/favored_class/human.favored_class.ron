@@ -1,0 +1,25 @@
+FavoredClassAsset(
+	race: Human,
+	favored_classes: [
+		(
+			class: Fighter,
+			race: Human,
+			description: "Add +1 to the Fighter’s CMD when resisting two combat maneuvers of the character’s choice.",
+			source: "",
+		),
+		(
+			class: Occultist,
+			race: Human,
+			description: "Gain 1/6 of a new focus power.",
+			source: "PZO1132",
+		),
+		(
+			class: Occultist,
+			race: Human,
+			description: "Add a +1/3 bonus on any skill check attempted as a part of an occult ritual.",
+			source: "PZO1135",
+		),
+
+	],
+
+)

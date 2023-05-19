@@ -15,6 +15,7 @@ use crate::{
         default_race_traits::DefaultTraitAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
         race_load::RaceAsset,
+        favored_class::FavoredClassAsset,
     },
 };
 use bevy::input::mouse::MouseButtonInput;
@@ -59,6 +60,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .init_resource::<CustomAssetLoadState<AltTraitAsset>>()
+            .init_resource::<CustomAssetLoadState<FavoredClassAsset>>()
             .init_resource::<RaceBuilder>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,

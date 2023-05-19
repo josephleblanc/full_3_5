@@ -10,9 +10,10 @@ use crate::{
             },
         },
     },
-    technical::default_race_traits::DefaultTraitAsset,
-    technical::is_custom_asset_loaded::CustomAssetLoadState,
-    technical::race_load::RaceAsset,
+    technical::{
+        default_race_traits::DefaultTraitAsset, favored_class::FavoredClassAsset,
+        is_custom_asset_loaded::CustomAssetLoadState, race_load::RaceAsset,
+    },
 };
 use bevy::prelude::*;
 const RACE_DESCRIPTION_FOLDER: &str = "text/descriptions/races";
@@ -96,6 +97,7 @@ pub fn set_list_node_display(
     mut query_node: Query<&mut Style, With<ListNode>>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
+    favored_class_asset: Res<Assets<FavoredClassAsset>>,
 ) {
     println!("--> running set_list_node_display");
     let len = match selected_race_tab.0 {
@@ -124,7 +126,17 @@ pub fn set_list_node_display(
                 None
             }
         }
-        RaceTab::FavoredClassTab => None,
+        RaceTab::FavoredClassTab => {
+            if let Some((_handle, asset)) = favored_class_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.favored_classes.len())
+            } else {
+                None
+            }
+        }
     };
     if let Some(len) = len {
         println!("------> len = {}", len);
@@ -136,6 +148,10 @@ pub fn set_list_node_display(
                 style.display = Display::None;
             }
         }
+    } else {
+        for mut style in &mut query_node {
+            style.display = Display::None;
+        }
     }
 }
 
@@ -146,6 +162,7 @@ pub fn set_list_title(
     asset_server: Res<AssetServer>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
+    favored_class_asset: Res<Assets<FavoredClassAsset>>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let titles = match selected_race_tab.0 {
@@ -184,7 +201,23 @@ pub fn set_list_title(
                 None
             }
         }
-        RaceTab::FavoredClassTab => None,
+        RaceTab::FavoredClassTab => {
+            if let Some((_handle, asset)) = favored_class_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(
+                    asset
+                        .favored_classes
+                        .iter()
+                        .map(|favored_class| favored_class.class.to_string())
+                        .collect(),
+                )
+            } else {
+                None
+            }
+        }
     };
     if let Some(titles) = titles {
         let mut titles_iter = titles.iter();
@@ -220,6 +253,7 @@ pub fn set_button_col_display(
     >,
     asset_server: Res<AssetServer>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
+    favored_class_asset: Res<Assets<FavoredClassAsset>>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let len = match selected_race_tab.0 {
@@ -236,7 +270,17 @@ pub fn set_button_col_display(
                 None
             }
         }
-        RaceTab::FavoredClassTab => None,
+        RaceTab::FavoredClassTab => {
+            if let Some((_handle, asset)) = favored_class_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(asset.favored_classes.len())
+            } else {
+                None
+            }
+        }
     };
     if let Some(len) = len {
         for (i, ((mut text_style, mut button_text), mut button_style)) in query_button_text
@@ -276,7 +320,7 @@ pub fn set_skill_replacement_text(
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let len = match selected_race_tab.0 {
-        RaceTab::RaceDescription => Some(1_usize),
+        RaceTab::RaceDescription => None,
         RaceTab::StandardTraitTab => None,
         RaceTab::AltTraitTab => {
             if let Some((_handle, asset)) = alt_trait_asset
@@ -424,6 +468,7 @@ pub fn set_list_descr(
     descr_asset: Res<Assets<RaceAsset>>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
+    favored_class_asset: Res<Assets<FavoredClassAsset>>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let descr: Option<Vec<&String>> = match selected_race_tab.0 {
@@ -468,7 +513,23 @@ pub fn set_list_descr(
                 None
             }
         }
-        RaceTab::FavoredClassTab => None,
+        RaceTab::FavoredClassTab => {
+            if let Some((_handle, asset)) = favored_class_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(
+                    asset
+                        .favored_classes
+                        .iter()
+                        .map(|traits| &traits.description)
+                        .collect(),
+                )
+            } else {
+                None
+            }
+        }
     };
     if let Some(descriptions) = descr {
         let mut descriptions_iter = descriptions.iter();

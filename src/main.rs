@@ -11,6 +11,7 @@ use bevy::winit::WinitSettings;
 use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu};
 use technical::alternate_traits::MyAltTraitAssetPlugin;
 use technical::default_race_traits::MyDefaultTraitAssetPlugin;
+use technical::favored_class::MyFavoredClassAssetPlugin;
 use technical::race_load::MyRaceAssetPlugin;
 // #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -43,6 +44,7 @@ fn main() {
         .add_plugin(MyRaceAssetPlugin)
         .add_plugin(MyDefaultTraitAssetPlugin)
         .add_plugin(MyAltTraitAssetPlugin)
+        .add_plugin(MyFavoredClassAssetPlugin)
         .add_system(load_ascii.in_base_set(StartupSet::PreStartup))
         .add_state::<AppState>()
         .add_plugin(CharacterCreationPlugin)
