@@ -31,7 +31,7 @@ enum ButtonSet {
 enum Changed {
     Race,
     RaceTab,
-    RaceAndTab,
+    RaceOrTab,
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -94,7 +94,7 @@ impl Plugin for CharacterCreationPlugin {
                     Build::Build.run_if(resource_changed::<RaceBuilder>()),
                     Changed::Race.run_if(resource_changed::<SelectedRaceButton>()),
                     Changed::RaceTab.run_if(resource_changed::<SelectedRaceTab>()),
-                    Changed::RaceAndTab.run_if(
+                    Changed::RaceOrTab.run_if(
                         resource_changed::<SelectedRaceButton>()
                             .or_else(resource_changed::<SelectedRaceTab>()),
                     ),
@@ -163,15 +163,14 @@ impl Plugin for CharacterCreationPlugin {
                 (
                     set_list_node_display,
                     set_list_title,
+                    set_button_col_display,
+                    set_skill_replacement_text,
                     set_replace_display,
                     set_replaced_content_display,
-                    // .run_if(
-                    //     resource_changed::<SelectedRaceButton>()
-                    //         .or_else(resource_changed::<SelectedRaceTab>()),
-                    // ),
+                    set_list_descr,
                 )
                     .chain()
-                    .in_set(Changed::RaceAndTab),
+                    .in_set(Changed::RaceOrTab),
             );
 
         // .add_systems(

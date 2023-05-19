@@ -63,9 +63,17 @@ pub struct ListNode;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ListTitle;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ListButton;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ButtonText;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct Description;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ListButtonColumn;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ReplacesText;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ReplacesContent;
 
 // #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 // pub struct AlternateTrait;
@@ -86,23 +94,22 @@ pub fn set_list_node_display(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_node: Query<&mut Style, With<ListNode>>,
-    asset_server: Res<AssetServer>,
-    descr_asset: Res<Assets<RaceAsset>>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
-    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    println!("--> running set_list_node_display");
     let len = match selected_race_tab.0 {
         RaceTab::RaceDescription => Some(1_usize),
         RaceTab::StandardTraitTab => {
-            let mut len = 0_usize;
             if let Some((_handle, asset)) = std_trait_asset
                 .iter()
                 .filter(|(_handle, asset)| asset.race == selected_race.inner())
                 .next()
             {
+                println!("----> race match found for standard trait");
                 Some(asset.default_traits.len())
             } else {
+                println!("----> race match not found");
                 None
             }
         }
@@ -120,9 +127,10 @@ pub fn set_list_node_display(
         RaceTab::FavoredClassTab => None,
     };
     if let Some(len) = len {
+        println!("------> len = {}", len);
         for (i, mut style) in query_node.iter_mut().enumerate() {
-            println!("i: {}", i);
             if i < len {
+                println!("      > set display to Flex");
                 style.display = Display::Flex;
             } else {
                 style.display = Display::None;
@@ -136,7 +144,6 @@ pub fn set_list_title(
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_title: Query<(&mut Style, &mut Text), With<ListTitle>>,
     asset_server: Res<AssetServer>,
-    descr_asset: Res<Assets<RaceAsset>>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
@@ -161,18 +168,18 @@ pub fn set_list_title(
             }
         }
         RaceTab::AltTraitTab => {
-            let mut titles = Vec::new();
             if let Some((_handle, asset)) = alt_trait_asset
                 .iter()
                 .filter(|(_handle, asset)| asset.race == selected_race.inner())
                 .next()
             {
-                titles = asset
-                    .alternate_traits
-                    .iter()
-                    .map(|traits| traits.title.clone())
-                    .collect();
-                Some(titles)
+                Some(
+                    asset
+                        .alternate_traits
+                        .iter()
+                        .map(|traits| traits.title.clone())
+                        .collect(),
+                )
             } else {
                 None
             }
@@ -181,29 +188,42 @@ pub fn set_list_title(
     };
     if let Some(titles) = titles {
         let mut titles_iter = titles.iter();
-        for ((mut style, mut text), title) in query_title.iter_mut().zip(titles_iter) {
-            *text = Text::from_section(
-                title,
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 25.,
-                    color: Color::WHITE,
-                },
-            );
+        for (mut style, mut text) in query_title.iter_mut() {
+            if let Some(title) = titles_iter.next() {
+                *text = Text::from_section(
+                    title,
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 25.,
+                        color: Color::WHITE,
+                    },
+                );
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    } else {
+        for (mut style, _) in &mut query_title {
+            style.display = Display::None;
         }
     }
 }
 
-pub fn set_button_display(
+pub fn set_button_col_display(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_node: Query<(&mut Style, &mut Text), With<ListNode>>,
+    mut query_button: Query<&mut Style, (With<ListButtonColumn>, Without<ButtonText>)>,
+    mut query_button_text: Query<
+        (&mut Style, &mut Text),
+        (With<ButtonText>, Without<ListButtonColumn>),
+    >,
     asset_server: Res<AssetServer>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let len = match selected_race_tab.0 {
-        RaceTab::RaceDescription => Some(1_usize),
+        RaceTab::RaceDescription => None,
         RaceTab::StandardTraitTab => None,
         RaceTab::AltTraitTab => {
             if let Some((_handle, asset)) = alt_trait_asset
@@ -219,9 +239,13 @@ pub fn set_button_display(
         RaceTab::FavoredClassTab => None,
     };
     if let Some(len) = len {
-        for (i, (mut style, mut text)) in query_node.iter_mut().enumerate() {
+        for (i, ((mut text_style, mut button_text), mut button_style)) in query_button_text
+            .iter_mut()
+            .zip(query_button.iter_mut())
+            .enumerate()
+        {
             if i < len {
-                *text = Text::from_section(
+                *button_text = Text::from_section(
                     "Select",
                     TextStyle {
                         font: font.clone(),
@@ -229,14 +253,16 @@ pub fn set_button_display(
                         color: TEXT_COLOR,
                     },
                 );
-                style.display = Display::Flex;
+                button_style.display = Display::Flex;
+                text_style.display = Display::Flex;
             } else {
-                style.display = Display::None;
+                button_style.display = Display::None;
+                text_style.display = Display::None;
             }
         }
     } else {
-        for (mut style, _) in &mut query_node {
-            style.display = Display::None;
+        for mut button_style in &mut query_button {
+            button_style.display = Display::None;
         }
     }
 }
@@ -244,7 +270,7 @@ pub fn set_button_display(
 pub fn set_skill_replacement_text(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_node: Query<(&mut Style, &mut Text), With<ListNode>>,
+    mut query_node: Query<(&mut Style, &mut Text), With<ReplacesText>>,
     asset_server: Res<AssetServer>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
@@ -291,7 +317,7 @@ pub fn set_skill_replacement_text(
 pub fn set_replace_display(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_node: Query<(&mut Style), With<ListNode>>,
+    mut query_node: Query<&mut Style, With<ReplacesContent>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
     let len = match selected_race_tab.0 {
@@ -385,6 +411,84 @@ pub fn set_replaced_content_display(
         }
     } else {
         for (mut style, _, _) in &mut query_node {
+            style.display = Display::None;
+        }
+    }
+}
+
+pub fn set_list_descr(
+    selected_race: Res<SelectedRaceButton>,
+    selected_race_tab: Res<SelectedRaceTab>,
+    mut query_descr: Query<(&mut Style, &mut Text), With<Description>>,
+    asset_server: Res<AssetServer>,
+    descr_asset: Res<Assets<RaceAsset>>,
+    std_trait_asset: Res<Assets<DefaultTraitAsset>>,
+    alt_trait_asset: Res<Assets<AltTraitAsset>>,
+) {
+    let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
+    let descr: Option<Vec<&String>> = match selected_race_tab.0 {
+        RaceTab::RaceDescription => Some(
+            descr_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .map(|(_handle, descr_asset)| &descr_asset.text)
+                .collect(),
+        ),
+        RaceTab::StandardTraitTab => {
+            if let Some((_handle, asset)) = std_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(
+                    asset
+                        .default_traits
+                        .iter()
+                        .map(|traits| &traits.description)
+                        .collect(),
+                )
+            } else {
+                None
+            }
+        }
+        RaceTab::AltTraitTab => {
+            if let Some((_handle, asset)) = alt_trait_asset
+                .iter()
+                .filter(|(_handle, asset)| asset.race == selected_race.inner())
+                .next()
+            {
+                Some(
+                    asset
+                        .alternate_traits
+                        .iter()
+                        .map(|traits| &traits.description)
+                        .collect(),
+                )
+            } else {
+                None
+            }
+        }
+        RaceTab::FavoredClassTab => None,
+    };
+    if let Some(descriptions) = descr {
+        let mut descriptions_iter = descriptions.iter();
+        for (mut style, mut text) in query_descr.iter_mut() {
+            if let Some(text_descr) = descriptions_iter.next() {
+                *text = Text::from_section(
+                    *text_descr,
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 25.,
+                        color: Color::WHITE,
+                    },
+                );
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    } else {
+        for (mut style, _) in &mut query_descr {
             style.display = Display::None;
         }
     }

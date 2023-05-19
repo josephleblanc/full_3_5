@@ -520,6 +520,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                             .spawn((
                                 list_col_node.clone(),
                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                ListButtonColumn,
                             ))
                             // Selection button
                             // Show during:
@@ -529,6 +530,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 button_and_replace_node
                                     .spawn((
                                         list_button.clone(),
+                                        ListButton,
                                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                         AltTraitSelectButton,
                                     ))
@@ -546,11 +548,13 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 // select them below the racial trait button.
                                 button_and_replace_node.spawn((
                                     skill_replaces_text.clone(),
-                                    Name::new("Text names of replaced traits"),
+                                    ReplacesText,
+                                    Name::new("'replaces' text"),
                                     AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                 ));
                                 button_and_replace_node.spawn((
                                     skill_replacement_item_text.clone(),
+                                    ReplacesContent,
                                     Name::new("Text names of replaced traits"),
                                     AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                     AltTraitReplaces(Vec::new()),
