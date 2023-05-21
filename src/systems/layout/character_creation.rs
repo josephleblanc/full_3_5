@@ -196,13 +196,13 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         "optional button text",
     ];
     let button_type = [
-        StagesOfCreationButton::Race,
-        StagesOfCreationButton::AbilityScores,
-        StagesOfCreationButton::Class,
-        StagesOfCreationButton::Skills,
-        StagesOfCreationButton::Feats,
-        StagesOfCreationButton::BonusFeats,
-        StagesOfCreationButton::Optional,
+        CreationTab::Race,
+        CreationTab::AbilityScores,
+        CreationTab::Class,
+        CreationTab::Skills,
+        CreationTab::Feats,
+        CreationTab::BonusFeats,
+        CreationTab::Optional,
     ];
     for ((&button_text, &text_bundle_name), &button_type) in button_text
         .iter()

@@ -124,6 +124,8 @@ impl Plugin for CharacterCreationPlugin {
             // .add_system(setup_flavor_text.in_set(SuperSet::Super))
             // Mouse Scroll systems
             .add_system(mouse_scroll.in_set(SuperSet::Super))
+            // Tab select button management (Race, Class, etc.)
+            .add_systems((creation_tab, cleanup_creation_tab).in_set(SuperSet::Super))
             // Race select button management
             .add_systems(
                 (
