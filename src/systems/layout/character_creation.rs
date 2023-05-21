@@ -294,8 +294,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 background_color: color.into(),
                                 ..default()
                             },
-                            race_enum,
-                            RaceSelectButton,
+                            LeftPanelEnum::Race(race_enum),
+                            LeftPanelButton,
                         ))
                         .with_children(|list_button| {
                             list_button.spawn((
@@ -489,7 +489,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 Name::from("Race Trait description"),
                 list_node.clone(),
                 // Label
-                AltTraitNode,
                 ListNode,
                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
             ))
@@ -497,7 +496,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 alt_racial_trait_container.spawn((
                     // Alternate Racial Trait Title
                     list_item_title.clone(),
-                    AltRacialTraitTitle,
                     ListTitle,
                     AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                 ));
@@ -532,14 +530,12 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                         list_button.clone(),
                                         ListButton,
                                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                        AltTraitSelectButton,
                                     ))
                                     .with_children(|alt_race_select_button| {
                                         alt_race_select_button.spawn((
                                             list_button_text.clone(),
                                             ButtonText,
                                             Name::new("race: moving list item"),
-                                            AltTraitSelectButtonText,
                                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                         ));
                                     });
@@ -568,7 +564,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         button_and_descr_node.spawn((
                             // Trait description
                             list_description_text.clone(),
-                            AltTraitDescription,
                             Description,
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                         ));

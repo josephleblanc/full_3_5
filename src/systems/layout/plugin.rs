@@ -1,6 +1,4 @@
-use crate::systems::interface::mouse::mouse_left_clicked;
 use crate::{
-    my_debug::print::*,
     system_scheduling::states::AppState,
     systems::{
         game::race::{build_race, RaceBuilder},
@@ -11,14 +9,13 @@ use crate::{
         },
     },
     technical::{
-        alternate_traits::{AltTraitAsset, AltTraitDisplay},
+        alternate_traits::AltTraitAsset,
         default_race_traits::DefaultTraitAsset,
         favored_class::FavoredClassAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
         race_load::RaceAsset,
     },
 };
-use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
 
 pub struct CharacterCreationPlugin;
@@ -137,16 +134,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(SuperSet::Super),
             )
             // Manages displayed racial descriptions in the central area
-            .add_systems(
-                (
-                    // selected_race_visibility,
-                    scroll_snap_top,
-                    // selected_default_traits_visibility,
-                )
-                    .in_set(Changed::Race),
-            )
-            // Changes central area based on which tab is selected
-            // .add_systems((display_racial_tab, display_alt_traits).in_set(Changed::RaceTab))
+            .add_systems((scroll_snap_top,).in_set(Changed::Race))
             .add_system(update_race_builder.in_set(Build::PreBuild))
             .add_systems(
                 (
@@ -172,7 +160,6 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_set(Build::Build),
             )
-            // .add_system(standard_traits_visibility.in_set(Changed::Race))
             .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
             // .add_system(fill_alt_traits.in_set(Changed::Race));
             .add_systems(
@@ -188,19 +175,5 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_set(Changed::RaceOrTab),
             );
-
-        // .add_systems(
-        //     (
-        //         alt_traits_visibility,
-        //         hide_racial_trait_button,
-        //     )
-        //         .in_set(Changed::Race),
-        // );
-        // .add_systems(
-        //     (
-        //     )
-        //         .chain()
-        //         .in_set(ButtonSet::LeftClicked),
-        // );
     }
 }

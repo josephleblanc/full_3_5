@@ -13,7 +13,7 @@ pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>
     let mut fighter = ClassInfo {
         name_str: String::new(),
         description: String::new(),
-        class_name: PlayableClassName::Fighter,
+        class_name: PlayableClass::Fighter,
         class_skills: vec![
             Climb,
             Craft,

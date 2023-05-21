@@ -6,14 +6,14 @@ use std::fmt;
 
 #[derive(Default, Deserialize, Clone, Component, Debug)]
 pub struct FavoredClass {
-    pub class: PlayableClassName,
+    pub class: PlayableClass,
     pub race: PlayableRace,
     pub description: String,
     pub source: String,
 }
 
-#[derive(Default, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq)]
-pub enum PlayableClassName {
+#[derive(Default, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
+pub enum PlayableClass {
     Alchemist,
     Arcanist,
     Barbarian,
@@ -54,7 +54,7 @@ pub enum PlayableClassName {
     None,
 }
 
-impl fmt::Display for PlayableClassName {
+impl fmt::Display for PlayableClass {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::Alchemist => write!(f, "Alchemist"),
@@ -99,7 +99,7 @@ impl fmt::Display for PlayableClassName {
 }
 
 #[derive(Default, Deserialize, Clone, Debug)]
-pub enum PlayableClass {
+pub enum PlayableClassDetails {
     // Alchemist(AlchemistClass),
     // Arcanist(ArcanistClass),
     // Barbarian(BarbarianClass),
@@ -142,9 +142,9 @@ pub enum PlayableClass {
 
 use std::collections::HashMap;
 #[derive(Resource, Default, Deserialize, Clone, Debug)]
-pub struct ClassMap(pub HashMap<PlayableClassName, ClassInfo>);
+pub struct ClassMap(pub HashMap<PlayableClass, ClassInfo>);
 impl ClassMap {
-    pub fn inner(&self) -> &HashMap<PlayableClassName, ClassInfo> {
+    pub fn inner(&self) -> &HashMap<PlayableClass, ClassInfo> {
         &self.0
     }
 
@@ -157,7 +157,7 @@ impl ClassMap {
 pub struct ClassInfo {
     pub name_str: String,
     pub description: String,
-    pub class_name: PlayableClassName,
+    pub class_name: PlayableClass,
     pub class_skills: Vec<SkillName>,
     pub skill_ranks_per_level: usize,
     pub hit_die: Dice,
