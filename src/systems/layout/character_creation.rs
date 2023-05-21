@@ -572,6 +572,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             .set_parent(central_scroll_list);
     }
 
+    for i in 0..20 {}
+
     // Panel with chosen racial traits and favored class.
     // Should be located on the right of the screen
     // This panel should:
@@ -1084,10 +1086,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     margin: UiRect::all(Val::Px(5.)),
                                     ..default()
                                 },
-                                background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+                                background_color: Color::PURPLE.into(),
                                 ..default()
                             },
                             description_button,
+                            SubTabButton,
                             Name::from("Button: Choose Description Content"),
                         ))
                         .with_children(|list_button| {
@@ -1104,7 +1107,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
                                     ..default()
                                 },
-                                // Name::new("Racial Choices Made Display Text"),
+                                SubTabButtonText,
                             ));
                         });
                     }
@@ -1168,4 +1171,30 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             ));
         })
         .set_parent(bottom_container);
+}
+
+pub fn setup_class_table(commands: Commands) {
+    // Table with class level progression details.
+    // The table will be made of rows which contain columns of uniform width.
+    // Titles in the first row are kept separate from the table.
+    // This should:
+    //  - Only be visible in the Class CreationTab
+    //  - Be invisible by default
+    //  - Include:
+    //      + level
+    //      + BAB
+    //      + Fort Save
+    //      + Ref Save
+    //      + Will SAve
+    //      + Special (class features)
+    //      + Spells per day
+    //  - Excludes:
+    //      + Spells Known
+    //
+    //  Spells Known will be displayed in the class feature description node
+    //  with on Spells.
+    let row_style = Style { ..default() };
+    let col_style = Style { ..default() };
+    use crate::systems::menu::components::MyTable;
+    MyTable::spawn_empty_from_styles::<15, 20>(commands, row_style, col_style);
 }

@@ -920,7 +920,7 @@ impl SelectedClass {
         self.0
     }
 }
-// Changes the color of the selected race button
+// Changes the color of the selected left panel button
 pub fn race_select_button_system(
     mut interaction_query: Query<
         (&Interaction, &LeftPanelEnum, &mut BackgroundColor),
@@ -1088,6 +1088,40 @@ pub fn cleanup_creation_tab(
         for (tab, interaction, mut color) in query_others.iter_mut() {
             if *interaction == Interaction::None && *tab != selected_tab.inner() {
                 *color = RACE_BUTTON_COLOR.into();
+            }
+        }
+    }
+}
+
+// #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+// pub struct SubTabParent;
+// #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+// pub struct SubTabNode;
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct SubTabButton;
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
+pub struct SubTabButtonText;
+
+impl SubTabButton {
+    pub fn display(
+        mut query_button: Query<(&mut Style, &RaceTab), With<SubTabButton>>,
+        selected_tab: Res<CreationTabSelected>,
+    ) {
+        match selected_tab.into_inner().inner() {
+            CreationTab::Race => {
+                let race_subtabs = RaceTab::array();
+                for (i, (mut button_style, race_tab)) in query_button.iter_mut().enumerate() {
+                    if i < race_subtabs.len() {
+                        button_style.display = Display::Flex;
+                    } else {
+                        button_style.display = Display::None;
+                    }
+                }
+            }
+            _ => {
+                for (i, (mut button_style, race_tab)) in query_button.iter_mut().enumerate() {
+                    button_style.display = Display::None;
+            }
             }
         }
     }

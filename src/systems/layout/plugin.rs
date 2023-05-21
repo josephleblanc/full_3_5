@@ -61,6 +61,7 @@ impl Plugin for CharacterCreationPlugin {
             //// init resources, load custom assets, & build layout
             .init_resource::<SelectedRaceButton>()
             .init_resource::<SelectedRaceTab>()
+            .init_resource::<SelectedClass>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CreationTabSelected>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
@@ -174,6 +175,11 @@ impl Plugin for CharacterCreationPlugin {
                 )
                     .chain()
                     .in_set(Changed::RaceOrTab),
+            )
+            .add_system(
+                SubTabButton::display
+                    .run_if(resource_changed::<CreationTabSelected>())
+                    .in_set(SuperSet::Super),
             );
     }
 }
