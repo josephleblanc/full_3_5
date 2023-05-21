@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use serde::Deserialize;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
@@ -13,8 +14,9 @@ pub enum SpellcraftUses {
 }
 
 // SkillName
-#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq)]
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq, Deserialize, Default)]
 pub enum SkillName {
+    #[default]
     Acrobatics,
     Appraise,
     Bluff,

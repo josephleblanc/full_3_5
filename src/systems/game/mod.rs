@@ -4,3 +4,4 @@ pub mod race;
 pub mod skills;
 pub mod magic;
 pub mod class;
+pub mod resources;

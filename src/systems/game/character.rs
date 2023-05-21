@@ -6,7 +6,7 @@ use std::fmt;
 
 use crate::systems::game::magic;
 use crate::systems::game::race::IntoHashMapVecBuilder;
-use crate::systems::game::{magic::*, skills::*};
+use crate::systems::game::{class::*, magic::*, skills::*};
 
 ////////////////////////////////////////////////////////
 //// Things that should probably go somewhere else
@@ -38,7 +38,27 @@ pub enum ItemContains {
     /* more here */
 }
 
+#[derive(Resource, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+pub struct SelectedCharacter(Entity);
+impl SelectedCharacter {
+    pub fn inner(&self) -> Entity {
+        self.0
+    }
+}
+
 ////////////////////////////////////////////////////////
+#[derive(Bundle, Clone, Debug)]
+pub struct Character {
+    class_levels: ClassLevels,
+    saving_throw_bonuses: SavingThrowBonuses,
+    ability_score_bonuses: AbilityScoreBonuses,
+    ability_scores: AbilityScores,
+    floating_bonus_feats: FloatingBonusFeats,
+}
+
+#[derive(Component, Clone, Debug)]
+pub struct ClassLevels(HashMap<PlayableClass, usize>);
+
 #[derive(Component, Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct PlayerName(String);
 
@@ -459,6 +479,38 @@ pub struct BonusSkillPerLevel {
 // bonus type.
 #[derive(Component, Clone, Debug)]
 pub struct SavingThrowBonuses(pub HashMap<SavingThrowName, Vec<SavingThrowBonus>>);
+// impl Iterator for SavingThrow
+// //// iterator impls
+// impl PlayableRace {
+//     pub fn iterator() -> impl Iterator<Item = PlayableRace> {
+//         [
+//             Self::Human,
+//             Self::Elf,
+//             Self::Gnome,
+//             Self::HalfElf,
+//             Self::HalfOrc,
+//             Self::Halfling,
+//             Self::Aasimar,
+//             Self::Catfolk,
+//             Self::Dhampir,
+//             Self::Drow,
+//             Self::Fetchling,
+//             Self::Goblin,
+//             Self::Hobgoblin,
+//             Self::Ifrit,
+//             Self::Kobold,
+//             Self::Orc,
+//             Self::Oread,
+//             Self::Ratfolk,
+//             Self::Sylph,
+//             Self::Tengu,
+//             Self::Tiefling,
+//             Self::Undine,
+//         ]
+//         .iter()
+//         .copied()
+//     }
+// }
 
 impl From<Vec<SavingThrowBonus>> for SavingThrowBonuses {
     fn from(other: Vec<SavingThrowBonus>) -> Self {
@@ -490,6 +542,31 @@ pub struct SavingThrowBonus {
     pub bonus_type: BonusType,
     pub saving_throw: SavingThrowName,
     pub limitation: LimitationEnum,
+}
+
+impl SavingThrowBonus {
+    fn to_all(&self) -> [SavingThrowBonus; 3] {
+        [
+            SavingThrowBonus {
+                bonus: self.bonus,
+                bonus_type: self.bonus_type,
+                saving_throw: SavingThrowName::Fort,
+                limitation: self.limitation,
+            },
+            SavingThrowBonus {
+                bonus: self.bonus,
+                bonus_type: self.bonus_type,
+                saving_throw: SavingThrowName::Reflex,
+                limitation: self.limitation,
+            },
+            SavingThrowBonus {
+                bonus: self.bonus,
+                bonus_type: self.bonus_type,
+                saving_throw: SavingThrowName::Will,
+                limitation: self.limitation,
+            },
+        ]
+    }
 }
 
 // Wraps the SkillBonus values, which are not Components, so they can
@@ -692,14 +769,26 @@ pub struct FloatingBonusFeat {
 pub struct FloatingBonusFeats(pub Vec<FloatingBonusFeat>);
 
 impl FloatingBonusFeats {
+    pub fn inner(&self) -> &Vec<FloatingBonusFeat> {
+        &self.0
+    }
+    pub fn ref_mut_inner(&mut self) -> &mut Vec<FloatingBonusFeat> {
+        &mut self.0
+    }
+}
+impl FloatingBonusFeats {
     pub fn push(&mut self, other: FloatingBonusFeat) {
         self.0.push(other);
     }
 }
-
 impl From<FloatingBonusFeat> for FloatingBonusFeats {
     fn from(other: FloatingBonusFeat) -> Self {
         FloatingBonusFeats(vec![other])
+    }
+}
+impl From<Vec<FloatingBonusFeat>> for FloatingBonusFeats {
+    fn from(other: Vec<FloatingBonusFeat>) -> Self {
+        FloatingBonusFeats(other)
     }
 }
 
@@ -873,6 +962,67 @@ impl AbilityScore {
             AbilityScore::Wisdom,
             AbilityScore::Charisma,
         ]
+    }
+}
+#[derive(
+    Component, Clone, Copy, Debug, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Default,
+)]
+pub struct Alignment {
+    order: AlignmentOrder,
+    moral: AlignmentMoral,
+}
+impl Display for Alignment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {}", self.order, self.moral)
+    }
+}
+
+#[derive(
+    Component, Clone, Copy, Debug, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Default,
+)]
+pub enum AlignmentOrder {
+    #[default]
+    Lawful,
+    Neutral,
+    Chaotic,
+}
+impl AlignmentOrder {
+    pub fn as_array() -> [AlignmentOrder; 3] {
+        [Self::Lawful, Self::Neutral, Self::Chaotic]
+    }
+}
+impl Display for AlignmentOrder {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Lawful => write!(f, "Lawful"),
+            Self::Neutral => write!(f, "Neutral"),
+            Self::Chaotic => write!(f, "Chaotic"),
+        }
+    }
+}
+
+#[derive(
+    Component, Clone, Copy, Debug, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, Default,
+)]
+pub enum AlignmentMoral {
+    // This is not a meaningful default
+    #[default]
+    Good,
+    Neutral,
+    Evil,
+}
+impl AlignmentMoral {
+    pub fn as_array() -> [AlignmentMoral; 3] {
+        [Self::Good, Self::Neutral, Self::Evil]
+    }
+}
+impl Display for AlignmentMoral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Good => write!(f, "Good"),
+            Self::Neutral => write!(f, "Neutral"),
+            Self::Evil => write!(f, "Evil"),
+        }
     }
 }
 
@@ -1361,11 +1511,14 @@ impl fmt::Display for CreatureSubtype {
     }
 }
 
-#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq)]
+#[derive(Component, Clone, Debug, PartialEq, PartialOrd, Hash, Copy, Eq, Default, Deserialize)]
 pub enum SavingThrowName {
+    // not a meaningful default
     Fort,
     Reflex,
     Will,
+    #[default]
+    None,
 }
 
 use std::fmt::{Display, Formatter};
@@ -1376,6 +1529,7 @@ impl Display for SavingThrowName {
             Fort => write!(f, "Fort"),
             Reflex => write!(f, "Reflex"),
             Will => write!(f, "Will"),
+            SavingThrowName::None => write!(f, "None"),
         }
     }
 }

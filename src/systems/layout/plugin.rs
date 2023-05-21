@@ -13,9 +13,9 @@ use crate::{
     technical::{
         alternate_traits::{AltTraitAsset, AltTraitDisplay},
         default_race_traits::DefaultTraitAsset,
+        favored_class::FavoredClassAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
         race_load::RaceAsset,
-        favored_class::FavoredClassAsset,
     },
 };
 use bevy::input::mouse::MouseButtonInput;
@@ -48,6 +48,14 @@ enum Build {
     PostBuild,
 }
 
+#[derive(SystemSet, PartialEq, Eq, Debug, Clone, Hash, Default)]
+enum CreationTabSet {
+    #[default]
+    Race,
+    AbilityScores,
+    Class,
+}
+
 use bevy::input::common_conditions::input_just_pressed;
 
 impl Plugin for CharacterCreationPlugin {
@@ -57,6 +65,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<SelectedRaceButton>()
             .init_resource::<SelectedRaceTab>()
             .init_resource::<FlavorTextSetup>()
+            .init_resource::<CreationTabSelected>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .init_resource::<CustomAssetLoadState<AltTraitAsset>>()
@@ -71,32 +80,35 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_schedule(OnEnter(AppState::CharacterCreation)),
             )
-            // .add_system(setup_assets.in_schedule(OnEnter(AppState::CharacterCreation)))
-            // .add_system(build_layout.in_schedule(OnEnter(AppState::CharacterCreation)))
-            // .add_system(
-            //     setup_flavor_text
-            //         .after(build_layout)
-            //         .run_if(is_custom_asset_loaded::<RaceAsset>())
-            //         .in_schedule(OnEnter(AppState::CharacterCreation)),
-            // )
             .configure_set(
                 // Ensure custom assets loaded, only run in character creation
                 SuperSet::Super
                     .run_if(is_custom_asset_loaded::<RaceAsset>())
                     .run_if(is_custom_asset_loaded::<DefaultTraitAsset>())
                     .run_if(is_custom_asset_loaded::<AltTraitAsset>())
+                    .run_if(is_custom_asset_loaded::<FavoredClassAsset>())
                     .in_set(OnUpdate(AppState::CharacterCreation)),
             )
+            .configure_sets((
+                CreationTabSet::Race
+                    .run_if(resource_equals(CreationTabSelected(CreationTab::Race))),
+                CreationTabSet::Class
+                    .run_if(resource_equals(CreationTabSelected(CreationTab::Class))),
+            ))
             .configure_sets(
                 (
                     Build::Super.run_if(resource_changed::<SelectedRaceButton>()),
                     Build::PreBuild
-                        .run_if(resource_changed::<SelectedRaceButton>())
-                        .before(Build::Build),
+                        .before(Build::Build)
+                        .run_if(resource_changed::<SelectedRaceButton>()),
                     Build::Build.run_if(resource_changed::<RaceBuilder>()),
-                    Changed::Race.run_if(resource_changed::<SelectedRaceButton>()),
-                    Changed::RaceTab.run_if(resource_changed::<SelectedRaceTab>()),
-                    Changed::RaceOrTab.run_if(
+                    Changed::Race
+                        .in_set(CreationTabSet::Race)
+                        .run_if(resource_changed::<SelectedRaceButton>()),
+                    Changed::RaceTab
+                        .run_if(resource_changed::<SelectedRaceTab>())
+                        .in_set(CreationTabSet::Race),
+                    Changed::RaceOrTab.in_set(CreationTabSet::Race).run_if(
                         resource_changed::<SelectedRaceButton>()
                             .or_else(resource_changed::<SelectedRaceTab>()),
                     ),

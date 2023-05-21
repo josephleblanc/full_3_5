@@ -29,6 +29,16 @@ impl SelectedRaceButton {
     }
 }
 
+#[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
+pub struct CreationTabSelected(pub CreationTab);
+
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
+pub enum CreationTab {
+    #[default]
+    Race,
+    Class,
+}
+
 //// Alt Trait description screen labels
 // Node containing a whole row
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
