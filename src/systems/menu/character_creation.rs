@@ -71,13 +71,18 @@ pub struct ReplacesText;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ReplacesContent;
 
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct RaceItem;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct ClassItem;
+
 // #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 // pub struct AlternateTrait;
 
 pub fn set_list_node_display(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_node: Query<&mut Style, With<ListNode>>,
+    mut query_node: Query<&mut Style, (With<ListNode>, With<RaceItem>)>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
     favored_class_asset: Res<Assets<FavoredClassAsset>>,
@@ -141,7 +146,7 @@ pub fn set_list_node_display(
 pub fn set_list_title(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_title: Query<(&mut Style, &mut Text), With<ListTitle>>,
+    mut query_title: Query<(&mut Style, &mut Text), (With<ListTitle>, With<RaceItem>)>,
     asset_server: Res<AssetServer>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
@@ -297,7 +302,7 @@ pub fn set_button_col_display(
 pub fn set_skill_replacement_text(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_node: Query<(&mut Style, &mut Text), With<ReplacesText>>,
+    mut query_node: Query<(&mut Style, &mut Text), (With<ReplacesText>, With<RaceItem>)>,
     asset_server: Res<AssetServer>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
@@ -344,7 +349,7 @@ pub fn set_skill_replacement_text(
 pub fn set_replace_display(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_node: Query<&mut Style, With<ReplacesContent>>,
+    mut query_node: Query<&mut Style, (With<ReplacesContent>, With<RaceItem>)>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
     let len = match selected_race_tab.0 {
@@ -439,7 +444,7 @@ pub fn set_replaced_content_display(
 pub fn set_list_descr(
     selected_race: Res<SelectedRaceButton>,
     selected_race_tab: Res<SelectedRaceTab>,
-    mut query_descr: Query<(&mut Style, &mut Text), With<Description>>,
+    mut query_descr: Query<(&mut Style, &mut Text), (With<Description>, With<RaceItem>)>,
     asset_server: Res<AssetServer>,
     descr_asset: Res<Assets<RaceAsset>>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
@@ -1283,7 +1288,7 @@ impl ClassTab {
         selected_tab: Res<SelectedClassTab>,
         selected_class: Res<SelectedClass>,
         class_asset: Res<Assets<ClassAsset>>,
-        mut query_node: Query<&mut Style, With<ListNode>>,
+        mut query_node: Query<&mut Style, (With<ListNode>, With<ClassItem>)>,
     ) {
         if let Some(len) = {
             match selected_tab.inner() {
@@ -1318,7 +1323,7 @@ impl ClassTab {
     pub fn display_list_title(
         selected_tab: Res<SelectedClassTab>,
         selected_class: Res<SelectedClass>,
-        mut query_node: Query<&mut Text, With<ListTitle>>,
+        mut query_node: Query<&mut Text, (With<ListTitle>, With<ClassItem>)>,
         class_asset: Res<Assets<ClassAsset>>,
         asset_server: Res<AssetServer>,
     ) {
