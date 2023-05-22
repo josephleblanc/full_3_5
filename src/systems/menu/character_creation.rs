@@ -53,7 +53,35 @@ pub enum CreationTab {
 pub struct AltTraitReplaces(pub Vec<RacialTraitName>);
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
-pub struct ListParent;
+pub enum ListParent {
+    Race,
+    Class,
+}
+impl Into<CreationTab> for ListParent {
+    fn into(self) -> CreationTab {
+        match self {
+            Self::Race => CreationTab::Race,
+            Self::Class => CreationTab::Class,
+            _ => CreationTab::Optional,
+        }
+    }
+}
+impl ListParent {
+    pub fn display(
+        mut query: Query<(&mut Style, &ListParent)>,
+        selected_tab: Res<CreationTabSelected>,
+    ) {
+        for (mut style, list_parent) in &mut query {
+            let creation_tab = selected_tab.inner();
+            if creation_tab == (*list_parent).into() {
+                style.display = Display::Flex;
+            } else {
+                style.display = Display::None;
+            }
+        }
+    }
+}
+
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ListNode;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]

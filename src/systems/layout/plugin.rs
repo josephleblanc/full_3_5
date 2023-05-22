@@ -217,6 +217,8 @@ impl Plugin for CharacterCreationPlugin {
                     ClassTab::selected_tab,
                 )
                     .in_set(CreationTabSet::Class),
-            );
+            )
+            .add_system(ListParent::display.run_if(resource_changed::<CreationTabSelected>()).in_set(SuperSet::Super))
+            ;
     }
 }

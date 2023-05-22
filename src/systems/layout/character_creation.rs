@@ -359,7 +359,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         top: Val::Px(8.),
                         bottom: Val::Px(0.),
                     },
-                    gap: Size::height(Val::Px(8.)),
                     ..default()
                 },
                 ..default()
@@ -371,11 +370,21 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             // Marks parent of the RaceDescriptionNode to be used when
             // returning the child to the parent.
             // RaceDescriptionNodeParent,
-            ListParent,
         ))
         .set_parent(central_node)
         .id();
 
+    let list_parent = NodeBundle {
+        style: Style {
+            // padding: UiRect::all(Val::Px(5.)),
+            // margin: UiRect::all(Val::Px(10.)),
+            flex_direction: FlexDirection::Column,
+            gap: Size::height(Val::Px(8.)),
+            ..default()
+        },
+        background_color: Color::rgba(32., 32., 32., 0.).into(), // RACIAL_CHOICES_BUTTON_COLOR,
+        ..default()
+    };
     // List nodes and text
     let list_node = NodeBundle {
         style: Style {
@@ -482,6 +491,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
     // Race Tab display
+    let race_parent_id = commands
+        .spawn((list_parent.clone(), ListParent::Race))
+        .set_parent(central_scroll_list)
+        .id();
     // Prepopulate the list items to be filled or hidden by systems
     for _ in 0..default_racial_trait_rows {
         commands
@@ -581,9 +594,13 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ));
                     });
             })
-            .set_parent(central_scroll_list);
+            .set_parent(race_parent_id);
     }
     // Class Tab display
+    let class_parent_id = commands
+        .spawn((list_parent.clone(), ListParent::Class))
+        .set_parent(central_scroll_list)
+        .id();
     // Prepopulate the list items to be filled or hidden by systems
     use crate::systems::game::class::PlayableClass;
     let class_name_array = PlayableClass::array();
@@ -685,7 +702,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ));
                     });
             })
-            .set_parent(central_scroll_list);
+            .set_parent(class_parent_id);
     }
 
     // Panel with chosen racial traits and favored class.
