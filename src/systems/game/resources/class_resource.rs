@@ -31,6 +31,14 @@ pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>
         alignment_restriction: Option::None,
         bab_progression: Full,
         save_progression: [Will, SavingThrowName::None, SavingThrowName::None],
+        class_features_list: vec![
+            Fighter(BonusFeat),
+            Fighter(Bravery),
+            Fighter(ArmorTraining),
+            Fighter(WeaponTraining),
+            Fighter(ArmorMastery),
+            Fighter(WeaponMastery),
+        ],
         class_features: vec![
             vec![Fighter(BonusFeat)],                         // 1
             vec![Fighter(Bravery)],                           // 2

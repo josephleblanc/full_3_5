@@ -54,6 +54,49 @@ pub enum PlayableClass {
     None,
 }
 
+impl PlayableClass {
+    pub fn iterator() -> impl Iterator<Item = PlayableClass> {
+        [
+    Self::Alchemist,
+    Self::Arcanist,
+    Self::Barbarian,
+    Self::Bard,
+    Self::Bloodrager,
+    Self::Brawler,
+    Self::Cavalier,
+    Self::Cleric,
+    Self::Druid,
+    Self::Fighter,
+    Self::Gunslinger,
+    Self::Hunter,
+    Self::Inquisitor,
+    Self::Investigator,
+    Self::Kineticist,
+    Self::Magus,
+    Self::Medium,
+    Self::Mesmerist,
+    Self::Monk,
+    Self::Occultist,
+    Self::Oracle,
+    Self::Paladin,
+    Self::Psychic,
+    Self::Ranger,
+    Self::Rogue,
+    Self::Shaman,
+    Self::Skald,
+    Self::Slayer,
+    Self::Sorcerer,
+    Self::Spiritualist,
+    Self::Summoner,
+    Self::Swashbuckler,
+    Self::Vigilante,
+    Self::Warpriest,
+    Self::Witch,
+    Self::Wizard,
+        ].iter().copied()
+    }
+}
+
 impl fmt::Display for PlayableClass {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -166,6 +209,7 @@ pub struct ClassInfo {
     // The name of each primary saving throw
     pub save_progression: [SavingThrowName; 3],
     pub class_features: Vec<Vec<ClassFeature>>,
+    pub class_features_list: Vec<ClassFeature>,
 }
 
 impl ClassInfo {
@@ -235,11 +279,6 @@ pub enum FighterFeature {
     #[default]
     None,
 }
-
-// #[derive(Default, Deserialize, Clone, Debug)]
-// pub struct FighterBonusFeat {
-//     bonus_feat: FloatingBonusFeat,
-// }
 
 pub trait IntoComponent<T: Component> {
     fn into_component(&self) -> T;

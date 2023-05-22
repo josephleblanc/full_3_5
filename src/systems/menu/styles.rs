@@ -100,6 +100,7 @@ pub const RACE_BUTTON_COLOR: Color = Color::DARK_GRAY;
 // List button for central area, used for things like Alt traits select
 pub const LIST_BUTTON_COLOR: Color = Color::DARK_GREEN;
 pub const LIST_BUTTON_TEXT_SIZE: f32 = 30.;
+pub const LIST_TITLE_TEXT_SIZE: f32 = 30.;
 
 pub const STAGES_OF_CREATION_FONT_SIZE: f32 = 30.;
 pub const STAGES_OF_CREATION_TEXT_COLOR: Color = Color::WHITE;
@@ -111,3 +112,7 @@ pub const RACIAL_CHOICES_BUTTON_COLOR: BackgroundColor =
     BackgroundColor(Color::rgb(71., 101., 101.));
 pub const RACIAL_CHOICES_TEXT_BG_COLOR: BackgroundColor =
     BackgroundColor(Color::rgb(48., 102., 105.));
+
+pub const SUBTAB_BUTTON_FONT: f32 = 25.;
+
+pub const LEFT_PANEL_FONT_SIZE: f32 = 30.;

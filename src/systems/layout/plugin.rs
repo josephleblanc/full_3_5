@@ -127,8 +127,6 @@ impl Plugin for CharacterCreationPlugin {
             // Race select button management
             .add_systems(
                 (
-                    race_select_button_system,
-                    cleanup_race_select_button,
                     selected_race_description_type,
                     cleanup_race_description_type_button,
                 )
@@ -176,9 +174,20 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_set(Changed::RaceOrTab),
             )
+            .add_systems(
+                (
+                    SubTabButton::display.run_if(resource_changed::<CreationTabSelected>()),
+                    SubTabButtonText::display.run_if(resource_changed::<CreationTabSelected>()),
+                )
+                    .in_set(SuperSet::Super),
+            )
             .add_system(
-                SubTabButton::display
+                LeftPanelEnum::set_list_text
                     .run_if(resource_changed::<CreationTabSelected>())
+                    .in_set(SuperSet::Super),
+            )
+            .add_systems(
+                (LeftPanelEnum::cleanup_buttons, LeftPanelEnum::button_system)
                     .in_set(SuperSet::Super),
             );
     }
