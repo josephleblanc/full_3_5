@@ -5,7 +5,7 @@ use crate::{
         layout::character_creation::build_layout,
         menu::{
             character_creation::*,
-            mouse::{mouse_scroll, scroll_snap_top, new_mouse_scroll},
+            mouse::{mouse_scroll, scroll_snap_top},
         },
     },
     technical::{
@@ -69,6 +69,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<AltTraitAsset>>()
             .init_resource::<CustomAssetLoadState<FavoredClassAsset>>()
             .init_resource::<RaceBuilder>()
+            .add_event::<LeftPanelOverflowEvent>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -121,7 +122,7 @@ impl Plugin for CharacterCreationPlugin {
             // Add default flavor text
             // .add_system(setup_flavor_text.in_set(SuperSet::Super))
             // Mouse Scroll systems
-            .add_system(new_mouse_scroll.in_set(SuperSet::Super))
+            .add_system(mouse_scroll.in_set(SuperSet::Super))
             // Tab select button management (Race, Class, etc.)
             .add_systems((creation_tab, cleanup_creation_tab).in_set(SuperSet::Super))
             // Race select button management
@@ -188,6 +189,11 @@ impl Plugin for CharacterCreationPlugin {
             )
             .add_systems(
                 (LeftPanelEnum::cleanup_buttons, LeftPanelEnum::button_system)
+                    .in_set(SuperSet::Super),
+            )
+            .add_system(
+                LeftPanelEnum::handle_overflow
+                    .run_if(on_event::<LeftPanelOverflowEvent>())
                     .in_set(SuperSet::Super),
             );
     }

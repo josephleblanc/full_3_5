@@ -277,6 +277,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     AccessibilityNode(NodeBuilder::new(Role::List)),
                     Name::from("moving panel"),
                     Interaction::default(),
+                    LeftPanelList,
                 ))
                 .with_children(|list| {
                     for race_enum in PlayableRace::iterator() {

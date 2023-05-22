@@ -950,17 +950,42 @@ impl std::fmt::Display for LeftPanelEnum {
     }
 }
 
+// Label for the list that contains the scrollable buttons in the left panel.
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub struct LeftPanelList;
+
+// Label for the button text in the scrollable left panel.
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct LeftPanelText;
 
 use crate::systems::menu::styles::LEFT_PANEL_FONT_SIZE;
 
+// Event to handle there being more elements that should be represented in the
+// scrollable left panel than currently spawned buttons and their text containers.
+// Sends details to LeftPanelEnum::handle_overflow to spawn more buttons with
+// the appropriate content and labels.
+pub struct LeftPanelOverflowEvent {
+    text: Text,
+    left_enum: LeftPanelEnum,
+}
+
+use bevy::a11y::{
+    accesskit::{NodeBuilder, Role},
+    AccessibilityNode,
+};
+
+// The systems managing the Left Panel of character creation, used to display
+// things like the list of available races when the race tab is selected,
+// or the list of available classes when the class tab is selected.
+// This should be scrollable, and should load most of its assets from custom
+// asset loaders.
 impl LeftPanelEnum {
     pub fn set_list_text(
         mut query_list_text: Query<&mut Text, With<LeftPanelText>>,
         mut query_list_button: Query<(&mut Style, &mut LeftPanelEnum), With<LeftPanelButton>>,
         selected_tab: Res<CreationTabSelected>,
         asset_server: Res<AssetServer>,
+        mut event_writer: EventWriter<LeftPanelOverflowEvent>,
     ) {
         let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
         // system should have a conditional to run when CreationTabSelected changes.
@@ -997,6 +1022,54 @@ impl LeftPanelEnum {
                     button_style.display = Display::None;
                 }
             }
+            for enum_overflow in left_iter {
+                event_writer.send(LeftPanelOverflowEvent {
+                    text: Text::from_section(
+                        enum_overflow.to_string(),
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: LEFT_PANEL_FONT_SIZE,
+                            color: TEXT_COLOR,
+                        },
+                    ),
+                    left_enum: *enum_overflow,
+                });
+            }
+        }
+    }
+    pub fn handle_overflow(
+        mut commands: Commands,
+        mut ev_reader: EventReader<LeftPanelOverflowEvent>,
+        query_parent: Query<Entity, With<LeftPanelList>>,
+    ) {
+        for event in ev_reader.into_iter() {
+            commands
+                .spawn((
+                    ButtonBundle {
+                        style: Style {
+                            size: Size::width(Val::Percent(100.)),
+                            padding: UiRect::left(Val::Percent(7.)),
+                            ..default()
+                        },
+                        background_color: RACE_BUTTON_COLOR.into(),
+                        ..default()
+                    },
+                    event.left_enum,
+                    LeftPanelButton,
+                ))
+                .with_children(|list_button| {
+                    list_button.spawn((
+                        TextBundle {
+                            text: event.text.to_owned(),
+                            ..default()
+                        },
+                        Name::new("race: moving list item"),
+                        Label,
+                        LeftPanelText,
+                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                    ));
+                })
+                .set_parent(query_parent.get_single().unwrap());
         }
     }
     // Makes sure other left panel buttons are the default color when not selected.

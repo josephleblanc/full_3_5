@@ -3,7 +3,7 @@ use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
 // Scroll list if the node or any of its descendants are hovered.
-pub fn new_mouse_scroll(
+pub fn mouse_scroll(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<
         (
