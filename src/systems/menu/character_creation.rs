@@ -4,12 +4,9 @@ use crate::{
     systems::{
         game::character::PlayableRace,
         game::race::RacialTraitName,
-        menu::{
-            components::RaceSelectButton,
-            styles::{
-                LIST_BUTTON_TEXT_SIZE, RACE_BUTTON_COLOR, RACE_BUTTON_COLOR_HOVERED,
-                RACE_BUTTON_COLOR_SELECTED, SUBTAB_BUTTON_FONT,
-            },
+        menu::styles::{
+            LIST_BUTTON_TEXT_SIZE, RACE_BUTTON_COLOR, RACE_BUTTON_COLOR_HOVERED,
+            RACE_BUTTON_COLOR_SELECTED, SUBTAB_BUTTON_FONT,
         },
     },
     technical::{
@@ -388,7 +385,7 @@ pub fn set_replaced_content_display(
     asset_server: Res<AssetServer>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
 ) {
-    println!("running set_replaces_display");
+    // println!("running set_replaces_display");
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
     let traits = match selected_race_tab.0 {
         RaceTab::RaceDescription => None,
@@ -405,13 +402,6 @@ pub fn set_replaced_content_display(
                         alt_trait.replaces_strings.iter(),
                     )
                 }))
-                // Some(
-                //     asset
-                //         .alternate_traits
-                //         .iter()
-                //         .map(|alt_trait| (alt_trait.replaces_names, alt_trait.replaces_strings))
-                //         .unzip(),
-                // )
             } else {
                 None
             }
@@ -421,7 +411,7 @@ pub fn set_replaced_content_display(
     if let Some(mut traits_iter) = traits {
         for (i, (mut style, mut text, mut displayed_replaces)) in query_node.iter_mut().enumerate()
         {
-            println!("i: {}", i);
+            // println!("i: {}", i);
             if let Some((trait_names, replaces_strings)) = traits_iter.next() {
                 *text = Text::from_sections(replaces_strings.map(|trait_name| {
                     TextSection::new(
@@ -730,14 +720,14 @@ pub fn setup_flavor_text(
     mut has_run: ResMut<FlavorTextSetup>,
 ) {
     if !has_run.0 {
-        println!("{:-<40}", "Starting flavor text setup");
+        // println!("{:-<40}", "Starting flavor text setup");
         let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
         let mut text = query_text.get_single_mut().unwrap();
-        println!("--- Assets {:#?}", assets.iter().next());
+        // println!("--- Assets {:#?}", assets.iter().next());
         for (_handle, race_asset) in assets.iter() {
-            println!("inside loop");
+            // println!("inside loop");
             if race_asset.race == PlayableRace::Human {
-                println!("{:-<50}", "Setting startup flavor text");
+                // println!("{:-<50}", "Setting startup flavor text");
                 *text = Text::from_section(
                     race_asset.text.clone(),
                     TextStyle {
@@ -751,9 +741,6 @@ pub fn setup_flavor_text(
         has_run.0 = true;
     }
 }
-
-// Display the selected race tab.
-use super::components::RaceDescriptionNode;
 
 // Makes sure other race buttons are the default color.
 pub fn cleanup_selected_race_description_button(
@@ -1010,6 +997,7 @@ impl LeftPanelEnum {
                 if let Some(left_enum) = left_iter.next() {
                     button_style.display = Display::Flex;
                     *button_enum = *left_enum;
+                    println!("button_enum is now: {:?}", button_enum);
                     *text = Text::from_section(
                         left_enum.to_string(),
                         TextStyle {
@@ -1133,6 +1121,7 @@ impl LeftPanelEnum {
                         if player_class != selected_class.inner() {
                             *color = RACE_BUTTON_COLOR_SELECTED.into();
                             *selected_class = SelectedClass(player_class);
+                            println!("button left_enum changed to: {:?}", player_class);
                         }
                     }
                     Interaction::Hovered => {
@@ -1185,7 +1174,7 @@ pub fn track_trait(query: Query<&Style, (With<TestChosenStandardTrait>, Changed<
     }
 }
 
-// Changes the color of the selected race button
+// Changes the color of the selected race button, and sets CreationTabSelected
 pub fn creation_tab(
     mut interaction_query: Query<
         (&Interaction, &CreationTab, &mut BackgroundColor),
@@ -1232,8 +1221,31 @@ pub fn cleanup_creation_tab(
     }
 }
 
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct SubTabButton;
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+pub enum SubTabButton {
+    Race(RaceTab),
+    Class(ClassTab),
+}
+impl SubTabButton {
+    pub fn get_race_tab(&self) -> Option<RaceTab> {
+        match self {
+            Self::Race(race) => Some(*race),
+            Self::Class(_) => None,
+        }
+    }
+    pub fn get_class_tab(&self) -> Option<ClassTab> {
+        match self {
+            Self::Race(_) => None,
+            Self::Class(class) => Some(*class),
+        }
+    }
+}
+
+impl Default for SubTabButton {
+    fn default() -> SubTabButton {
+        Self::Race(RaceTab::RaceDescription)
+    }
+}
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct SubTabButtonText;
 
@@ -1266,20 +1278,25 @@ impl std::fmt::Display for ClassTab {
     }
 }
 
-use crate::systems::game::class::{ClassInfo, ClassMap};
 impl ClassTab {
-    fn display_list_node(
+    pub fn display_list_node(
         selected_tab: Res<SelectedClassTab>,
         selected_class: Res<SelectedClass>,
-        class_map: Res<ClassMap>,
+        class_asset: Res<Assets<ClassAsset>>,
         mut query_node: Query<&mut Style, With<ListNode>>,
     ) {
         if let Some(len) = {
             match selected_tab.inner() {
                 Self::Description => Some(1_usize),
                 Self::ClassFeatures => {
-                    if let Some(class_info) = class_map.inner().get(&selected_class.inner()) {
-                        Some(class_info.class_features.len())
+                    if let Some((_handle, class_asset)) = class_asset
+                        .iter()
+                        .filter(|(_handle, class_asset)| {
+                            class_asset.class_name == selected_class.inner()
+                        })
+                        .next()
+                    {
+                        Some(class_asset.class_features.len())
                     } else {
                         None
                     }
@@ -1290,6 +1307,7 @@ impl ClassTab {
         } {
             for (i, mut node_style) in query_node.iter_mut().enumerate() {
                 if i < len {
+                    println!("making class feature visible");
                     node_style.display = Display::Flex;
                 } else {
                     node_style.display = Display::None;
@@ -1297,11 +1315,10 @@ impl ClassTab {
             }
         }
     }
-    fn display_list_title(
+    pub fn display_list_title(
         selected_tab: Res<SelectedClassTab>,
         selected_class: Res<SelectedClass>,
-        class_map: Res<ClassMap>,
-        mut query_node: Query<&mut Text, With<ListNode>>,
+        mut query_node: Query<&mut Text, With<ListTitle>>,
         class_asset: Res<Assets<ClassAsset>>,
         asset_server: Res<AssetServer>,
     ) {
@@ -1321,7 +1338,11 @@ impl ClassTab {
                             class_asset
                                 .class_features
                                 .iter()
-                                .map(|class_features| class_features.title.clone())
+                                .map(|class_features| {
+                                    println!("class_features.title = {}", class_features.title);
+
+                                    class_features.title.clone()
+                                })
                                 .collect(),
                         )
                     } else {
@@ -1333,9 +1354,14 @@ impl ClassTab {
                 Self::Progression => None,
             }
         } {
+            println!(
+                "---------------> class_asset.class_features has len = {}",
+                titles.len()
+            );
             let mut titles_iter = titles.iter();
-            for (i, mut list_title) in query_node.iter_mut().enumerate() {
+            for mut list_title in &mut query_node {
                 if let Some(title) = titles_iter.next() {
+                    println!("class_feature title: {}", title);
                     *list_title = Text::from_section(
                         title,
                         TextStyle {
@@ -1344,6 +1370,38 @@ impl ClassTab {
                             color: TEXT_COLOR,
                         },
                     );
+                }
+            }
+        }
+    }
+    pub fn selected_tab(
+        mut selected: ResMut<SelectedClassTab>,
+        mut interaction_query: Query<
+            (&Interaction, &SubTabButton, &mut BackgroundColor),
+            Changed<Interaction>,
+        >,
+    ) {
+        let selection_copy = selected.inner();
+        for (interaction, interacted_subtab, mut color) in &mut interaction_query {
+            if let SubTabButton::Class(class_subtab) = interacted_subtab {
+                match *interaction {
+                    Interaction::Clicked => {
+                        if selection_copy != *class_subtab {
+                            *color = RACE_BUTTON_COLOR_SELECTED.into();
+                            *selected = SelectedClassTab(*class_subtab);
+                            println!("SelectedClassTab: {:#?}", selected);
+                        }
+                    }
+                    Interaction::Hovered => {
+                        if selection_copy != *class_subtab {
+                            *color = RACE_BUTTON_COLOR_HOVERED.into();
+                        }
+                    }
+                    Interaction::None => {
+                        if selection_copy != *class_subtab {
+                            *color = RACE_BUTTON_COLOR.into();
+                        }
+                    }
                 }
             }
         }
@@ -1363,15 +1421,17 @@ impl SelectedClassTab {
 }
 impl SubTabButton {
     pub fn display(
-        mut query_button: Query<&mut Style, With<SubTabButton>>,
+        mut query_button: Query<(&mut Style, &mut SubTabButton)>,
         selected_tab: Res<CreationTabSelected>,
     ) {
         match selected_tab.into_inner().inner() {
             CreationTab::Race => {
                 let race_subtabs = RaceTab::array();
-                for (i, mut button_style) in query_button.iter_mut().enumerate() {
-                    if i < race_subtabs.len() {
+                let mut race_iter = race_subtabs.iter();
+                for (mut button_style, mut subtab) in query_button.iter_mut() {
+                    if let Some(race) = race_iter.next() {
                         button_style.display = Display::Flex;
+                        *subtab = SubTabButton::Race(*race);
                     } else {
                         button_style.display = Display::None;
                     }
@@ -1379,16 +1439,18 @@ impl SubTabButton {
             }
             CreationTab::Class => {
                 let class_subtabs = ClassTab::array();
-                for (i, mut button_style) in query_button.iter_mut().enumerate() {
-                    if i < class_subtabs.len() {
+                let mut class_subtabs_iter = class_subtabs.iter();
+                for (mut button_style, mut subtab) in query_button.iter_mut() {
+                    if let Some(class) = class_subtabs_iter.next() {
                         button_style.display = Display::Flex;
+                        *subtab = SubTabButton::Class(*class);
                     } else {
                         button_style.display = Display::None;
                     }
                 }
             }
             _ => {
-                for (i, mut button_style) in query_button.iter_mut().enumerate() {
+                for (_i, (mut button_style, _)) in query_button.iter_mut().enumerate() {
                     button_style.display = Display::None;
                 }
             }

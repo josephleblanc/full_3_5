@@ -1092,7 +1092,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             },
                             description_button,
-                            SubTabButton,
+                            SubTabButton::Race(description_button),
                             Name::from("Button: Choose Description Content"),
                         ))
                         .with_children(|list_button| {

@@ -59,8 +59,9 @@ impl Plugin for CharacterCreationPlugin {
     fn build(&self, app: &mut App) {
         app
             //// init resources, load custom assets, & build layout
-            .init_resource::<SelectedRaceButton>()
             .init_resource::<SelectedRaceTab>()
+            .init_resource::<SelectedRaceButton>()
+            .init_resource::<SelectedClassTab>()
             .init_resource::<SelectedClass>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CreationTabSelected>()
@@ -88,12 +89,15 @@ impl Plugin for CharacterCreationPlugin {
                     .run_if(is_custom_asset_loaded::<FavoredClassAsset>())
                     .in_set(OnUpdate(AppState::CharacterCreation)),
             )
-            .configure_sets((
-                CreationTabSet::Race
-                    .run_if(resource_equals(CreationTabSelected(CreationTab::Race))),
-                CreationTabSet::Class
-                    .run_if(resource_equals(CreationTabSelected(CreationTab::Class))),
-            ))
+            .configure_sets(
+                (
+                    CreationTabSet::Race
+                        .run_if(resource_equals(CreationTabSelected(CreationTab::Race))),
+                    CreationTabSet::Class
+                        .run_if(resource_equals(CreationTabSelected(CreationTab::Class))),
+                )
+                    .in_set(SuperSet::Super),
+            )
             .configure_sets(
                 (
                     Build::Super.run_if(resource_changed::<SelectedRaceButton>()),
@@ -195,6 +199,24 @@ impl Plugin for CharacterCreationPlugin {
                 LeftPanelEnum::handle_overflow
                     .run_if(on_event::<LeftPanelOverflowEvent>())
                     .in_set(SuperSet::Super),
+            )
+            .add_systems(
+                (
+                    ClassTab::display_list_node.run_if(
+                        resource_changed::<CreationTabSelected>().or_else(
+                            resource_changed::<SelectedClassTab>()
+                                .or_else(resource_changed::<SelectedClass>()),
+                        ),
+                    ),
+                    ClassTab::display_list_title.run_if(
+                        resource_changed::<CreationTabSelected>().or_else(
+                            resource_changed::<SelectedClassTab>()
+                                .or_else(resource_changed::<SelectedClass>()),
+                        ),
+                    ),
+                    ClassTab::selected_tab,
+                )
+                    .in_set(CreationTabSet::Class),
             );
     }
 }
