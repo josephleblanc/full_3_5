@@ -1159,10 +1159,6 @@ pub fn cleanup_creation_tab(
     }
 }
 
-// #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-// pub struct SubTabParent;
-// #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-// pub struct SubTabNode;
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct SubTabButton;
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]

@@ -2,8 +2,8 @@ use crate::systems::menu::components::ScrollingList;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
-// Scroll list if the node or its direct children are being hovered.
-pub fn mouse_scroll(
+// Scroll list if the node or any of its descendants are hovered.
+pub fn new_mouse_scroll(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<
         (
@@ -16,16 +16,30 @@ pub fn mouse_scroll(
         ),
         With<Children>,
     >,
+    query_children: Query<&Children>,
     query_node: Query<&Node>,
-    query_buttons: Query<(&Interaction, &Parent), With<Button>>,
+    query_buttons: Query<(Entity, &Interaction)>,
 ) {
+    let mut child_hovered = false;
     for mouse_wheel_event in mouse_wheel_events.iter() {
         for (entity, mut scrolling_list, mut style, parent, list_node, interaction) in
             &mut query_list
         {
-            let child_hovered = query_buttons.iter().any(|(interaction, b_parent)| {
-                b_parent.get() == entity && *interaction == Interaction::Hovered
-            });
+            for hovered_ent in query_buttons
+                .iter()
+                .filter(|(_, ent_interaction)| **ent_interaction == Interaction::Hovered)
+                .map(|(ent, _)| ent)
+            {
+                if query_children
+                    .iter_descendants(entity)
+                    .into_iter()
+                    .any(|descendant| hovered_ent == descendant)
+                {
+                    child_hovered = true;
+                } else {
+                    child_hovered = false;
+                }
+            }
             if *interaction == Interaction::Hovered || child_hovered {
                 let items_height = list_node.size().y;
                 let container_height = query_node.get(parent.get()).unwrap().size().y;
