@@ -1,5 +1,5 @@
 use crate::systems::{
-    game::{character::PlayableRace, race::CharacterBuilder},
+    game::{archetype::*, character::PlayableRace, race::CharacterBuilder},
     menu::{
         character_creation::*,
         components::{
@@ -248,11 +248,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     // Setup for race select button panel, located on the left,
     // with a scrolling selection of buttons for player races.
-    commands
+    let left_panel_container = commands
         .spawn((
             NodeBundle {
                 style: Style {
-                    flex_direction: FlexDirection::Column,
+                    flex_direction: FlexDirection::Row,
                     size: Size::height(Val::Percent(90.)),
                     overflow: (Overflow::Hidden),
                     ..default()
@@ -260,10 +260,162 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 background_color: Color::DARK_GREEN.into(),
                 ..default()
             },
-            Name::from("Scrolling List container"),
+            RacePanel,
+            Name::from("Left Panel container"),
         ))
-        .with_children(|scrolling_list_container| {
-            scrolling_list_container
+        .set_parent(mid_container)
+        .id();
+    // Left Panel for Race
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    // overflow: (Overflow::Hidden),
+                    ..default()
+                },
+                ..default()
+            },
+            ScrollingList::default(),
+            AccessibilityNode(NodeBuilder::new(Role::List)),
+            Name::from("Race panel"),
+            Interaction::default(),
+            LeftPanelList,
+            RacePanel,
+        ))
+        .with_children(|list| {
+            for race_enum in PlayableRace::iterator() {
+                let mut color = RACE_BUTTON_COLOR;
+                if race_enum == PlayableRace::Human {
+                    color = RACE_BUTTON_COLOR_SELECTED;
+                }
+                list.spawn((
+                    ButtonBundle {
+                        style: Style {
+                            size: Size::width(Val::Percent(100.)),
+                            padding: UiRect::left(Val::Percent(7.)),
+                            ..default()
+                        },
+                        background_color: color.into(),
+                        ..default()
+                    },
+                    LeftPanelEnum::Race(race_enum),
+                    LeftPanelButton,
+                    RacePanel,
+                ))
+                .with_children(|list_button| {
+                    list_button.spawn((
+                        TextBundle::from_section(
+                            race_enum.to_string(),
+                            TextStyle {
+                                font: shared_font.clone(),
+                                font_size: 30.,
+                                color: TEXT_COLOR,
+                            },
+                        ),
+                        Name::new("race: moving list item"),
+                        Label,
+                        LeftPanelText,
+                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                        RacePanel,
+                    ));
+                });
+            }
+        })
+        .set_parent(left_panel_container);
+    // Left Panel for Class
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                ..default()
+            },
+            ClassPanel,
+            ScrollingList::default(),
+            AccessibilityNode(NodeBuilder::new(Role::List)),
+            Name::from("moving panel"),
+            Interaction::default(),
+            LeftPanelList,
+        ))
+        .with_children(|list| {
+            for class_enum in PlayableClass::iterator() {
+                let mut color = RACE_BUTTON_COLOR;
+                if class_enum == PlayableClass::Alchemist {
+                    color = RACE_BUTTON_COLOR_SELECTED;
+                }
+                list.spawn((
+                    ButtonBundle {
+                        style: Style {
+                            size: Size::width(Val::Percent(100.)),
+                            padding: UiRect::left(Val::Percent(7.)),
+                            ..default()
+                        },
+                        background_color: color.into(),
+                        ..default()
+                    },
+                    LeftPanelEnum::Class(class_enum),
+                    LeftPanelButton,
+                    ClassPanel,
+                ))
+                .with_children(|list_button| {
+                    list_button.spawn((
+                        TextBundle::from_section(
+                            class_enum.to_string(),
+                            TextStyle {
+                                font: shared_font.clone(),
+                                font_size: 30.,
+                                color: TEXT_COLOR,
+                            },
+                        ),
+                        Name::new("race: moving list item"),
+                        Label,
+                        LeftPanelText,
+                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                        ClassPanel,
+                    ));
+                });
+            }
+        })
+        .set_parent(left_panel_container);
+    // Left panel for Class Archetype
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                ..default()
+            },
+            Name::from("moving panel"),
+            LeftPanelList,
+            ArchetypePanel,
+        ))
+        .with_children(|scrolling_list_parent| {
+            scrolling_list_parent.spawn((
+                // List Panel Title - class of the archetypes displayed
+                TextBundle {
+                    text: Text::from_section(
+                        "Class",
+                        TextStyle {
+                            font: shared_font.clone(),
+                            font_size: 30.,
+                            color: TEXT_COLOR,
+                        },
+                    ),
+                    background_color: PANEL_TITLE_COLOR.into(),
+                    ..default()
+                },
+                LeftPanelTitle,
+                ArchetypePanel,
+            ));
+            scrolling_list_parent
                 .spawn((
                     NodeBundle {
                         style: Style {
@@ -277,12 +429,12 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     AccessibilityNode(NodeBuilder::new(Role::List)),
                     Name::from("moving panel"),
                     Interaction::default(),
-                    LeftPanelList,
+                    ArchetypePanel,
                 ))
                 .with_children(|list| {
-                    for race_enum in PlayableRace::iterator() {
+                    for (i, archetype_name) in ArchetypeName::iterator().enumerate() {
                         let mut color = RACE_BUTTON_COLOR;
-                        if race_enum == PlayableRace::Human {
+                        if i == 0 {
                             color = RACE_BUTTON_COLOR_SELECTED;
                         }
                         list.spawn((
@@ -295,13 +447,13 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 background_color: color.into(),
                                 ..default()
                             },
-                            LeftPanelEnum::Race(race_enum),
                             LeftPanelButton,
+                            ArchetypePanel,
                         ))
                         .with_children(|list_button| {
                             list_button.spawn((
                                 TextBundle::from_section(
-                                    race_enum.to_string(),
+                                    archetype_name.to_string(),
                                     TextStyle {
                                         font: shared_font.clone(),
                                         font_size: 30.,
@@ -311,13 +463,16 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 Name::new("race: moving list item"),
                                 Label,
                                 LeftPanelText,
+                                archetype_name,
+                                archetype_name.class(),
                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                ArchetypePanel,
                             ));
                         });
                     }
                 });
         })
-        .set_parent(mid_container);
+        .set_parent(left_panel_container);
 
     // Setup for Race description area, located in the middle and right,
     // with text descriptions of the selected races.

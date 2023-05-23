@@ -12,7 +12,7 @@ pub struct FavoredClass {
     pub source: String,
 }
 
-#[derive(Default, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Component, Default, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub enum PlayableClass {
     Alchemist,
     Arcanist,
@@ -318,6 +318,16 @@ pub enum FighterFeature {
     ArmorTraining,
     ArmorMastery,
     WeaponMastery,
+    //// Archetypes
+    // Archer
+    Hawkeye,
+    TrickShot,
+    ExpertArcher,
+    SafeShot,
+    EvasiveArcher,
+    Volley,
+    RangedDefense,
+    WeaponMasteryArcher,
     #[default]
     None,
 }

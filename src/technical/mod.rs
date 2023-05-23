@@ -4,3 +4,4 @@ pub mod race_load;
 pub mod alternate_traits;
 pub mod favored_class;
 pub mod class;
+pub mod archetype;

@@ -10,6 +10,7 @@ use bevy::prelude::*;
 use bevy::winit::WinitSettings;
 use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu};
 use technical::alternate_traits::MyAltTraitAssetPlugin;
+use technical::archetype::MyArchetypeAssetPlugin;
 use technical::class::MyClassAssetPlugin;
 use technical::default_race_traits::MyDefaultTraitAssetPlugin;
 use technical::favored_class::MyFavoredClassAssetPlugin;
@@ -47,6 +48,7 @@ fn main() {
         .add_plugin(MyAltTraitAssetPlugin)
         .add_plugin(MyFavoredClassAssetPlugin)
         .add_plugin(MyClassAssetPlugin)
+        .add_plugin(MyArchetypeAssetPlugin)
         .add_system(load_ascii.in_base_set(StartupSet::PreStartup))
         .add_state::<AppState>()
         .add_plugin(CharacterCreationPlugin)
