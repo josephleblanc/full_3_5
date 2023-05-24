@@ -7,6 +7,7 @@ mod my_test_plugins;
 mod system_scheduling;
 mod systems;
 mod technical;
+mod constants;
 use bevy::prelude::*;
 use bevy::winit::WinitSettings;
 use menu::main_menu;

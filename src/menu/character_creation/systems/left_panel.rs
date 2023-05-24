@@ -7,11 +7,34 @@ use bevy::prelude::*;
 // Display or hide the left panel
 // Only display when the race tab is selected, otherwise hide.
 
-pub fn left_panel(
+pub fn race_panel(
     mut query_list: Query<&mut Style, (With<LeftPanelList>, With<RacePanel>)>,
     selected_tab: Res<CreationTabSelected>,
 ) {
     if selected_tab.inner() == CreationTab::Race {
+        query_list.get_single_mut().unwrap().display = Display::Flex;
+    } else {
+        query_list.get_single_mut().unwrap().display = Display::None;
+    }
+}
+pub fn class_panel(
+    mut query_list: Query<&mut Style, (With<LeftPanelList>, With<ClassPanel>)>,
+    selected_tab: Res<CreationTabSelected>,
+) {
+    if selected_tab.inner() == CreationTab::Class {
+        query_list.get_single_mut().unwrap().display = Display::Flex;
+    } else {
+        query_list.get_single_mut().unwrap().display = Display::None;
+    }
+}
+pub fn archetype_panel(
+    mut query_list: Query<&mut Style, (With<LeftPanelList>, With<ArchetypePanel>)>,
+    selected_tab: Res<CreationTabSelected>,
+    selected_class_tab: Res<SelectedClassTab>,
+) {
+    if selected_tab.inner() == CreationTab::Class
+        && selected_class_tab.inner() == ClassTab::Archetypes
+    {
         query_list.get_single_mut().unwrap().display = Display::Flex;
     } else {
         query_list.get_single_mut().unwrap().display = Display::None;

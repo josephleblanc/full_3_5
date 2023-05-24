@@ -183,14 +183,22 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_set(Changed::RaceOrTab),
             )
-            .add_system(
-                left_panel::left_panel
-                    .run_if(resource_changed::<CreationTabSelected>())
+            .add_systems(
+                (
+                    // Manage the display of left panels.
+                    left_panel::race_panel.run_if(resource_changed::<CreationTabSelected>()),
+                    left_panel::class_panel.run_if(resource_changed::<CreationTabSelected>()),
+                    left_panel::archetype_panel.run_if(
+                        resource_changed::<CreationTabSelected>()
+                            .or_else(resource_changed::<SelectedClassTab>()),
+                    ),
+                )
                     .in_set(SuperSet::Super),
             )
             .add_systems(
                 (
                     subtab_button::display.run_if(resource_changed::<CreationTabSelected>()),
+                    subtab_button::text.run_if(resource_changed::<CreationTabSelected>()),
                     // I'm afraid I deleted this in the re-organization. Maybe grab it from a
                     // roll-back
                     // SubTabButtonText::display.run_if(resource_changed::<CreationTabSelected>()),
@@ -216,11 +224,6 @@ impl Plugin for CharacterCreationPlugin {
                     ),
                     class_tab::selected_tab,
                 )
-                    .in_set(CreationTabSet::Class),
-            )
-            .add_system(
-                left_panel::left_panel
-                    .run_if(resource_changed::<CreationTabSelected>())
                     .in_set(CreationTabSet::Class),
             )
             .add_systems(
