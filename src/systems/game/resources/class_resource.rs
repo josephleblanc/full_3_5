@@ -1,8 +1,8 @@
+#![allow(unused_mut, unused_variables)]
 use crate::systems::game::character::*;
-use crate::systems::game::{character::*, class::*, skills::SkillName::*};
+use crate::systems::game::{class::*, skills::SkillName::*};
 use crate::technical::class::ClassAsset;
 use bevy::prelude::*;
-
 pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>>) {
     use BABProgression::*;
     use ClassFeature::*;

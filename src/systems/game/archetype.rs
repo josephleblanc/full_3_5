@@ -19,7 +19,7 @@ impl fmt::Display for ClassArchetype {
     }
 }
 
-#[derive(Default, Debug, Deserialize, Clone)]
+#[derive(Default, Debug, Deserialize, Clone, Hash)]
 pub struct FighterArchetype {
     name: ArchetypeName,
     class: PlayableClass,
@@ -31,7 +31,7 @@ pub struct FighterArchetype {
     loses_proficiency: Option<usize>,
 }
 
-#[derive(Component, Default, Debug, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[derive(Component, Default, Debug, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Hash)]
 pub enum ArchetypeName {
     #[default]
     Archer,
@@ -47,7 +47,7 @@ impl ArchetypeName {
     }
     pub fn class(&self) -> PlayableClass {
         match self {
-            Archer => PlayableClass::Fighter,
+            Self::Archer => PlayableClass::Fighter,
         }
     }
 }
@@ -60,14 +60,14 @@ impl fmt::Display for ArchetypeName {
     }
 }
 
-#[derive(Default, Debug, Deserialize, Clone, Component)]
+#[derive(Default, Debug, Deserialize, Clone, Component, Hash)]
 pub enum Restriction {
     Race(PlayableRace),
     #[default]
     None,
 }
 
-#[derive(Default, Debug, Deserialize, Clone, Component)]
+#[derive(Default, Debug, Deserialize, Clone, Component, Hash)]
 pub struct ArchetypeFeature {
     feature: ClassFeature,
     replaces: Vec<ClassFeature>,

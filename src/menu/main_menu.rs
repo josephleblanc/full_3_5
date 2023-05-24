@@ -1,13 +1,13 @@
 use crate::{
-    my_camera::my_camera_systems,
-    system_scheduling::states::AppState,
-    systems::menu::{
+    menu::{
         components::{Container, NavBarButtonType},
         styles::{
             MAIN_MENU_TITLE_STYLE, NAV_BAR_STYLE, NAV_BUTTON_BOTTOM_STYLE, NAV_BUTTON_MIDDLE_STYLE,
             NAV_BUTTON_TOP_STYLE,
         },
     },
+    my_camera::my_camera_systems,
+    system_scheduling::states::AppState,
 };
 use bevy::prelude::*;
 

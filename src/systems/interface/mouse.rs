@@ -1,4 +1,4 @@
-use crate::systems::menu::components::ScrollingList;
+use crate::menu::components::ScrollingList;
 use bevy::input::mouse::{MouseButton, MouseButtonInput, MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 

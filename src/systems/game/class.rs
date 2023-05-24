@@ -12,7 +12,9 @@ pub struct FavoredClass {
     pub source: String,
 }
 
-#[derive(Component, Default, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(
+    Component, Default, Deserialize, Copy, Clone, Debug, Hash, Eq, PartialEq, Ord, PartialOrd,
+)]
 pub enum PlayableClass {
     Alchemist,
     Arcanist,
@@ -417,7 +419,7 @@ pub fn add_class_bonusfeats(
     mut commands: Commands,
 ) {
     if let Ok(class_bonus_feats) = FloatingBonusFeats::try_from(class.as_ref()) {
-        if let Some((entity, mut floating_feats)) = query_character
+        if let Some((_entity, mut floating_feats)) = query_character
             .iter_mut()
             .filter(|(entity, _)| *entity == selected.inner())
             .next()
@@ -440,7 +442,7 @@ pub fn add_class_savingthrowbonuses(
 ) {
     for class in class_map.inner().values() {
         if let Ok(class_bonuses) = SavingThrowBonuses::try_from(class) {
-            if let Some((entity, mut existing_bonuses, class_levels)) = query_character
+            if let Some((_entity, mut existing_bonuses, _class_levels)) = query_character
                 .iter_mut()
                 .filter(|(entity, _, _)| *entity == selected.inner())
                 .next()

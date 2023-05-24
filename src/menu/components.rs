@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::systems::menu::character_creation::*;
+use crate::menu::character_creation::components::RaceTab;
 
 #[derive(Component, Debug)]
 pub enum Container {
@@ -92,7 +92,7 @@ impl MyTable {
                     MyTable::Row(row_i),
                 ))
                 .with_children(|row_node| {
-                    for (col_i, col) in row.iter().enumerate() {
+                    for (col_i, _col) in row.iter().enumerate() {
                         row_node.spawn((
                             NodeBundle {
                                 style: col_style.clone(),

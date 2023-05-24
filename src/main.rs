@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+mod menu;
 mod my_camera;
 mod my_debug;
 mod my_test_plugins;
@@ -8,7 +9,8 @@ mod systems;
 mod technical;
 use bevy::prelude::*;
 use bevy::winit::WinitSettings;
-use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin, menu::main_menu};
+use menu::main_menu;
+use systems::{grid_systems::flex_grid, layout::plugin::CharacterCreationPlugin};
 use technical::alternate_traits::MyAltTraitAssetPlugin;
 use technical::archetype::MyArchetypeAssetPlugin;
 use technical::class::MyClassAssetPlugin;

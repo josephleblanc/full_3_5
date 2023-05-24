@@ -1,4 +1,4 @@
-use crate::systems::menu::components::ScrollingList;
+use crate::menu::components::ScrollingList;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
@@ -32,8 +32,8 @@ pub fn mouse_scroll(
                     .any(|descendant| hovered_ent == descendant)
                     || *interaction == Interaction::Hovered
                 {
-                    let items_height =
-                        query_node.get(hovered_ent).unwrap().size().y * children.iter().count() as f32;
+                    let items_height = query_node.get(hovered_ent).unwrap().size().y
+                        * children.iter().count() as f32;
                     // let container_height = query_node.get(parent.get()).unwrap().size().y;
                     let container_height = list_node.size().y;
                     println!("container_height: {:?}", container_height);

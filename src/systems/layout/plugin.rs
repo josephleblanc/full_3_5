@@ -1,12 +1,14 @@
 use crate::{
+    menu::character_creation::{
+        components::*,
+        systems::*,
+        systems::{creation_tab::*, race_tab::*, setup::*, tooltip::*},
+    },
+    menu::mouse::{mouse_scroll, scroll_snap_top},
     system_scheduling::states::AppState,
     systems::{
         game::race::{build_race, RaceBuilder},
         layout::character_creation::build_layout,
-        menu::{
-            character_creation::*,
-            mouse::{mouse_scroll, scroll_snap_top},
-        },
     },
     technical::{
         alternate_traits::AltTraitAsset,
@@ -64,6 +66,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<SelectedRaceButton>()
             .init_resource::<SelectedClassTab>()
             .init_resource::<SelectedClass>()
+            .init_resource::<SelectedArchetype>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CreationTabSelected>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
@@ -72,7 +75,6 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<FavoredClassAsset>>()
             .init_resource::<CustomAssetLoadState<ArchetypeAsset>>()
             .init_resource::<RaceBuilder>()
-            .add_event::<LeftPanelOverflowEvent>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -170,81 +172,71 @@ impl Plugin for CharacterCreationPlugin {
             // .add_system(fill_alt_traits.in_set(Changed::Race));
             .add_systems(
                 (
-                    RaceTab::list_node,
-                    RaceTab::set_list_title,
-                    RaceTab::button_col,
-                    RaceTab::replacement_text,
-                    RaceTab::replace_node,
-                    RaceTab::replace_text,
-                    RaceTab::description,
+                    race_tab::list_node,
+                    race_tab::set_list_title,
+                    race_tab::button_col,
+                    race_tab::replacement_text,
+                    race_tab::replace_node,
+                    race_tab::replace_text,
+                    race_tab::description,
                 )
                     .chain()
                     .in_set(Changed::RaceOrTab),
             )
             .add_system(
-                RaceTab::left_panel
+                left_panel::left_panel
                     .run_if(resource_changed::<CreationTabSelected>())
                     .in_set(SuperSet::Super),
             )
             .add_systems(
                 (
-                    SubTabButton::display.run_if(resource_changed::<CreationTabSelected>()),
-                    SubTabButtonText::display.run_if(resource_changed::<CreationTabSelected>()),
+                    subtab_button::display.run_if(resource_changed::<CreationTabSelected>()),
+                    // I'm afraid I deleted this in the re-organization. Maybe grab it from a
+                    // roll-back
+                    // SubTabButtonText::display.run_if(resource_changed::<CreationTabSelected>()),
                 )
                     .in_set(SuperSet::Super),
             )
-            // .add_system(
-            //     LeftPanelEnum::set_list_text
-            //         .run_if(resource_changed::<CreationTabSelected>())
-            //         .in_set(SuperSet::Super),
-            // )
             .add_systems(
-                (LeftPanelEnum::cleanup_buttons, LeftPanelEnum::button_system)
-                    .in_set(SuperSet::Super),
-            )
-            .add_system(
-                LeftPanelEnum::handle_overflow
-                    .run_if(on_event::<LeftPanelOverflowEvent>())
-                    .in_set(SuperSet::Super),
+                (left_panel::cleanup_buttons, left_panel::button_system).in_set(SuperSet::Super),
             )
             .add_systems(
                 (
-                    ClassTab::display_list_node.run_if(
+                    class_tab::display_list_node.run_if(
                         resource_changed::<CreationTabSelected>().or_else(
                             resource_changed::<SelectedClassTab>()
                                 .or_else(resource_changed::<SelectedClass>()),
                         ),
                     ),
-                    ClassTab::display_list_title.run_if(
+                    class_tab::display_list_title.run_if(
                         resource_changed::<CreationTabSelected>().or_else(
                             resource_changed::<SelectedClassTab>()
                                 .or_else(resource_changed::<SelectedClass>()),
                         ),
                     ),
-                    ClassTab::selected_tab,
+                    class_tab::selected_tab,
                 )
                     .in_set(CreationTabSet::Class),
             )
             .add_system(
-                ClassTab::left_panel
+                left_panel::left_panel
                     .run_if(resource_changed::<CreationTabSelected>())
                     .in_set(CreationTabSet::Class),
             )
             .add_systems(
                 (
-                    ClassTab::archetype_panel_display.run_if(
-                            
+                    archetype::archetype_panel_display.run_if(
                         resource_changed::<CreationTabSelected>()
                             .or_else(resource_changed::<SelectedClassTab>()),
                     ),
-                    ClassTab::archetype_panel_text
+                    archetype::archetype_panel_text
                         .run_if(
                             resource_changed::<SelectedClass>()
                                 .and_then(resource_equals(SelectedClassTab(ClassTab::Archetypes))),
                         )
-                        .after(ClassTab::archetype_panel_display),
-                    ClassTab::archetype_panel_title
-                        .after(ClassTab::archetype_panel_display)
+                        .after(archetype::archetype_panel_display),
+                    archetype::archetype_panel_title
+                        .after(archetype::archetype_panel_display)
                         .run_if(
                             resource_changed::<SelectedClass>()
                                 .and_then(resource_equals(SelectedClassTab(ClassTab::Archetypes))),
@@ -255,6 +247,32 @@ impl Plugin for CharacterCreationPlugin {
             .add_system(
                 ListParent::display
                     .run_if(resource_changed::<CreationTabSelected>())
+                    .in_set(SuperSet::Super),
+            )
+            .add_system(
+                class_tab::display_list_title
+                    .run_if(
+                        resource_changed::<SelectedClass>()
+                            .or_else(resource_changed::<CreationTabSelected>().and_then(
+                                resource_equals(CreationTabSelected(CreationTab::Class)).and_then(
+                                    resource_equals(SelectedClassTab(ClassTab::Archetypes)),
+                                ),
+                            ))
+                            .or_else(resource_changed::<SelectedClassTab>()),
+                    )
+                    .in_set(SuperSet::Super),
+            )
+            .add_system(
+                class_tab::display_list_text
+                    .run_if(
+                        resource_changed::<SelectedClass>()
+                            .or_else(resource_changed::<CreationTabSelected>().and_then(
+                                resource_equals(CreationTabSelected(CreationTab::Class)).and_then(
+                                    resource_equals(SelectedClassTab(ClassTab::Archetypes)),
+                                ),
+                            ))
+                            .or_else(resource_changed::<SelectedClassTab>()),
+                    )
                     .in_set(SuperSet::Super),
             );
     }
