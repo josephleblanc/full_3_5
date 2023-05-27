@@ -1,6 +1,9 @@
+use crate::menu::character_creation::layout::description::*;
+use crate::systems::game::character::PlayableRace;
 use crate::{
     menu::character_creation::{
         components::*,
+        generics,
         systems::*,
         systems::{creation_tab::*, race_tab::*, setup::*, tooltip::*},
     },
@@ -84,6 +87,7 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_schedule(OnEnter(AppState::CharacterCreation)),
             )
+            .add_system(build_description_list::<RaceAsset, RaceItem, PlayableRace>)
             .configure_set(
                 // Ensure custom assets loaded, only run in character creation
                 SuperSet::Super
@@ -132,12 +136,12 @@ impl Plugin for CharacterCreationPlugin {
             // Mouse Scroll systems
             .add_system(mouse_scroll.in_set(SuperSet::Super))
             // Tab select button management (Race, Class, etc.)
-            .add_systems((creation_tab, cleanup_creation_tab).in_set(SuperSet::Super))
-            // Race select button management
             .add_systems(
                 (
-                    selected_race_description_type,
-                    cleanup_race_description_type_button,
+                    generics::new_selected_tab::<CreationTabSelected, CreationTab>(),
+                    generics::cleanup_tab_button::<CreationTabSelected, CreationTab>(),
+                    generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
+                    generics::cleanup_tab_button::<SelectedRaceTab, RaceTab>(),
                 )
                     .in_set(SuperSet::Super),
             )
@@ -222,7 +226,7 @@ impl Plugin for CharacterCreationPlugin {
                                 .or_else(resource_changed::<SelectedClass>()),
                         ),
                     ),
-                    class_tab::selected_tab,
+                    generics::new_selected_tab::<SelectedClassTab, ClassTab>(),
                 )
                     .in_set(CreationTabSet::Class),
             )
@@ -249,7 +253,10 @@ impl Plugin for CharacterCreationPlugin {
             )
             .add_system(
                 ListParent::display
-                    .run_if(resource_changed::<CreationTabSelected>())
+                    .run_if(
+                        resource_changed::<CreationTabSelected>()
+                            .or_else(resource_changed::<SelectedClassTab>()),
+                    )
                     .in_set(SuperSet::Super),
             )
             .add_system(

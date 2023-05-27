@@ -536,13 +536,9 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
     // List nodes and text
+    use crate::menu::character_creation::constants::*;
     let list_node = NodeBundle {
-        style: Style {
-            // padding: UiRect::all(Val::Px(5.)),
-            margin: UiRect::all(Val::Px(10.)),
-            flex_direction: FlexDirection::Column,
-            ..default()
-        },
+        style: LIST_PARENT_NODE_STYLE,
         background_color: Color::BLACK.into(), // RACIAL_CHOICES_BUTTON_COLOR,
         ..default()
     };
@@ -555,11 +551,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 color: TEXT_COLOR,
             },
         ),
-        style: Style {
-            max_size: Size::width(Val::Px(1200.)),
-            margin: UiRect::all(Val::Px(5.)),
-            ..default()
-        },
+        style: LIST_ITEM_TITLE_STYLE,
         ..default()
     };
     let list_row_node = NodeBundle {
@@ -855,7 +847,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             .set_parent(class_parent_id);
     }
     let archetype_list_id = commands
-        .spawn((list_parent.clone(), ListParent::Class))
+        .spawn((list_parent.clone(), ListParent::Archetype))
         .set_parent(central_scroll_list)
         .id();
     // Prepopulate the list items to be filled or hidden by systems

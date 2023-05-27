@@ -59,13 +59,13 @@ pub fn display_list_title(
     selected_tab: Res<SelectedClassTab>,
     selected_archetype: Res<SelectedArchetype>,
     selected_class: Res<SelectedClass>,
-    mut query_node: Query<(&mut Text, &mut Style), (With<ListTitle>, With<ClassItem>)>,
+    mut query_title: Query<(&mut Text, &mut Style), (With<ListTitle>, With<ClassItem>)>,
     class_asset: Res<Assets<ClassAsset>>,
     archetype_asset: Res<Assets<ArchetypeAsset>>,
     asset_server: Res<AssetServer>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
-    if let Some(titles) = {
+    let titles = {
         match selected_tab.inner() {
             ClassTab::Description => Some(vec![CLASS_DESCRIPTION_TITLE.to_string()]),
             ClassTab::ClassFeatures => {
@@ -80,11 +80,7 @@ pub fn display_list_title(
                         class_asset
                             .class_features
                             .iter()
-                            .map(|class_features| {
-                                println!("class_features.title = {}", class_features.title);
-
-                                class_features.title.clone()
-                            })
+                            .map(|class_features| class_features.title.clone())
                             .collect(),
                     )
                 } else {
@@ -113,13 +109,10 @@ pub fn display_list_title(
             }
             ClassTab::Progression => None,
         }
-    } {
-        println!(
-            "---------------> class_asset.class_features has len = {}",
-            titles.len()
-        );
+    };
+    if let Some(titles) = titles {
         let mut titles_iter = titles.iter();
-        for (mut list_title, mut style) in &mut query_node {
+        for (mut list_title, mut style) in &mut query_title {
             if let Some(title) = titles_iter.next() {
                 println!("class_feature title: {}", title);
                 *list_title = Text::from_section(
@@ -134,119 +127,93 @@ pub fn display_list_title(
                 style.display = Display::None;
             }
         }
+    } else {
+        for (_, mut style) in &mut query_title {
+            style.display = Display::None;
+        }
     }
 }
 pub fn display_list_text(
     selected_tab: Res<SelectedClassTab>,
     selected_archetype: Res<SelectedArchetype>,
     selected_class: Res<SelectedClass>,
-    mut query_node: Query<(&mut Text, &mut Style), (With<Description>, With<ClassItem>)>,
+    mut query_descr: Query<(&mut Style, &mut Text), (With<Description>, With<ClassItem>)>,
     class_asset: Res<Assets<ClassAsset>>,
     archetype_asset: Res<Assets<ArchetypeAsset>>,
     asset_server: Res<AssetServer>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
-    if let Some(description) = {
-        match selected_tab.inner() {
-            ClassTab::Description => Some(vec![CLASS_DESCRIPTION_TITLE.to_string()]),
-            ClassTab::ClassFeatures => {
-                if let Some((_handle, class_asset)) = class_asset
-                    .iter()
-                    .filter(|(_handle, class_asset)| {
-                        class_asset.class_name == selected_class.inner()
-                    })
-                    .next()
-                {
-                    Some(
-                        class_asset
-                            .class_features
-                            .iter()
-                            .map(|class_features| {
-                                println!("class_features.title = {}", class_features.description);
+    let descr: Option<Vec<&String>> = match selected_tab.inner() {
+        ClassTab::Description => Some(
+            class_asset
+                .iter()
+                .filter(|(_handle, class_asset)| class_asset.class_name == selected_class.inner())
+                .map(|(_handle, class)| &class.description)
+                .collect(),
+        ),
+        ClassTab::ClassFeatures => {
+            if let Some((_handle, class_asset)) = class_asset
+                .iter()
+                .filter(|(_handle, class_asset)| class_asset.class_name == selected_class.inner())
+                .next()
+            {
+                Some(
+                    class_asset
+                        .class_features
+                        .iter()
+                        .map(|class_features| {
+                            println!("class_features.title = {}", class_features.description);
 
-                                class_features.description.clone()
-                            })
-                            .collect(),
-                    )
-                } else {
-                    None
-                }
+                            &class_features.description
+                        })
+                        .collect(),
+                )
+            } else {
+                None
             }
-
-            ClassTab::Archetypes => {
-                if let Some((_handle, archetype_asset)) = archetype_asset
-                    .iter()
-                    .filter(|(_handle, archetype_asset)| {
-                        archetype_asset.archetype_name == selected_archetype.inner()
-                    })
-                    .next()
-                {
-                    Some(
-                        archetype_asset
-                            .class_features
-                            .iter()
-                            .map(|class_feature| class_feature.description.clone())
-                            .collect(),
-                    )
-                } else {
-                    None
-                }
-            }
-            ClassTab::Progression => None,
         }
-    } {
-        let mut titles_iter = description.iter();
-        for (mut list_description, mut style) in &mut query_node {
-            if let Some(description) = titles_iter.next() {
-                style.display = Display::Flex;
-                *list_description = Text::from_section(
-                    description,
+
+        ClassTab::Archetypes => {
+            if let Some((_handle, archetype_asset)) = archetype_asset
+                .iter()
+                .filter(|(_handle, archetype_asset)| {
+                    archetype_asset.archetype_name == selected_archetype.inner()
+                })
+                .next()
+            {
+                Some(
+                    archetype_asset
+                        .class_features
+                        .iter()
+                        .map(|class_feature| &class_feature.description)
+                        .collect(),
+                )
+            } else {
+                None
+            }
+        }
+        ClassTab::Progression => None,
+    };
+    if let Some(descriptions) = descr {
+        let mut descriptions_iter = descriptions.iter();
+        for (mut style, mut text) in query_descr.iter_mut() {
+            if let Some(text_descr) = descriptions_iter.next() {
+                *text = Text::from_section(
+                    *text_descr,
                     TextStyle {
                         font: font.clone(),
-                        font_size: LIST_TITLE_TEXT_SIZE,
-                        color: TEXT_COLOR,
+                        font_size: 25.,
+                        color: Color::WHITE,
                     },
                 );
+                style.display = Display::Flex;
             } else {
                 style.display = Display::None;
             }
         }
-    }
-}
-pub fn selected_tab(
-    mut selected: ResMut<SelectedClassTab>,
-    mut interaction_query: Query<
-        (&Interaction, &SubTabButton, &mut BackgroundColor),
-        Changed<Interaction>,
-    >,
-) {
-    let selection_copy = selected.inner();
-    for (interaction, interacted_subtab, mut color) in &mut interaction_query {
-        if let SubTabButton::Class(class_subtab) = interacted_subtab {
-            match *interaction {
-                Interaction::Clicked => {
-                    if selection_copy != *class_subtab {
-                        *color = RACE_BUTTON_COLOR_SELECTED.into();
-                        *selected = SelectedClassTab(*class_subtab);
-                        println!("SelectedClassTab: {:#?}", selected);
-                    }
-                }
-                Interaction::Hovered => {
-                    if selection_copy != *class_subtab {
-                        *color = RACE_BUTTON_COLOR_HOVERED.into();
-                    }
-                }
-                Interaction::None => {
-                    if selection_copy != *class_subtab {
-                        *color = RACE_BUTTON_COLOR.into();
-                    }
-                }
-            }
+    } else {
+        for (mut style, _) in &mut query_descr {
+            style.display = Display::None;
         }
     }
-    // pub fn button_col(
-    //     query: Query<&mut Style, (With<ListButtonColumn>, With<ClassItem>)>,
-    //     selected_class_tab: Res<SelectedClassTab>,
-    // ) {
-    // }
 }

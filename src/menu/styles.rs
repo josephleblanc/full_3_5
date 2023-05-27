@@ -117,3 +117,6 @@ pub const SUBTAB_BUTTON_FONT: f32 = 25.;
 
 pub const LEFT_PANEL_FONT_SIZE: f32 = 30.;
 pub const PANEL_TITLE_COLOR: Color = Color::INDIGO;
+pub const DESCRIPTION_FONT_SIZE: f32 = 25.;
+
+pub const DESCRIPTION_MAX_WIDTH: f32 = 900.;

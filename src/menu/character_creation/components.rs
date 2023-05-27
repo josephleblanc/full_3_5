@@ -56,26 +56,48 @@ pub struct LeftPanelButton;
 #[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
 pub struct CreationTabSelected(pub CreationTab);
 
-impl Into<CreationTab> for ListParent {
-    fn into(self) -> CreationTab {
+impl ListParent {
+    pub fn as_creation_tab(&self) -> Option<CreationTab> {
         match self {
-            Self::Race => CreationTab::Race,
-            Self::Class => CreationTab::Class,
-            // _ => CreationTab::Optional,
+            Self::Race => Some(CreationTab::Race),
+            Self::Class => Some(CreationTab::Class),
+            _ => None,
+        }
+    }
+    pub fn as_class_tab(&self) -> Option<ClassTab> {
+        match self {
+            Self::Archetype => Some(ClassTab::Archetypes),
+            _ => None,
         }
     }
 }
 impl ListParent {
+    // Display the list items in the `central_scroll_list` are of character
+    // creation.
+    // If in the Race tab, the elements of a list with a matching CreationTab
+    // are always displayed.
+    // If in the Class tab, the elements of a list with a matching CreationTab
+    // are only displayed if the element is not an Archetype item.
+    // Archetype items are only displayed when the Class subtab Archetype is
+    // selected, otherwise the Class items are displayed.
     pub fn display(
         mut query: Query<(&mut Style, &ListParent)>,
         selected_tab: Res<CreationTabSelected>,
+        selected_class_tab: Res<SelectedClassTab>,
     ) {
         for (mut style, list_parent) in &mut query {
-            let creation_tab = selected_tab.inner();
-            if creation_tab == (*list_parent).into() {
-                style.display = Display::Flex;
+            if list_parent.as_class_tab().is_none() {
+                if Some(selected_tab.inner()) == list_parent.as_creation_tab() {
+                    style.display = Display::Flex;
+                } else {
+                    style.display = Display::None;
+                }
             } else {
-                style.display = Display::None;
+                if Some(selected_class_tab.inner()) == list_parent.as_class_tab() {
+                    style.display = Display::Flex;
+                } else {
+                    style.display = Display::None;
+                }
             }
         }
     }
@@ -92,6 +114,12 @@ pub enum CreationTab {
     BonusFeats,
     Optional,
 }
+impl Into<CreationTabSelected> for CreationTab {
+    fn into(self) -> CreationTabSelected {
+        CreationTabSelected(self)
+    }
+}
+
 impl CreationTabSelected {
     pub fn inner(&self) -> CreationTab {
         self.0
@@ -102,6 +130,7 @@ impl CreationTabSelected {
 pub enum ListParent {
     Race,
     Class,
+    Archetype,
 }
 
 #[derive(Component, Copy, Clone, Debug, Default, Eq, PartialEq, PartialOrd)]
@@ -131,6 +160,13 @@ pub enum ClassTab {
     Progression,
     Archetypes,
 }
+
+impl Into<SelectedClassTab> for ClassTab {
+    fn into(self) -> SelectedClassTab {
+        SelectedClassTab(self)
+    }
+}
+
 impl ClassTab {
     pub fn array() -> [ClassTab; 4] {
         [
@@ -204,6 +240,12 @@ impl std::fmt::Display for RaceTab {
             Self::AltTraitTab => write!(f, "Alternate Racial Traits"),
             Self::FavoredClassTab => write!(f, "Favored Class Option"),
         }
+    }
+}
+
+impl Into<SelectedRaceTab> for RaceTab {
+    fn into(self) -> SelectedRaceTab {
+        SelectedRaceTab(self)
     }
 }
 
@@ -325,7 +367,7 @@ pub struct ReplacesText;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ReplacesContent;
 
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
+#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
 pub struct RaceItem;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub struct ClassItem;

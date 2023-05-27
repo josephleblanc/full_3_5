@@ -1252,6 +1252,32 @@ impl PlayableRace {
         .iter()
         .copied()
     }
+    pub fn array() -> [PlayableRace; 22] {
+        [
+            Self::Human,
+            Self::Elf,
+            Self::Gnome,
+            Self::HalfElf,
+            Self::HalfOrc,
+            Self::Halfling,
+            Self::Aasimar,
+            Self::Catfolk,
+            Self::Dhampir,
+            Self::Drow,
+            Self::Fetchling,
+            Self::Goblin,
+            Self::Hobgoblin,
+            Self::Ifrit,
+            Self::Kobold,
+            Self::Orc,
+            Self::Oread,
+            Self::Ratfolk,
+            Self::Sylph,
+            Self::Tengu,
+            Self::Tiefling,
+            Self::Undine,
+        ]
+    }
 }
 
 //// Display impls
