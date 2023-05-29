@@ -1,3 +1,3 @@
 pub mod race;
-pub mod description;
 pub mod generics;
+pub mod resource;

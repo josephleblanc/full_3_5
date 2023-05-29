@@ -1,16 +1,19 @@
-use crate::menu::character_creation::layout::description::*;
-use crate::systems::game::character::PlayableRace;
 use crate::{
-    menu::character_creation::{
-        components::*,
-        generics,
-        systems::*,
-        systems::{creation_tab::*, race_tab::*, setup::*, tooltip::*},
+    menu::{
+        character_creation::{
+            components::*,
+            generics,
+            layout::generics::description::*,
+            systems::{race_tab::*, setup::*, tooltip::*, *},
+        },
+        mouse::{mouse_scroll, scroll_snap_top},
     },
-    menu::mouse::{mouse_scroll, scroll_snap_top},
     system_scheduling::states::AppState,
     systems::{
-        game::race::{build_race, RaceBuilder},
+        game::{
+            character::PlayableRace,
+            race::{build_race, RaceBuilder},
+        },
         layout::character_creation::build_layout,
     },
     technical::{

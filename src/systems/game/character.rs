@@ -1,3 +1,5 @@
+use crate::menu::character_creation::layout::generics::list_traits::AsVec;
+
 use crate::systems::game::equipment::*;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -1221,6 +1223,18 @@ pub enum CreatureSubtype {
 
 ///////////////////////////////////////////////////////////////////////////////
 //// Impls
+
+//// Layout-related impls
+// trait needed for layout in character creation layout.
+impl AsVec for PlayableRace {
+    fn vec() -> Vec<Self> {
+        Vec::from(PlayableRace::array())
+    }
+}
+
+pub trait HasKey<T> {
+    fn key(&self) -> T;
+}
 
 //// iterator impls
 impl PlayableRace {

@@ -1551,7 +1551,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         .set_parent(bottom_container);
 }
 
-pub fn setup_class_table(commands: Commands, query_parent: Query<Entity, With<ListNode>>) {
+pub fn setup_class_table(commands: Commands /* query_parent: Query<Entity, With<ListNode>>*/) {
     // Table with class level progression details.
     // The table will be made of rows which contain columns of uniform width.
     // Titles in the first row are kept separate from the table.

@@ -10,3 +10,6 @@ bevy = "0.10.1"
 bevy-inspector-egui = "0.18.3"
 ron = "0.8.0"
 serde = "1.0.162"
+
+[profile.dev]
+opt-level = 1
