@@ -60,8 +60,11 @@ enum CreationTabSet {
     Class,
 }
 
+// Kind of a hacky solution, try to find a better way to do this later
 #[derive(Resource, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct HasRun(pub bool);
+pub struct BuiltRaceDescriptions(pub bool);
+#[derive(Resource, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct BuiltRaceSelectItems(pub bool);
 
 use bevy::input::common_conditions::input_just_pressed;
 
@@ -83,7 +86,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<ArchetypeAsset>>()
             .init_resource::<RaceBuilder>()
             // for testing, maybe remove later
-            .init_resource::<HasRun>()
+            .init_resource::<BuiltRaceDescriptions>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -148,8 +151,11 @@ impl Plugin for CharacterCreationPlugin {
             // Tab select button management (Race, Class, etc.)
             .add_systems(
                 (
-                    build_description_list::<RaceAsset, RaceItem, PlayableRace>
-                        .run_if(resource_equals(HasRun(false))),
+                    build_description_list::<RaceTab, RaceAsset, RaceItem, PlayableRace>(
+                        RaceTab::RaceDescription,
+                    )
+                    .run_if(resource_equals(BuiltRaceDescriptions(false)))
+                    .run_if(resource_equals(BuiltRaceDescriptions(false))),
                     generics::new_selected_tab::<CreationTabSelected, CreationTab>(),
                     generics::cleanup_tab_button::<CreationTabSelected, CreationTab>(),
                     generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),

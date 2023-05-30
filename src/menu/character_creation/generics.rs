@@ -1,5 +1,59 @@
-use crate::menu::styles::*;
+use crate::menu::{
+    character_creation::components::{RaceTab, SelectedRaceTab},
+    styles::*,
+};
 use bevy::prelude::*;
+
+pub trait SubTabWrapper<U>
+where
+    U: Copy + Clone + Component,
+{
+    fn sub_tab(&self) -> U;
+}
+
+impl SubTabWrapper<RaceTab> for SelectedRaceTab {
+    fn sub_tab(&self) -> RaceTab {
+        self.0
+    }
+}
+
+// Holds the subtab under which a list should be displayed
+#[derive(Component, Clone, Copy)]
+pub struct SubTabListParent<V>
+where
+    V: Copy + Clone + Component,
+{
+    pub sub_tab: V,
+}
+impl<V> SubTabListParent<V>
+where
+    V: Copy + Clone + Component,
+{
+    pub fn from(other: V) -> SubTabListParent<V> {
+        SubTabListParent { sub_tab: other }
+    }
+}
+
+pub fn display_sub_tab<T, V>(
+    subtab: Res<T>,
+    mut query_sub_tab_parent: Query<(&mut Style, &SubTabListParent<V>), With<Node>>,
+) where
+    // The selected subtab resource wrapping the value of the selected tab
+    T: SubTabWrapper<V> + Resource,
+    // The parent list component containing the tab under which this node should
+    // be displayed
+    // U: SubTabListParent<V>,
+    // The type of the subtab
+    V: Component + Copy + Eq + PartialEq,
+{
+    for (mut node_style, list_sub_tab) in &mut query_sub_tab_parent {
+        if subtab.sub_tab() == list_sub_tab.sub_tab {
+            node_style.display = Display::Flex;
+        } else {
+            node_style.display = Display::None;
+        }
+    }
+}
 
 pub fn new_selected_tab<T, U>(
 ) -> impl FnMut(Query<(&Interaction, &U, &mut BackgroundColor), Changed<Interaction>>, ResMut<T>) -> ()

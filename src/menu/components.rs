@@ -30,6 +30,13 @@ pub enum StagesOfCreationButton {
     Optional,
 }
 
+pub trait SelectedWrapper<V>
+where
+    V: Component + Eq + PartialEq + Copy,
+{
+    fn selected(&self) -> V;
+}
+
 #[derive(Component, Debug, Copy, Clone, PartialEq, Eq)]
 pub struct RaceSelectButton;
 

@@ -1,13 +1,15 @@
-use crate::systems::game::archetype::ArchetypeName;
-use crate::systems::{
-    game::character::{AbilityScore, PlayableRace},
-    game::race::RacialTraitName,
+use crate::{
+    menu::{character_creation::generics::SubTabWrapper, components::SelectedWrapper},
+    systems::game::{
+        archetype::ArchetypeName,
+        character::{AbilityScore, PlayableRace},
+        class::PlayableClass,
+        race::RacialTraitName,
+    },
 };
+
 use bevy::prelude::*;
 
-use crate::systems::game::class::PlayableClass;
-
-use super::layout::generics::description::SelectedWrapper;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub enum LeftPanelEnum {
     Race(PlayableRace),

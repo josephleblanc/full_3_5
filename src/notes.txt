@@ -1,1 +1,2 @@
 simple_font: https://www.dafont.com/04b-03.font
+hacky solution to ensuring lists are loaded in the structs in character creation plugin
