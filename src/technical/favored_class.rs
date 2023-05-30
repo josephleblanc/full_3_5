@@ -1,7 +1,7 @@
 //! Implements loader for a custom asset type.
 
 use crate::systems::game::character::PlayableRace;
-use crate::systems::game::class::{FavoredClass, PlayableClass};
+use crate::systems::game::class::FavoredClass;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -44,9 +44,9 @@ impl Plugin for MyFavoredClassAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<State>()
             .add_asset::<FavoredClassAsset>()
-            .init_asset_loader::<FavoredClassAssetLoader>()
-            .add_startup_system(setup_asset_example)
-            .add_system(print_on_load);
+            .init_asset_loader::<FavoredClassAssetLoader>();
+        //             .add_startup_system(setup_asset_example)
+        //             .add_system(print_on_load);
     }
 }
 

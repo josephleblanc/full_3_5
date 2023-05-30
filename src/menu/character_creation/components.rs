@@ -6,6 +6,8 @@ use crate::systems::{
 use bevy::prelude::*;
 
 use crate::systems::game::class::PlayableClass;
+
+use super::layout::generics::description::SelectedWrapper;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub enum LeftPanelEnum {
     Race(PlayableRace),
@@ -207,6 +209,13 @@ impl SelectedArchetype {
 
 #[derive(Resource, Copy, Clone, Debug, Default)]
 pub struct SelectedRaceButton(pub PlayableRace);
+
+// used in character_creation generics
+impl SelectedWrapper<PlayableRace> for SelectedRaceButton {
+    fn selected(&self) -> PlayableRace {
+        self.0
+    }
+}
 
 impl SelectedRaceButton {
     pub fn inner(&self) -> PlayableRace {

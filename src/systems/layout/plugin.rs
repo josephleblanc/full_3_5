@@ -1,19 +1,17 @@
+use crate::menu::character_creation::layout::generics::description::*;
+use crate::menu::character_creation::layout::resource::CentralListBundles;
+use crate::systems::game::character::PlayableRace;
 use crate::{
-    menu::{
-        character_creation::{
-            components::*,
-            generics,
-            layout::generics::description::*,
-            systems::{race_tab::*, setup::*, tooltip::*, *},
-        },
-        mouse::{mouse_scroll, scroll_snap_top},
+    menu::character_creation::{
+        components::*,
+        generics,
+        systems::*,
+        systems::{race_tab::*, setup::*, tooltip::*},
     },
+    menu::mouse::{mouse_scroll, scroll_snap_top},
     system_scheduling::states::AppState,
     systems::{
-        game::{
-            character::PlayableRace,
-            race::{build_race, RaceBuilder},
-        },
+        game::race::{build_race, RaceBuilder},
         layout::character_creation::build_layout,
     },
     technical::{
@@ -62,6 +60,9 @@ enum CreationTabSet {
     Class,
 }
 
+#[derive(Resource, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct HasRun(pub bool);
+
 use bevy::input::common_conditions::input_just_pressed;
 
 impl Plugin for CharacterCreationPlugin {
@@ -81,16 +82,22 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<FavoredClassAsset>>()
             .init_resource::<CustomAssetLoadState<ArchetypeAsset>>()
             .init_resource::<RaceBuilder>()
+            // for testing, maybe remove later
+            .init_resource::<HasRun>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
             )))
             .add_systems(
-                (setup_assets, build_layout, apply_system_buffers)
+                (
+                    setup_assets,
+                    build_layout,
+                    CentralListBundles::init,
+                    apply_system_buffers,
+                )
                     .chain()
                     .in_schedule(OnEnter(AppState::CharacterCreation)),
             )
-            .add_system(build_description_list::<RaceAsset, RaceItem, PlayableRace>)
             .configure_set(
                 // Ensure custom assets loaded, only run in character creation
                 SuperSet::Super
@@ -141,6 +148,8 @@ impl Plugin for CharacterCreationPlugin {
             // Tab select button management (Race, Class, etc.)
             .add_systems(
                 (
+                    build_description_list::<RaceAsset, RaceItem, PlayableRace>
+                        .run_if(resource_equals(HasRun(false))),
                     generics::new_selected_tab::<CreationTabSelected, CreationTab>(),
                     generics::cleanup_tab_button::<CreationTabSelected, CreationTab>(),
                     generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
@@ -176,20 +185,24 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(Build::Build),
             )
             .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
-            // .add_system(fill_alt_traits.in_set(Changed::Race));
-            .add_systems(
-                (
-                    race_tab::list_node,
-                    race_tab::set_list_title,
-                    race_tab::button_col,
-                    race_tab::replacement_text,
-                    race_tab::replace_node,
-                    race_tab::replace_text,
-                    race_tab::description,
-                )
-                    .chain()
+            .add_system(
+                display_node::<SelectedRaceButton, PlayableRace, RaceItem>
                     .in_set(Changed::RaceOrTab),
             )
+            // .add_system(fill_alt_traits.in_set(Changed::Race));
+            // .add_systems(
+            //     (
+            //         // race_tab::list_node,
+            //         // race_tab::set_list_title,
+            //         // race_tab::button_col,
+            //         // race_tab::replacement_text,
+            //         // race_tab::replace_node,
+            //         // race_tab::replace_text,
+            //         // race_tab::description,
+            //     )
+            //         .chain()
+            //         .in_set(Changed::RaceOrTab),
+            // )
             .add_systems(
                 (
                     // Manage the display of left panels.
