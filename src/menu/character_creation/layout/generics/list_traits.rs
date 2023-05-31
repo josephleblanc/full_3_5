@@ -12,3 +12,10 @@ pub trait HasDescr {
 pub trait HasKey<T> {
     fn key(&self) -> T;
 }
+
+pub trait HasItemVec<T>
+where
+    T: bevy::prelude::Component + Clone + Copy,
+{
+    fn vec(&self) -> Vec<(&T, &String, &String)>;
+}

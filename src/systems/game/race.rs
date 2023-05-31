@@ -28,7 +28,7 @@ impl RaceBuilder {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Hash, Eq, Copy, Deserialize, Serialize, Default)]
+#[derive(Component, Clone, Debug, PartialEq, Hash, Eq, Copy, Deserialize, Serialize, Default)]
 pub enum RacialTraitName {
     //// Traits Common to many races
     //// Size

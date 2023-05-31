@@ -3,12 +3,14 @@ use crate::{
     menu::{
         character_creation::{
             components::*,
-            generics::SubTabListParent,
+            generics::{SubTab, SubTabListParent, Tab},
             layout::{generics::list_traits, resource::*},
         },
         components::SelectedWrapper,
         styles::*,
     },
+    systems::game::character::PlayableRace,
+    technical::race_load::RaceAsset,
 };
 use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
@@ -17,7 +19,7 @@ use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
 
 pub fn display_node<S, V, U>(
-    mut query_node: Query<(&mut Style, &V), (With<U>, With<Node>)>,
+    mut query_node: Query<(&mut Style, &V), (With<U>, With<ListNode>)>,
     selected: Res<S>,
 ) where
     S: SelectedWrapper<V> + Resource,
@@ -38,10 +40,22 @@ pub fn display_node<S, V, U>(
         }
     }
 }
+// traits needed for generics in character creation layout
+impl list_traits::HasDescr for RaceAsset {
+    fn description(&self) -> &String {
+        &self.text
+    }
+}
+impl list_traits::HasKey<PlayableRace> for RaceAsset {
+    fn key(&self) -> PlayableRace {
+        self.race
+    }
+}
 
 use crate::systems::layout::plugin::BuiltRaceDescriptions;
 pub const BUILT_LEN: usize = 3;
-pub fn build_description_list<S, T, U, V>(
+pub fn build_description_list<R, S, T, U, V>(
+    tab_identifier: R,
     subtab_identifier: S,
 ) -> impl FnMut(
     Commands,
@@ -52,8 +66,11 @@ pub fn build_description_list<S, T, U, V>(
     ResMut<BuiltRaceDescriptions>,
 )
 where
+    // The tab identifier specified when the function is called,
+    // e.g. CreationTab::RaceTab
+    R: Tab + Component + Copy + Clone,
     // This is the subtab enum identifier
-    S: Component + Copy + Clone,
+    S: SubTab + Component + Copy + Clone,
     // This is the CustomAsset
     T: TypeUuid + Send + Sync + 'static + list_traits::HasDescr + list_traits::HasKey<V>,
     // This is the list Label
@@ -112,8 +129,9 @@ where
             let list_id = commands
                 .spawn((
                     list_resource.list_node.clone(),
-                    SubTabListParent::from(subtab_identifier),
+                    SubTabListParent::from(tab_identifier, subtab_identifier),
                 ))
+                .set_parent(parent_entity)
                 .id();
             for (asset_key, descr_text) in custom_asset.iter().map(|(_handle, asset)| {
                 println!("asset found: {}", asset.key());
@@ -197,7 +215,7 @@ where
                                     ));
                                 });
                         })
-                        .set_parent(parent_entity);
+                        .set_parent(list_id);
                 }
                 println!("count: {count}");
             }

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 pub fn display(
     mut query_button: Query<(&mut Style, &mut SubTabButton)>,
-    selected_tab: Res<CreationTabSelected>,
+    selected_tab: Res<SelectedCreationTab>,
 ) {
     match selected_tab.into_inner().inner() {
         CreationTab::Race => {
@@ -42,7 +42,7 @@ pub fn display(
 
 pub fn text(
     mut query_button_text: Query<&mut Text, With<SubTabButtonText>>,
-    selected_tab: Res<CreationTabSelected>,
+    selected_tab: Res<SelectedCreationTab>,
     asset_server: Res<AssetServer>,
 ) {
     let font = asset_server.load(PATH_SIMPLE_FONT);

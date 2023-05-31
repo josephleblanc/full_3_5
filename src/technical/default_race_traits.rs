@@ -1,7 +1,8 @@
 //! Implements loader for a custom asset type.
-
-use crate::systems::game::character::PlayableRace;
-use crate::systems::game::race::RacialTraitName;
+use crate::{
+    menu::character_creation::layout::generics::list_traits::HasItemVec,
+    systems::game::{character::PlayableRace, race::RacialTraitName},
+};
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -24,6 +25,21 @@ pub struct RacialTraitDisplay {
 pub struct DefaultTraitAsset {
     pub race: PlayableRace,
     pub default_traits: Vec<RacialTraitDisplay>,
+}
+
+impl HasItemVec<RacialTraitName> for DefaultTraitAsset {
+    fn vec(&self) -> Vec<(&RacialTraitName, &String, &String)> {
+        self.default_traits
+            .iter()
+            .map(|default_traits| {
+                (
+                    &default_traits.my_trait_name,
+                    &default_traits.title,
+                    &default_traits.description,
+                )
+            })
+            .collect()
+    }
 }
 
 #[derive(Default)]

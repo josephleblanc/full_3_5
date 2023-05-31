@@ -59,7 +59,7 @@ pub fn archetype_panel_text(
 pub fn archetype_panel_display(
     mut query_list_node: Query<&mut Style, (With<LeftPanelList>, With<ArchetypePanel>)>,
     selected_tab: Res<SelectedClassTab>,
-    creation_tab: Res<CreationTabSelected>,
+    creation_tab: Res<SelectedCreationTab>,
 ) {
     if selected_tab.inner() == ClassTab::Archetypes && creation_tab.inner() == CreationTab::Class {
         query_list_node.get_single_mut().unwrap().display = Display::Flex;

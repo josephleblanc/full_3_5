@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+mod constants;
 mod menu;
 mod my_camera;
 mod my_debug;
@@ -7,7 +8,6 @@ mod my_test_plugins;
 mod system_scheduling;
 mod systems;
 mod technical;
-mod constants;
 use bevy::prelude::*;
 use bevy::winit::WinitSettings;
 use menu::main_menu;
@@ -19,7 +19,7 @@ use technical::default_race_traits::MyDefaultTraitAssetPlugin;
 use technical::favored_class::MyFavoredClassAssetPlugin;
 use technical::race_load::MyRaceAssetPlugin;
 // #[cfg(feature = "debug")]
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use system_scheduling::states::AppState;
 
@@ -45,7 +45,7 @@ fn main() {
             },
         ))
         .insert_resource(WinitSettings::desktop_app())
-        .add_plugin(WorldInspectorPlugin::new())
+        // .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(MyRaceAssetPlugin)
         .add_plugin(MyDefaultTraitAssetPlugin)
         .add_plugin(MyAltTraitAssetPlugin)

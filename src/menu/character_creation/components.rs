@@ -10,6 +10,8 @@ use crate::{
 
 use bevy::prelude::*;
 
+use super::generics::Tab;
+
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub enum LeftPanelEnum {
     Race(PlayableRace),
@@ -58,7 +60,7 @@ impl Default for LeftPanelEnum {
 pub struct LeftPanelButton;
 
 #[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
-pub struct CreationTabSelected(pub CreationTab);
+pub struct SelectedCreationTab(pub CreationTab);
 
 impl ListParent {
     pub fn as_creation_tab(&self) -> Option<CreationTab> {
@@ -86,7 +88,7 @@ impl ListParent {
     // selected, otherwise the Class items are displayed.
     pub fn display(
         mut query: Query<(&mut Style, &ListParent)>,
-        selected_tab: Res<CreationTabSelected>,
+        selected_tab: Res<SelectedCreationTab>,
         selected_class_tab: Res<SelectedClassTab>,
     ) {
         for (mut style, list_parent) in &mut query {
@@ -118,14 +120,22 @@ pub enum CreationTab {
     BonusFeats,
     Optional,
 }
-impl Into<CreationTabSelected> for CreationTab {
-    fn into(self) -> CreationTabSelected {
-        CreationTabSelected(self)
+impl Into<SelectedCreationTab> for CreationTab {
+    fn into(self) -> SelectedCreationTab {
+        SelectedCreationTab(self)
     }
 }
+impl Tab for CreationTab {}
 
-impl CreationTabSelected {
+// TODO: Delete the inner method for SelectedCreationTab and replace it with
+// the method from SelectedWrapper instead.
+impl SelectedCreationTab {
     pub fn inner(&self) -> CreationTab {
+        self.0
+    }
+}
+impl SelectedWrapper<CreationTab> for SelectedCreationTab {
+    fn selected(&self) -> CreationTab {
         self.0
     }
 }
@@ -417,8 +427,15 @@ pub struct RightPanel;
 // Holds the currently selected race for reference by other functions.
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd)]
 pub struct SelectedRaceTab(pub RaceTab);
+// TODO: Replace the inner() method wherever it appears with the `selected` method
+// below instead, and delete `inner`.
 impl SelectedRaceTab {
     pub fn inner(&self) -> RaceTab {
+        self.0
+    }
+}
+impl SelectedWrapper<RaceTab> for SelectedRaceTab {
+    fn selected(&self) -> RaceTab {
         self.0
     }
 }

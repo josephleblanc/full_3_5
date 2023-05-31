@@ -6,7 +6,7 @@ use bevy::prelude::*;
 pub fn cleanup_tab_button(
     query_change: Query<&CreationTab, Changed<Interaction>>,
     mut query_others: Query<(&CreationTab, &Interaction, &mut BackgroundColor)>,
-    selected_tab: Res<CreationTabSelected>,
+    selected_tab: Res<SelectedCreationTab>,
 ) {
     if !query_change.is_empty() {
         for (tab, interaction, mut color) in query_others.iter_mut() {
@@ -17,13 +17,13 @@ pub fn cleanup_tab_button(
     }
 }
 
-// Changes the color of the selected race button, and sets CreationTabSelected
+// Changes the color of the selected race button, and sets SelectedCreationTab
 pub fn selected_tab(
     mut interaction_query: Query<
         (&Interaction, &CreationTab, &mut BackgroundColor),
         Changed<Interaction>,
     >,
-    mut selected_tab: ResMut<CreationTabSelected>,
+    mut selected_tab: ResMut<SelectedCreationTab>,
 ) {
     let selection_copy = (*selected_tab).inner();
     for (interaction, tab, mut color) in &mut interaction_query {
@@ -31,9 +31,9 @@ pub fn selected_tab(
             Interaction::Clicked => {
                 if selection_copy != *tab {
                     *color = RACE_BUTTON_COLOR_SELECTED.into();
-                    *selected_tab = CreationTabSelected(*tab);
+                    *selected_tab = SelectedCreationTab(*tab);
                 }
-                println!("Changing CreationTabSelected to {:?}", selected_tab);
+                println!("Changing SelectedCreationTab to {:?}", selected_tab);
             }
             Interaction::Hovered => {
                 if selection_copy != *tab {

@@ -4,6 +4,21 @@ use crate::menu::{
 };
 use bevy::prelude::*;
 
+use super::components::{CreationTab, SelectedCreationTab};
+
+pub trait TabWrapper<U>
+where
+    U: Copy + Clone + Component,
+{
+    fn tab(&self) -> U;
+}
+
+impl TabWrapper<CreationTab> for SelectedCreationTab {
+    fn tab(&self) -> CreationTab {
+        self.0
+    }
+}
+
 pub trait SubTabWrapper<U>
 where
     U: Copy + Clone + Component,
@@ -19,37 +34,46 @@ impl SubTabWrapper<RaceTab> for SelectedRaceTab {
 
 // Holds the subtab under which a list should be displayed
 #[derive(Component, Clone, Copy)]
-pub struct SubTabListParent<V>
+pub struct SubTabListParent<R, V>
 where
-    V: Copy + Clone + Component,
+    R: Copy + Clone + Component + Tab,
+    V: Copy + Clone + Component + SubTab,
 {
+    pub tab: R,
     pub sub_tab: V,
 }
-impl<V> SubTabListParent<V>
+impl<R, V> SubTabListParent<R, V>
 where
-    V: Copy + Clone + Component,
+    R: Copy + Clone + Component + Tab,
+    V: Copy + Clone + Component + SubTab,
 {
-    pub fn from(other: V) -> SubTabListParent<V> {
-        SubTabListParent { sub_tab: other }
+    pub fn from(tab: R, sub_tab: V) -> SubTabListParent<R, V> {
+        SubTabListParent { tab, sub_tab }
     }
 }
 
-pub fn display_sub_tab<T, V>(
+impl Tab for SelectedCreationTab {}
+impl SubTab for RaceTab {}
+
+pub trait Tab {}
+pub trait SubTab {}
+
+pub fn display_sub_tab<R, T, V, U, W>(
     subtab: Res<T>,
-    mut query_sub_tab_parent: Query<(&mut Style, &SubTabListParent<V>), With<Node>>,
+    mut query_sub_tab_parent: Query<(&mut Style, &SubTabListParent<R, V>), With<Node>>,
 ) where
+    R: Tab + Component + Copy + Clone,
+    // The selected tab resource wrapping the value of the selected tab
+    U: TabWrapper<R> + Resource,
     // The selected subtab resource wrapping the value of the selected tab
     T: SubTabWrapper<V> + Resource,
-    // The parent list component containing the tab under which this node should
-    // be displayed
-    // U: SubTabListParent<V>,
     // The type of the subtab
-    V: Component + Copy + Eq + PartialEq,
+    V: Component + Copy + Eq + PartialEq + SubTab,
 {
     for (mut node_style, list_sub_tab) in &mut query_sub_tab_parent {
         if subtab.sub_tab() == list_sub_tab.sub_tab {
             node_style.display = Display::Flex;
-        } else {
+        } else if node_style.display == Display::Flex {
             node_style.display = Display::None;
         }
     }

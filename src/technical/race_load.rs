@@ -1,7 +1,5 @@
 //! Implements loader for a custom asset type.
 
-use crate::menu::character_creation::layout::generics::list_traits::HasDescr;
-use crate::menu::character_creation::layout::generics::list_traits::HasKey;
 pub(crate) use crate::systems::game::character::PlayableRace;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
@@ -16,18 +14,6 @@ use serde::Deserialize;
 pub struct RaceAsset {
     pub race: PlayableRace,
     pub text: String,
-}
-
-// traits needed for generics in character creation layout
-impl HasDescr for RaceAsset {
-    fn description(&self) -> &String {
-        &self.text
-    }
-}
-impl HasKey<PlayableRace> for RaceAsset {
-    fn key(&self) -> PlayableRace {
-        self.race
-    }
 }
 
 #[derive(Default)]
