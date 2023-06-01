@@ -18,6 +18,8 @@ use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
 
+use super::select_item::{BuiltLists, ListName};
+
 pub fn display_node<S, V, U>(
     mut query_node: Query<(&mut Style, &V), (With<U>, With<ListNode>)>,
     selected: Res<S>,
@@ -52,31 +54,34 @@ impl list_traits::HasKey<PlayableRace> for RaceAsset {
     }
 }
 
-use crate::systems::layout::plugin::BuiltRaceDescriptions;
-pub const BUILT_LEN: usize = 3;
+#[derive(Component, Copy, Clone, Debug, Default)]
+pub struct RaceItemDescription;
+
 pub fn build_description_list<R, S, T, U, V>(
     tab_identifier: R,
     subtab_identifier: S,
+    build_enum: ListName,
 ) -> impl FnMut(
     Commands,
     Query<Entity, (With<ListParent>, With<U>)>,
     Res<Assets<T>>,
     Res<AssetServer>,
     Res<CentralListBundles>,
-    ResMut<BuiltRaceDescriptions>,
+    ResMut<BuiltLists>,
 )
 where
     // The tab identifier specified when the function is called,
     // e.g. CreationTab::RaceTab
-    R: Tab + Component + Copy + Clone,
+    R: Tab + Component + Copy + Clone + std::fmt::Debug,
     // This is the subtab enum identifier
-    S: SubTab + Component + Copy + Clone,
+    S: SubTab + Component + Copy + Clone + std::fmt::Debug,
     // This is the CustomAsset
     T: TypeUuid + Send + Sync + 'static + list_traits::HasDescr + list_traits::HasKey<V>,
     // This is the list Label
     U: Component + Default,
     // This is the identifying enum
     V: Component + list_traits::AsVec + Eq + PartialEq + std::fmt::Display + Copy,
+    (bevy::prelude::NodeBundle, SubTabListParent<R, S>): bevy::prelude::Bundle,
 {
     // This is a generic function to build a description list in the style of the character
     // creation menu.
@@ -115,21 +120,21 @@ where
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
+          mut res_built: ResMut<BuiltLists>
           // try to remove this later
-          mut has_run: ResMut<BuiltRaceDescriptions>| {
+          | {
+        if !res_built.inner_mut().contains(&build_enum) {
         let shared_font = asset_server.load(PATH_SIMPLE_FONT);
         let parent_entity = query_parent.get_single().unwrap();
         let key_vec = V::vec();
         let key_array = key_vec.as_slice();
         println!("{} assets loaded", custom_asset.len());
-
-        let mut count = 3;
-
-        if custom_asset.len() > 2 && has_run.0 == false {
             let list_id = commands
                 .spawn((
                     list_resource.list_node.clone(),
                     SubTabListParent::from(tab_identifier, subtab_identifier),
+                    Name::from("description nodes list parent"),
+                    RaceItemDescription,
                 ))
                 .set_parent(parent_entity)
                 .id();
@@ -138,13 +143,12 @@ where
                 (asset.key(), asset.description())
             }) {
                 if key_array.contains(&asset_key) {
-                    count -= 1;
                     let key = asset_key;
-                    println!("--> building node for {}", key);
+                    println!("--> building description node for {}", key);
                     commands
                         .spawn((
                             // Each of these nodes is one row.
-                            Name::from("Race Trait description"),
+                            Name::from("Race description node"),
                             ListNode,
                             list_resource.list_node.clone(),
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
@@ -217,9 +221,8 @@ where
                         })
                         .set_parent(list_id);
                 }
-                println!("count: {count}");
             }
-            has_run.0 = true;
+            res_built.inner_mut().push(build_enum)
         }
-    }
+        }
 }

@@ -14,7 +14,7 @@ use crate::{
 use bevy::prelude::*;
 
 pub fn list_node(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_node: Query<&mut Style, (With<ListNode>, With<RaceItem>)>,
     std_trait_asset: Res<Assets<DefaultTraitAsset>>,
@@ -75,7 +75,7 @@ pub fn list_node(
 // Set title text for elements of the list in the central display while in the
 // Race tab of character creation.
 pub fn set_list_title(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_title: Query<(&mut Style, &mut Text), (With<ListTitle>, With<RaceItem>)>,
     asset_server: Res<AssetServer>,
@@ -166,7 +166,7 @@ pub fn set_list_title(
 // containing the replacement text for alternate traits in the race tab of
 // character creation.
 pub fn button_col(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_button: Query<&mut Style, (With<ListButtonColumn>, Without<ButtonText>)>,
     mut query_button_text: Query<
@@ -235,7 +235,7 @@ pub fn button_col(
 // The static value of replacement text for choosing alternate traits in the
 // alternate traits subtab of race selection in character creation.
 pub fn replacement_text(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_node: Query<(&mut Style, &mut Text), (With<ReplacesText>, With<RaceItem>)>,
     asset_server: Res<AssetServer>,
@@ -283,7 +283,7 @@ pub fn replacement_text(
 // Sets the display of the replaces node in the left side of the row for an alternate
 // trait. Should not be displayed for other race subtabs.
 pub fn replace_node(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_node: Query<&mut Style, (With<ReplacesContent>, With<RaceItem>)>,
     alt_trait_asset: Res<Assets<AltTraitAsset>>,
@@ -321,7 +321,7 @@ pub fn replace_node(
 // Sets the text of the replaced traits in the left column of the alternate traits
 // list element of the race tab in character creation.
 pub fn replace_text(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_node: Query<(&mut Style, &mut Text, &mut AltTraitReplaces)>,
     asset_server: Res<AssetServer>,
@@ -377,7 +377,7 @@ pub fn replace_text(
 }
 // Handle the description text display in the race tab.
 pub fn description(
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_race_tab: Res<SelectedRaceTab>,
     mut query_descr: Query<(&mut Style, &mut Text), (With<Description>, With<RaceItem>)>,
     asset_server: Res<AssetServer>,
@@ -576,7 +576,7 @@ fn build_text(string: String, font: Handle<Font>) -> Text {
 // This is required for the build_race system.
 pub fn update_race_builder(
     mut race_builder: ResMut<RaceBuilder>,
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
 ) {
     race_builder.inner_mut().clear();
     race_builder

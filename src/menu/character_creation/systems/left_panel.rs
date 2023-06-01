@@ -145,7 +145,7 @@ pub fn cleanup_buttons(
         &mut BackgroundColor,
         &LeftPanelButton,
     )>,
-    selected_race: Res<SelectedRaceButton>,
+    selected_race: Res<SelectedRace>,
     selected_class: Res<SelectedClass>,
 ) {
     if !query_change.is_empty() {
@@ -167,7 +167,7 @@ pub fn button_system(
         (&Interaction, &LeftPanelEnum, &mut BackgroundColor),
         Changed<Interaction>,
     >,
-    mut selected_race: ResMut<SelectedRaceButton>,
+    mut selected_race: ResMut<SelectedRace>,
     mut selected_class: ResMut<SelectedClass>,
 ) {
     let selection_copy = selected_race.inner();
@@ -177,7 +177,7 @@ pub fn button_system(
                 Interaction::Clicked => {
                     if selection_copy != player_race {
                         *color = RACE_BUTTON_COLOR_SELECTED.into();
-                        *selected_race = SelectedRaceButton(player_race);
+                        *selected_race = SelectedRace(player_race);
                     }
                 }
                 Interaction::Hovered => {

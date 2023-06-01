@@ -8,7 +8,7 @@ use super::components::{CreationTab, SelectedCreationTab};
 
 pub trait TabWrapper<U>
 where
-    U: Copy + Clone + Component,
+    U: Copy + Clone + Component + Tab,
 {
     fn tab(&self) -> U;
 }
@@ -21,7 +21,7 @@ impl TabWrapper<CreationTab> for SelectedCreationTab {
 
 pub trait SubTabWrapper<U>
 where
-    U: Copy + Clone + Component,
+    U: Copy + Clone + Component + SubTab,
 {
     fn sub_tab(&self) -> U;
 }
@@ -33,42 +33,43 @@ impl SubTabWrapper<RaceTab> for SelectedRaceTab {
 }
 
 // Holds the subtab under which a list should be displayed
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Debug)]
 pub struct SubTabListParent<R, V>
 where
-    R: Copy + Clone + Component + Tab,
-    V: Copy + Clone + Component + SubTab,
+    R: Copy + Clone + Component + Tab + std::fmt::Debug,
+    V: Copy + Clone + Component + SubTab + std::fmt::Debug,
 {
     pub tab: R,
     pub sub_tab: V,
 }
 impl<R, V> SubTabListParent<R, V>
 where
-    R: Copy + Clone + Component + Tab,
-    V: Copy + Clone + Component + SubTab,
+    R: Copy + Clone + Component + Tab + std::fmt::Debug,
+    V: Copy + Clone + Component + SubTab + std::fmt::Debug,
 {
     pub fn from(tab: R, sub_tab: V) -> SubTabListParent<R, V> {
+        println!("creating SubTabListParent from {tab:#?} and {sub_tab:#?}");
         SubTabListParent { tab, sub_tab }
     }
 }
 
-impl Tab for SelectedCreationTab {}
+impl Tab for CreationTab {}
 impl SubTab for RaceTab {}
 
 pub trait Tab {}
 pub trait SubTab {}
 
-pub fn display_sub_tab<R, T, V, U, W>(
+pub fn display_sub_tab<R, U, V, T>(
     subtab: Res<T>,
     mut query_sub_tab_parent: Query<(&mut Style, &SubTabListParent<R, V>), With<Node>>,
 ) where
-    R: Tab + Component + Copy + Clone,
+    R: Tab + Component + Copy + Clone + std::fmt::Debug,
     // The selected tab resource wrapping the value of the selected tab
     U: TabWrapper<R> + Resource,
+    // The type of the subtab
+    V: SubTab + Component + Copy + Eq + PartialEq + std::fmt::Debug,
     // The selected subtab resource wrapping the value of the selected tab
     T: SubTabWrapper<V> + Resource,
-    // The type of the subtab
-    V: Component + Copy + Eq + PartialEq + SubTab,
 {
     for (mut node_style, list_sub_tab) in &mut query_sub_tab_parent {
         if subtab.sub_tab() == list_sub_tab.sub_tab {

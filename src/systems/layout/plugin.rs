@@ -1,6 +1,7 @@
-use crate::menu::character_creation::layout::generics::description;
+use crate::menu::character_creation::generics::display_sub_tab;
+use crate::menu::character_creation::layout::generics::description::{self, RaceItemDescription};
 use crate::menu::character_creation::layout::generics::select_item::{
-    build_button_desc_list, display_list,
+    build_button_desc_list, BuiltLists, ListName, RaceItemAltTrait, RaceItemDefaultTrait,
 };
 use crate::menu::character_creation::layout::resource::CentralListBundles;
 use crate::systems::game::character::PlayableRace;
@@ -68,12 +69,6 @@ enum CreationTabSet {
     Class,
 }
 
-// Kind of a hacky solution, try to find a better way to do this later
-#[derive(Resource, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct BuiltRaceDescriptions(pub bool);
-#[derive(Resource, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct BuiltRaceSelectItems(pub bool);
-
 use bevy::input::common_conditions::input_just_pressed;
 
 impl Plugin for CharacterCreationPlugin {
@@ -81,7 +76,7 @@ impl Plugin for CharacterCreationPlugin {
         app
             //// init resources, load custom assets, & build layout
             .init_resource::<SelectedRaceTab>()
-            .init_resource::<SelectedRaceButton>()
+            .init_resource::<SelectedRace>()
             .init_resource::<SelectedClassTab>()
             .init_resource::<SelectedClass>()
             .init_resource::<SelectedArchetype>()
@@ -93,9 +88,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<FavoredClassAsset>>()
             .init_resource::<CustomAssetLoadState<ArchetypeAsset>>()
             .init_resource::<RaceBuilder>()
-            // for testing, maybe remove later
-            .init_resource::<BuiltRaceDescriptions>()
-            .init_resource::<BuiltRaceSelectItems>()
+            .init_resource::<BuiltLists>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -130,14 +123,14 @@ impl Plugin for CharacterCreationPlugin {
             )
             .configure_sets(
                 (
-                    Build::Super.run_if(resource_changed::<SelectedRaceButton>()),
+                    Build::Super.run_if(resource_changed::<SelectedRace>()),
                     Build::PreBuild
                         .before(Build::Build)
-                        .run_if(resource_changed::<SelectedRaceButton>()),
+                        .run_if(resource_changed::<SelectedRace>()),
                     Build::Build.run_if(resource_changed::<RaceBuilder>()),
-                    Changed::Race.run_if(resource_changed::<SelectedRaceButton>()),
+                    Changed::Race.run_if(resource_changed::<SelectedRace>()),
                     Changed::RaceOrTab.run_if(
-                        resource_changed::<SelectedRaceButton>()
+                        resource_changed::<SelectedRace>()
                             .or_else(resource_changed::<SelectedRaceTab>()),
                     ),
                     Changed::ClassOrTab.run_if(
@@ -168,19 +161,40 @@ impl Plugin for CharacterCreationPlugin {
                         CreationTab,
                         RaceTab,
                         RaceAsset,
-                        RaceItem,
+                        RaceItemDescription,
                         PlayableRace,
-                    >(CreationTab::Race, RaceTab::RaceDescription)
-                    .run_if(resource_equals(BuiltRaceDescriptions(false))),
+                    >(
+                        CreationTab::Race,
+                        RaceTab::RaceDescription,
+                        ListName::DescriptionRace,
+                    )
+                    .run_if(not(BuiltLists::is_built(ListName::DescriptionRace))),
                     build_button_desc_list::<
+                        RaceItemDefaultTrait,
                         CreationTab,
                         RaceTab,
                         DefaultTraitAsset,
-                        RaceItem,
                         PlayableRace,
                         RacialTraitName,
-                    >(CreationTab::Race, RaceTab::StandardTraitTab)
-                    .run_if(resource_equals(BuiltRaceSelectItems(false))),
+                    >(
+                        CreationTab::Race,
+                        RaceTab::StandardTraitTab,
+                        ListName::DefaultTraitsRace,
+                    )
+                    .run_if(not(BuiltLists::is_built(ListName::DefaultTraitsRace))),
+                    build_button_desc_list::<
+                        RaceItemAltTrait,
+                        CreationTab,
+                        RaceTab,
+                        AltTraitAsset,
+                        PlayableRace,
+                        RacialTraitName,
+                    >(
+                        CreationTab::Race,
+                        RaceTab::AltTraitTab,
+                        ListName::AltTraitsRace,
+                    )
+                    .run_if(not(BuiltLists::is_built(ListName::AltTraitsRace))),
                     generics::new_selected_tab::<SelectedCreationTab, CreationTab>(),
                     generics::cleanup_tab_button::<SelectedCreationTab, CreationTab>(),
                     generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
@@ -218,35 +232,30 @@ impl Plugin for CharacterCreationPlugin {
             .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
             .add_systems(
                 (
-                    description::display_node::<SelectedRaceButton, PlayableRace, RaceItem>
-                        .before(
-                            display_list::<
-                                CreationTab,
-                                RaceTab,
-                                SelectedCreationTab,
-                                SelectedRaceTab,
-                                RaceItem,
-                            >,
-                        )
+                    description::display_node::<SelectedRace, PlayableRace, RaceItemDescription>
                         .run_if(
                             resource_changed::<SelectedCreationTab>().or_else(
                                 resource_changed::<SelectedRaceTab>()
-                                    .or_else(resource_changed::<SelectedRaceButton>()),
+                                    .or_else(resource_changed::<SelectedRace>()),
                             ),
                         )
                         .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
-                    // .run_if(resource_equals(SelectedRaceTab(RaceTab::RaceDescription))),
-                    display_list::<
-                        CreationTab,
-                        RaceTab,
-                        SelectedCreationTab,
-                        SelectedRaceTab,
-                        RaceItem,
-                    >
+                    description::display_node::<SelectedRace, PlayableRace, RaceItemDefaultTrait>
                         .run_if(
-                            resource_changed::<SelectedCreationTab>()
-                                .or_else(resource_changed::<SelectedRaceTab>()),
-                        ),
+                            resource_changed::<SelectedCreationTab>().or_else(
+                                resource_changed::<SelectedRaceTab>()
+                                    .or_else(resource_changed::<SelectedRace>()),
+                            ),
+                        )
+                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
+                    display_sub_tab::<CreationTab, SelectedCreationTab, RaceTab, SelectedRaceTab>
+                        .run_if(
+                            resource_changed::<SelectedCreationTab>().or_else(
+                                resource_changed::<SelectedRaceTab>()
+                                    .or_else(resource_changed::<SelectedRace>()),
+                            ),
+                        )
+                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
                 )
                     .in_set(SuperSet::Super),
             )

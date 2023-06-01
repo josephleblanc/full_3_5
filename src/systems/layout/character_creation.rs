@@ -1,4 +1,8 @@
 use crate::menu::character_creation::components::*;
+use crate::menu::character_creation::layout::generics::description::RaceItemDescription;
+use crate::menu::character_creation::layout::generics::select_item::{
+    RaceItemAltTrait, RaceItemDefaultTrait,
+};
 use crate::menu::components::ScrollingList;
 use crate::menu::styles::*;
 use crate::systems::game::{
@@ -634,7 +638,13 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     // Race Tab display
     commands
-        .spawn((list_parent.clone(), ListParent::Race, RaceItem))
+        .spawn((
+            list_parent.clone(),
+            ListParent::Race,
+            RaceItemDescription,
+            RaceItemDefaultTrait,
+            RaceItemAltTrait,
+        ))
         .set_parent(central_scroll_list);
     // Class Tab display
     let class_parent_id = commands

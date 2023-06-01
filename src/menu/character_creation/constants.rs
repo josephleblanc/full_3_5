@@ -10,7 +10,6 @@ pub const CLASS_DESCRIPTION_TITLE: &'static str = "Class Description";
 pub const LIST_PARENT_NODE_STYLE: Style = Style {
     // padding: UiRect::all(Val::Px(5.)),
     margin: UiRect::all(Val::Px(10.)),
-    display: Display::None,
     flex_direction: FlexDirection::Column,
     ..Style::DEFAULT
 };
