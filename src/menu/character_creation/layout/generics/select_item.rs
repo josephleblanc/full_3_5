@@ -4,10 +4,8 @@ use crate::{
         character_creation::{
             components::*,
             constants::{LIST_DESCRIPTION_TEXT_STYLE, LIST_ITEM_TITLE_STYLE},
-            generics::{SubTab, SubTabListParent, Tab},
             layout::{generics::list_traits, resource::*},
         },
-        components::SelectedWrapper,
         styles::*,
     },
     systems::game::{character, race::RacialTraitName},
@@ -60,98 +58,45 @@ impl HasItemVec<RacialTraitName> for AltTraitAsset {
 
 use bevy::reflect::TypeUuid;
 
-pub fn display_list<A, B, R, P, U>(
-    mut query_list_parent: Query<(&mut Style, &SubTabListParent<A, B>, &Name), With<U>>,
-    selected_tab: Res<R>,
-    selected_sub_tab: Res<P>,
-    with_replaces: bool,
-) where
-    // The type of the tab this node should be displayed in
-    A: Tab + Component + Copy + Clone + Eq + std::fmt::Debug,
-    // The type of the subtab this node should be displayed in
-    B: SubTab + Component + Copy + Clone + Eq + std::fmt::Debug,
-    // This is the wrapper for the selected tab,
-    // e.g. SelectedCreationTab
-    R: SelectedWrapper<A> + Resource,
-    // This is the wrapper for the selected subtab,
-    // e.g. SelectedClassTab
-    P: SelectedWrapper<B> + Resource,
-    // This is the list Label
-    // e.g. ClassItem, RaceItem
-    U: Component + Default,
-{
-    // This is the generic way to show or hide a list of items with a selected
-    // tab and subtab.
-    for (mut style, list_parent, name) in &mut query_list_parent {
-        if list_parent.tab == selected_tab.selected()
-            && list_parent.sub_tab == selected_sub_tab.selected()
-        {
-            println!("setting {name} to {:?}", style.display);
-            style.display = Display::Flex;
-        } else {
-            println!("setting {name} to {:?}", style.display);
-            style.display = Display::None;
-        }
-    }
-}
+// TODO: adjust this function for the new button select
+pub fn display_list() {}
 
 #[derive(Component, Copy, Clone, Debug, Default)]
 pub struct RaceItemDefaultTrait;
 #[derive(Component, Copy, Clone, Debug, Default)]
 pub struct RaceItemAltTrait;
 
-#[derive(Component, Copy, Clone, Debug, Default, Eq, PartialEq)]
-pub enum ListName {
-    #[default]
-    DescriptionRace,
-    DefaultTraitsRace,
-    AltTraitsRace,
-    ClassDescription,
-    ClassFeaturesDescription,
-    ClassArchetypes,
-}
-
 #[derive(Resource, Clone, Debug, Default)]
-pub struct BuiltLists(pub Vec<ListName>);
+pub struct BuiltLists(pub Vec<SubTabListParent>);
 
+// TODO: Change this to receive events from building the lists
 impl BuiltLists {
-    pub fn inner_mut(&mut self) -> &mut Vec<ListName> {
+    pub fn inner_mut(&mut self) -> &mut Vec<SubTabListParent> {
         &mut self.0
     }
-    pub fn inner_ref(&self) -> &Vec<ListName> {
+    pub fn inner_ref(&self) -> &Vec<SubTabListParent> {
         &self.0
     }
-    pub fn is_built(list: ListName) -> impl Fn(Res<BuiltLists>) -> bool {
+    pub fn is_built(list: SubTabListParent) -> impl Fn(Res<BuiltLists>) -> bool {
         move |built_lists: Res<BuiltLists>| built_lists.inner_ref().contains(&list)
     }
 }
 
-// TODO: Make something similar to this function but without the buttons,
-// as that fits better with default traits vs alternate traits.
+// TODO: adjust this function for the new button select
 use super::list_traits::HasItemVec;
-pub fn build_button_desc_list<U, R, S, T, V, Q>(
-    tab_identifier: R,
-    subtab_identifier: S,
-    build_enum: ListName,
+pub fn build_button_desc_list<T, V, Q>(
+    tab: Tab,
+    subtab: SubTab,
     with_replaces: bool,
 ) -> impl FnMut(
     Commands,
-    Query<Entity, (With<ListParent>, With<U>)>,
+    Query<Entity, With<ListParent>>,
     Res<Assets<T>>,
     Res<AssetServer>,
     Res<CentralListBundles>,
     ResMut<BuiltLists>,
 )
 where
-    // This is the list Label
-    // e.g. RaceItem, ClassItem
-    U: Component + Default,
-    // The tab identifier specified when the function is called,
-    // e.g. CreationTab::RaceTab
-    R: Tab + Component + Copy + Clone + std::fmt::Debug,
-    // This is the subtab identifier specified when the function is called,
-    // e.g. RaceTab::AlternateTraits, ClassTab::ClassFeatures
-    S: Component + Clone + Copy + SubTab + std::fmt::Debug,
     // This is the CustomAsset
     // e.g. RaceAsset, ClassAsset
     T: TypeUuid + Send + Sync + 'static + list_traits::HasKey<V> + list_traits::HasItemVec<Q>,
@@ -169,14 +114,18 @@ where
     //   3. Setup the list parent.
     //   4. add a system with the function, using the subtab_identifier parameter.
     move |mut commands: Commands,
-          query_parent: Query<Entity, (With<ListParent>, With<U>)>,
+          query_parent: Query<Entity, With<ListParent>>,
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
          mut res_built: ResMut<BuiltLists>,
           // try to remove this later
           | {
-        if !res_built.inner_mut().contains(&build_enum) {
+        let subtab_list_parent = SubTabListParent {
+            tab,
+            subtab,
+        };
+        if !res_built.inner_mut().contains(&subtab_list_parent) {
             println!(
                 "custom_asset len when running build_button desc_list: {}",
                 custom_asset.len()
@@ -188,9 +137,12 @@ where
                 let list_id = commands
                     .spawn((
                         list_resource.list_node.clone(),
-                        SubTabListParent::from(tab_identifier, subtab_identifier),
+                        // SubTabListParent::from(tab_identifier, subtab_identifier),
                         Name::from("select description node parent"),
-                        RaceItemDefaultTrait,
+                        SubTabListParent {
+                            tab,
+                            subtab,
+                    }
                     ))
                     .set_parent(parent_entity)
                     .id();
@@ -213,7 +165,6 @@ where
                                     ListNode,
                                     key,
                                     *enum_name,
-                                    U::default(),
                                 ))
                                 .set_parent(list_id)
                                 .with_children(|list_node| {
@@ -232,7 +183,6 @@ where
                                                     ..default()
                                                 },
                                                 ListTitle,
-                                                U::default(),
                                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
                                     list_node
@@ -243,7 +193,6 @@ where
                                             list_resource.list_row_node.clone(),
                                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             // Label
-                                            U::default(),
                                         ))
                                         .with_children(|row_node| {
                                     if with_replaces {
@@ -251,7 +200,6 @@ where
                                         .spawn((
                                             Name::from("button column"),
                                             list_resource.list_col_node.clone(),
-                                            U::default(),
                                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                         ))
                                         .with_children(|button_col| {
@@ -260,7 +208,6 @@ where
                                                 .spawn((
                                                     Name::from("button to choose item"),
                                                     list_resource.list_button.clone(),
-                                                    U::default(),
                                                     AccessibilityNode(NodeBuilder::new(
                                                         Role::Column,
                                                     )),
@@ -270,7 +217,6 @@ where
                                                     button.spawn((
                                                         Name::from("button text"),
                                                         list_resource.list_button_text.clone(),
-                                                        U::default(),
                                                         AccessibilityNode(NodeBuilder::new(
                                                             Role::Button,
                                                         )),
@@ -280,13 +226,11 @@ where
                                             button_col.spawn((
                                                 Name::from("text that reads 'replace'"),
                                                 list_resource.skill_replaces_text.clone(),
-                                                U::default(),
                                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
                                             button_col.spawn((
                                                 Name::from("items that will be replaced"),
                                                 list_resource.skill_replacement_item_text.clone(),
-                                                U::default(),
                                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
                                             }
@@ -300,7 +244,6 @@ where
                                             list_resource.list_node.clone(),
                                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             // Label
-                                            U::default(),
                                         ))
                                         .with_children(|row_node| {
                                             row_node
@@ -310,7 +253,6 @@ where
                                                     AccessibilityNode(NodeBuilder::new(
                                                         Role::ListItem,
                                                     )),
-                                                    U::default(),
                                                 ))
                                                 .with_children(|inner_row_node| {
                                                     // Item description
@@ -331,7 +273,6 @@ where
                                                         },
                                                         // Description,
                                                         // Label
-                                                        U::default(),
                                                         AccessibilityNode(NodeBuilder::new(
                                                             Role::ListItem,
                                                         )),
@@ -343,7 +284,7 @@ where
                         }
                     }
                 }
-            res_built.inner_mut().push(build_enum)
+            res_built.inner_mut().push(subtab_list_parent)
         }
             }
 }

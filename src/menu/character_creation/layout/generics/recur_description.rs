@@ -4,7 +4,6 @@ use crate::{
         character_creation::{
             components::*,
             constants::{LIST_DESCRIPTION_TEXT_STYLE, LIST_ITEM_TITLE_STYLE},
-            generics::{SubTab, SubTabListParent, Tab},
             layout::{
                 generics::{list_traits, select_item::RaceItemDefaultTrait},
                 resource::*,
@@ -19,30 +18,20 @@ use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
 
-use super::select_item::{BuiltLists, ListName};
+use super::select_item::BuiltLists;
 
-pub fn build_item_desc_list<U, R, S, T, V, Q>(
-    tab_identifier: R,
-    subtab_identifier: S,
-    build_enum: ListName,
+pub fn build_item_desc_list<T, V, Q>(
+    tab: Tab,
+    subtab: SubTab,
 ) -> impl FnMut(
     Commands,
-    Query<Entity, (With<ListParent>, With<U>)>,
+    Query<Entity, With<ListParent>>,
     Res<Assets<T>>,
     Res<AssetServer>,
     Res<CentralListBundles>,
     ResMut<BuiltLists>,
 )
 where
-    // This is the list Label
-    // e.g. RaceItem, ClassItem
-    U: Component + Default,
-    // The tab identifier specified when the function is called,
-    // e.g. CreationTab::RaceTab
-    R: Tab + Component + Copy + Clone + std::fmt::Debug,
-    // This is the subtab identifier specified when the function is called,
-    // e.g. RaceTab::AlternateTraits, ClassTab::ClassFeatures
-    S: Component + Clone + Copy + SubTab + std::fmt::Debug,
     // This is the CustomAsset
     // e.g. RaceAsset, ClassAsset
     T: TypeUuid + Send + Sync + 'static + list_traits::HasKey<V> + list_traits::HasItemVec<Q>,
@@ -60,14 +49,18 @@ where
     //   3. Setup the list parent.
     //   4. add a system with the function, using the subtab_identifier parameter.
     move |mut commands: Commands,
-          query_parent: Query<Entity, (With<ListParent>, With<U>)>,
+          query_parent: Query<Entity, With<ListParent>>,
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
         mut res_built: ResMut<BuiltLists>
           // try to remove this later
           | {
-        if !res_built.inner_mut().contains(&build_enum) {
+        let subtab_list_parent = SubTabListParent {
+            tab,
+            subtab,
+        };
+        if !res_built.inner_ref().contains(&subtab_list_parent) {
             println!(
                 "custom_asset len when running build_button desc_list: {}",
                 custom_asset.len()
@@ -79,7 +72,6 @@ where
                 let list_id = commands
                     .spawn((
                         list_resource.subtab_list_parent.clone(),
-                        SubTabListParent::from(tab_identifier, subtab_identifier),
                         Name::from("select description node parent"),
                         RaceItemDefaultTrait,
                     ))
@@ -104,7 +96,7 @@ where
                                     ListNode,
                                     key,
                                     *enum_name,
-                                    U::default(),
+                                    
                                 ))
                                 .set_parent(list_id)
                                 .with_children(|list_node| {
@@ -124,7 +116,7 @@ where
                                                 ..default()
                                             },
                                             ListTitle,
-                                            U::default(),
+                                            
                                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
                                     list_node
@@ -134,7 +126,7 @@ where
                                             AccessibilityNode(NodeBuilder::new(
                                                 Role::ListItem,
                                             )),
-                                            U::default(),
+                                            
                                         ))
                                         .with_children(|inner_row_node| {
                                             println!(
@@ -160,7 +152,7 @@ where
                                                 },
                                                 // Description,
                                                 // Label
-                                                U::default(),
+                                                
                                                 AccessibilityNode(NodeBuilder::new(
                                                     Role::ListItem,
                                                 )),
@@ -171,6 +163,6 @@ where
                         }
                     }
                 }
-            res_built.inner_mut().push(build_enum)
+            res_built.inner_mut().push(subtab_list_parent)
         }
 }

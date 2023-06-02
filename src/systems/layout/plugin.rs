@@ -1,4 +1,3 @@
-use crate::menu::character_creation::generics::display_sub_tab;
 use crate::menu::character_creation::layout::generics::description::{
     self, ClassItemDescription, RaceItemDescription,
 };
@@ -280,14 +279,14 @@ impl Plugin for CharacterCreationPlugin {
                             ),
                         )
                         .run_if(resource_equals(SelectedCreationTab(CreationTab::Class))),
-                    display_sub_tab::<CreationTab, SelectedCreationTab, RaceTab, SelectedRaceTab>
-                        .run_if(
-                            resource_changed::<SelectedCreationTab>().or_else(
-                                resource_changed::<SelectedRaceTab>()
-                                    .or_else(resource_changed::<SelectedRace>()),
-                            ),
-                        )
-                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
+                    // display_subtab::<CreationTab, SelectedCreationTab, RaceTab, SelectedRaceTab>
+                    //     .run_if(
+                    //         resource_changed::<SelectedCreationTab>().or_else(
+                    //             resource_changed::<SelectedRaceTab>()
+                    //                 .or_else(resource_changed::<SelectedRace>()),
+                    //         ),
+                    //     )
+                    //     .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
                 )
                     .in_set(SuperSet::Super),
             )
@@ -332,23 +331,6 @@ impl Plugin for CharacterCreationPlugin {
             )
             .add_systems(
                 (
-                    class_tab::display_list_node.run_if(
-                        resource_changed::<SelectedCreationTab>().or_else(
-                            resource_changed::<SelectedClassTab>()
-                                .or_else(resource_changed::<SelectedClass>()),
-                        ),
-                    ),
-                    class_tab::display_list_title.run_if(
-                        resource_changed::<SelectedCreationTab>().or_else(
-                            resource_changed::<SelectedClassTab>()
-                                .or_else(resource_changed::<SelectedClass>()),
-                        ),
-                    ),
-                )
-                    .in_set(CreationTabSet::Class),
-            )
-            .add_systems(
-                (
                     archetype::archetype_panel_display.run_if(
                         resource_changed::<SelectedCreationTab>()
                             .or_else(resource_changed::<SelectedClassTab>()),
@@ -372,32 +354,6 @@ impl Plugin for CharacterCreationPlugin {
                 ListParent::display
                     .run_if(
                         resource_changed::<SelectedCreationTab>()
-                            .or_else(resource_changed::<SelectedClassTab>()),
-                    )
-                    .in_set(SuperSet::Super),
-            )
-            .add_system(
-                class_tab::display_list_title
-                    .run_if(
-                        resource_changed::<SelectedClass>()
-                            .or_else(resource_changed::<SelectedCreationTab>().and_then(
-                                resource_equals(SelectedCreationTab(CreationTab::Class)).and_then(
-                                    resource_equals(SelectedClassTab(ClassTab::Archetypes)),
-                                ),
-                            ))
-                            .or_else(resource_changed::<SelectedClassTab>()),
-                    )
-                    .in_set(SuperSet::Super),
-            )
-            .add_system(
-                class_tab::display_list_text
-                    .run_if(
-                        resource_changed::<SelectedClass>()
-                            .or_else(resource_changed::<SelectedCreationTab>().and_then(
-                                resource_equals(SelectedCreationTab(CreationTab::Class)).and_then(
-                                    resource_equals(SelectedClassTab(ClassTab::Archetypes)),
-                                ),
-                            ))
                             .or_else(resource_changed::<SelectedClassTab>()),
                     )
                     .in_set(SuperSet::Super),

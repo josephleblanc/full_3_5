@@ -1,5 +1,5 @@
 use crate::{
-    menu::{character_creation::generics::SubTabWrapper, components::SelectedWrapper},
+    menu::components::SelectedWrapper,
     systems::game::{
         archetype::ArchetypeName,
         character::{AbilityScore, PlayableRace},
@@ -10,7 +10,120 @@ use crate::{
 
 use bevy::prelude::*;
 
-use super::generics::Tab;
+use super::layout::generics::list_traits::AsVec;
+
+#[derive(Component, Copy, Clone, Debug, PartialEq, Eq, PartialOrd)]
+pub enum Tab {
+    Race,
+    Class,
+}
+
+impl AsVec for Tab {
+    fn vec() -> Vec<Self> {
+        vec![Self::Race, Self::Class]
+    }
+}
+
+impl Into<TabButton> for Tab {
+    fn into(self) -> TabButton {
+        TabButton(self)
+    }
+}
+
+impl Into<ListParent> for Tab {
+    fn into(self) -> ListParent {
+        match self {
+            Self::Race => ListParent::Race,
+            Self::Class => ListParent::Class,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct SelectTabEvent {
+    pub entity: Entity,
+    pub tab: Tab,
+    pub tab_state: InTab,
+}
+
+#[derive(Resource, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct SelectedTab(pub Tab);
+impl SelectedTab {
+    pub fn new(other: Tab) -> SelectedTab {
+        SelectedTab(other)
+    }
+}
+impl SelectedWrapper<Tab> for SelectedTab {
+    fn selected(&self) -> Tab {
+        self.0
+    }
+}
+
+#[derive(Resource, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct SelectedSubTab(pub SubTab);
+impl SelectedSubTab {
+    pub fn new(other: SubTab) -> SelectedSubTab {
+        SelectedSubTab(other)
+    }
+}
+impl SelectedWrapper<SubTab> for SelectedSubTab {
+    fn selected(&self) -> SubTab {
+        self.0
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct SelectSubTabEvent {
+    pub tab: Tab,
+    pub subtab: SubTab,
+    pub entity: Entity,
+    pub tab_state: InTab,
+}
+
+#[derive(Component, Copy, Clone, Debug, Eq, PartialEq)]
+pub enum SubTab {
+    RaceDescription,
+    RaceDefaultTraits,
+    RaceAltTraits,
+    RaceFavoredClass,
+    ClassDescription,
+    ClassFeatures,
+    ClassArchetype,
+}
+
+#[derive(Component, Copy, Clone, Debug, Eq, PartialEq)]
+pub struct SubTabListParent {
+    pub tab: Tab,
+    pub subtab: SubTab,
+}
+
+#[derive(Copy, Clone)]
+pub struct SelectButton {
+    pub entity: Entity,
+    pub tab: Tab,
+    pub subtab: SubTab,
+    pub tab_state: InTab,
+}
+
+#[derive(Component, Copy, Clone, Debug)]
+pub struct TabButton(Tab);
+impl TabButton {
+    pub fn inner(&self) -> Tab {
+        self.0
+    }
+    pub fn new(other: Tab) -> SelectedTab {
+        SelectedTab(other)
+    }
+}
+
+#[derive(Component, Copy, Clone, Debug)]
+pub struct SubTabButton(SubTab);
+
+#[derive(Component, Copy, Clone, Debug)]
+pub enum InTab {
+    Entering,
+    Exiting,
+}
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub enum LeftPanelEnum {
@@ -62,53 +175,6 @@ pub struct LeftPanelButton;
 #[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
 pub struct SelectedCreationTab(pub CreationTab);
 
-impl ListParent {
-    pub fn as_creation_tab(&self) -> Option<CreationTab> {
-        match self {
-            Self::Race => Some(CreationTab::Race),
-            Self::Class => Some(CreationTab::Class),
-            _ => None,
-        }
-    }
-    pub fn as_class_tab(&self) -> Option<ClassTab> {
-        match self {
-            Self::Archetype => Some(ClassTab::Archetypes),
-            _ => None,
-        }
-    }
-}
-impl ListParent {
-    // Display the list items in the `central_scroll_list` are of character
-    // creation.
-    // If in the Race tab, the elements of a list with a matching CreationTab
-    // are always displayed.
-    // If in the Class tab, the elements of a list with a matching CreationTab
-    // are only displayed if the element is not an Archetype item.
-    // Archetype items are only displayed when the Class subtab Archetype is
-    // selected, otherwise the Class items are displayed.
-    pub fn display(
-        mut query: Query<(&mut Style, &ListParent)>,
-        selected_tab: Res<SelectedCreationTab>,
-        selected_class_tab: Res<SelectedClassTab>,
-    ) {
-        for (mut style, list_parent) in &mut query {
-            if list_parent.as_class_tab().is_none() {
-                if Some(selected_tab.inner()) == list_parent.as_creation_tab() {
-                    style.display = Display::Flex;
-                } else {
-                    style.display = Display::None;
-                }
-            } else {
-                if Some(selected_class_tab.inner()) == list_parent.as_class_tab() {
-                    style.display = Display::Flex;
-                } else {
-                    style.display = Display::None;
-                }
-            }
-        }
-    }
-}
-
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
 pub enum CreationTab {
     #[default]
@@ -143,7 +209,24 @@ impl SelectedWrapper<CreationTab> for SelectedCreationTab {
 pub enum ListParent {
     Race,
     Class,
-    Archetype,
+}
+
+impl std::fmt::Display for ListParent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Race => write!(f, "Race"),
+            Self::Class => write!(f, "Class"),
+        }
+    }
+}
+
+impl Into<Tab> for ListParent {
+    fn into(self) -> Tab {
+        match self {
+            Self::Race => Tab::Race,
+            Self::Class => Tab::Race,
+        }
+    }
 }
 
 #[derive(Component, Copy, Clone, Debug, Default, Eq, PartialEq, PartialOrd)]
@@ -287,34 +370,6 @@ impl RaceTab {
 
 #[derive(Component, Copy, Clone)]
 pub struct TestChosenStandardTrait;
-
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
-pub enum SubTabButton {
-    Race(RaceTab),
-    Class(ClassTab),
-}
-impl SubTabButton {
-    pub fn get_race_tab(&self) -> Option<RaceTab> {
-        match self {
-            Self::Race(race) => Some(*race),
-            Self::Class(_) => None,
-        }
-    }
-    pub fn get_class_tab(&self) -> Option<ClassTab> {
-        match self {
-            Self::Race(_) => None,
-            Self::Class(class) => Some(*class),
-        }
-    }
-}
-
-impl Default for SubTabButton {
-    fn default() -> SubTabButton {
-        Self::Race(RaceTab::RaceDescription)
-    }
-}
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct SubTabButtonText;
 
 impl std::fmt::Display for CommonTraits {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

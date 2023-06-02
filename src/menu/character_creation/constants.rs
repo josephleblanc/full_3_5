@@ -52,3 +52,8 @@ pub const LIST_DESCRIPTION_TEXT_STYLE: Style = Style {
     margin: UiRect::all(Val::Px(20.)),
     ..Style::DEFAULT
 };
+
+// SubTab Button Styles
+pub const SUBTAB_BUTTON_FONT: f32 = 25.;
+pub const SUBTAB_BUTTON_BUNDLE_COLOR: Color = Color::PURPLE;
+pub const SUBTAB_BUTTON_TEXT_COLOR: Color = Color::VIOLET;

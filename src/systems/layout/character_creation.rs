@@ -23,6 +23,8 @@ pub trait ButtonBar {}
 
 impl ButtonBar for HighContainer {}
 
+// TODO: alter components in entities below to reflect new event model
+
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let shared_font = asset_server.load("fonts/simple_font.TTF");
     commands.spawn(CharacterBuilder);
@@ -649,13 +651,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     // Race Tab display
     commands
-        .spawn((
-            list_parent.clone(),
-            ListParent::Race,
-            RaceItemDescription,
-            RaceItemDefaultTrait,
-            RaceItemAltTrait,
-        ))
+        .spawn((list_parent.clone(), ListParent::Race))
         .set_parent(central_scroll_list);
     // Class Tab display
     // hook for select_item::build_description_list
