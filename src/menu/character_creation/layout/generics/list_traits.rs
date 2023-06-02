@@ -1,3 +1,5 @@
+use bevy::prelude::Component;
+
 pub trait AsVec
 where
     Self: Sized,
@@ -18,4 +20,11 @@ where
     T: bevy::prelude::Component + Clone + Copy,
 {
     fn vec(&self) -> Vec<(&T, &String, &String)>;
+}
+
+pub trait HasArray<const N: usize>
+where
+    Self: Sized + Copy + Clone + Component,
+{
+    fn has_array() -> [Self; N];
 }

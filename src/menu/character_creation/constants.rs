@@ -11,11 +11,18 @@ pub const LIST_PARENT_NODE_STYLE: Style = Style {
     // padding: UiRect::all(Val::Px(5.)),
     margin: UiRect::all(Val::Px(10.)),
     flex_direction: FlexDirection::Column,
+    gap: Size::height(Val::Px(10.)),
+    ..Style::DEFAULT
+};
+pub const LIST_NODE_STYLE: Style = Style {
+    padding: UiRect::all(Val::Px(5.)),
+    // margin: UiRect::all(Val::Px(10.)),
+    flex_direction: FlexDirection::Column,
     ..Style::DEFAULT
 };
 pub const LIST_ITEM_TITLE_STYLE: Style = Style {
     max_size: Size::width(Val::Px(1200.)),
-    margin: UiRect::all(Val::Px(5.)),
+    margin: UiRect::all(Val::Px(10.)),
     ..Style::DEFAULT
 };
 pub const LIST_ROW_NODE_STYLE: Style = Style {

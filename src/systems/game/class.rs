@@ -1,3 +1,4 @@
+use crate::menu::character_creation::layout::generics::list_traits::{AsVec, HasArray};
 use crate::systems::game::character::*;
 use crate::systems::game::skills::SkillName;
 use bevy::prelude::*;
@@ -138,6 +139,18 @@ impl PlayableClass {
             Self::Witch,
             Self::Wizard,
         ]
+    }
+}
+
+impl HasArray<PLAYABLE_CLASSES_LEN> for PlayableClass {
+    fn has_array() -> [PlayableClass; PLAYABLE_CLASSES_LEN] {
+        PlayableClass::array()
+    }
+}
+
+impl AsVec for PlayableClass {
+    fn vec() -> Vec<Self> {
+        Vec::from(PlayableClass::array())
     }
 }
 
@@ -382,6 +395,8 @@ impl TryFrom<&ClassInfo> for FloatingBonusFeats {
 }
 
 use crate::systems::game::magic::SpellCauses;
+
+use super::constants::PLAYABLE_CLASSES_LEN;
 impl TryFrom<&ClassInfo> for SavingThrowBonuses {
     type Error = &'static str;
     fn try_from(other: &ClassInfo) -> Result<Self, Self::Error> {

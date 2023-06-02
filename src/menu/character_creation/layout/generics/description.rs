@@ -3,14 +3,15 @@ use crate::{
     menu::{
         character_creation::{
             components::*,
+            constants::{LIST_DESCRIPTION_TEXT_STYLE, LIST_ITEM_TITLE_STYLE},
             generics::{SubTab, SubTabListParent, Tab},
             layout::{generics::list_traits, resource::*},
         },
         components::SelectedWrapper,
         styles::*,
     },
-    systems::game::character::PlayableRace,
-    technical::race_load::RaceAsset,
+    systems::game::{character::PlayableRace, class::PlayableClass},
+    technical::{class::ClassAsset, race_load::RaceAsset},
 };
 use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
@@ -48,14 +49,27 @@ impl list_traits::HasDescr for RaceAsset {
         &self.text
     }
 }
+impl list_traits::HasDescr for ClassAsset {
+    fn description(&self) -> &String {
+        &self.description
+    }
+}
+
 impl list_traits::HasKey<PlayableRace> for RaceAsset {
     fn key(&self) -> PlayableRace {
         self.race
     }
 }
+impl list_traits::HasKey<PlayableClass> for ClassAsset {
+    fn key(&self) -> PlayableClass {
+        self.class_name
+    }
+}
 
 #[derive(Component, Copy, Clone, Debug, Default)]
 pub struct RaceItemDescription;
+#[derive(Component, Copy, Clone, Debug, Default)]
+pub struct ClassItemDescription;
 
 pub fn build_description_list<R, S, T, U, V>(
     tab_identifier: R,
@@ -131,7 +145,7 @@ where
         println!("{} assets loaded", custom_asset.len());
             let list_id = commands
                 .spawn((
-                    list_resource.list_node.clone(),
+                    list_resource.subtab_list_parent.clone(),
                     SubTabListParent::from(tab_identifier, subtab_identifier),
                     Name::from("description nodes list parent"),
                     RaceItemDescription,
@@ -170,13 +184,9 @@ where
                                             color: TEXT_COLOR,
                                         },
                                     ),
-                                    style: Style {
-                                        max_size: Size::width(Val::Px(DESCRIPTION_MAX_WIDTH)),
-                                        margin: UiRect::left(Val::Px(20.)),
+                                    style: LIST_ITEM_TITLE_STYLE,
                                         ..default()
                                     },
-                                    ..default()
-                                },
                                 ListTitle,
                                 U::default(),
                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
@@ -203,13 +213,7 @@ where
                                                     color: TEXT_COLOR,
                                                 },
                                             ),
-                                            style: Style {
-                                                max_size: Size::width(Val::Px(
-                                                    DESCRIPTION_MAX_WIDTH,
-                                                )),
-                                                margin: UiRect::left(Val::Px(20.)),
-                                                ..default()
-                                            },
+                                            style: LIST_DESCRIPTION_TEXT_STYLE,
                                             ..default()
                                         },
                                         Description,

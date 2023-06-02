@@ -6,6 +6,7 @@ use bevy::prelude::*;
 #[derive(Resource, Clone)]
 pub struct CentralListBundles {
     // A bundle of bundles used to spawn a list with a unified style.
+    pub subtab_list_parent: NodeBundle,
     pub list_node: NodeBundle,
     pub list_item_title: TextBundle,
     pub list_row_node: NodeBundle,
@@ -22,9 +23,14 @@ impl CentralListBundles {
         // A function that may be turned into a system to initialize the resource before
         // it is referenced by systems which utilize the CentralListBundles.
         let shared_font = asset_server.load(PATH_SIMPLE_FONT);
-        let list_node = NodeBundle {
+        let subtab_list_parent = NodeBundle {
             style: LIST_PARENT_NODE_STYLE,
-            background_color: Color::BLACK.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+            // background_color: Color::rgb_linear(20., 20., 20.).into(),
+            ..default()
+        };
+        let list_node = NodeBundle {
+            style: LIST_NODE_STYLE,
+            background_color: Color::BLACK.into(),
             ..default()
         };
 
@@ -47,7 +53,7 @@ impl CentralListBundles {
                 flex_direction: FlexDirection::Row,
                 ..default()
             },
-            background_color: Color::GRAY.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+            background_color: Color::DARK_GRAY.into(),
             ..default()
         };
         let list_col_node = NodeBundle {
@@ -119,6 +125,7 @@ impl CentralListBundles {
             ..default()
         };
         let central_list_bundles = CentralListBundles {
+            subtab_list_parent,
             list_node,
             list_item_title,
             list_row_node,

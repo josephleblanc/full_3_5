@@ -4,7 +4,7 @@ use crate::menu::{
 };
 use bevy::prelude::*;
 
-use super::components::{CreationTab, SelectedCreationTab};
+use super::components::{ClassTab, CreationTab, SelectedClassTab, SelectedCreationTab};
 
 pub trait TabWrapper<U>
 where
@@ -32,6 +32,12 @@ impl SubTabWrapper<RaceTab> for SelectedRaceTab {
     }
 }
 
+impl SubTabWrapper<ClassTab> for SelectedClassTab {
+    fn sub_tab(&self) -> ClassTab {
+        self.0
+    }
+}
+
 // Holds the subtab under which a list should be displayed
 #[derive(Component, Clone, Copy, Debug)]
 pub struct SubTabListParent<R, V>
@@ -55,6 +61,7 @@ where
 
 impl Tab for CreationTab {}
 impl SubTab for RaceTab {}
+impl SubTab for ClassTab {}
 
 pub trait Tab {}
 pub trait SubTab {}

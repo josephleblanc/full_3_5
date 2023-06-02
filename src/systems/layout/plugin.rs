@@ -1,11 +1,16 @@
 use crate::menu::character_creation::generics::display_sub_tab;
-use crate::menu::character_creation::layout::generics::description::{self, RaceItemDescription};
+use crate::menu::character_creation::layout::generics::description::{
+    self, ClassItemDescription, RaceItemDescription,
+};
+use crate::menu::character_creation::layout::generics::recur_description::build_item_desc_list;
 use crate::menu::character_creation::layout::generics::select_item::{
     build_button_desc_list, BuiltLists, ListName, RaceItemAltTrait, RaceItemDefaultTrait,
 };
 use crate::menu::character_creation::layout::resource::CentralListBundles;
 use crate::systems::game::character::PlayableRace;
+use crate::systems::game::class::PlayableClass;
 use crate::systems::game::race::RacialTraitName;
+use crate::technical::class::ClassAsset;
 use crate::{
     menu::character_creation::{
         components::*,
@@ -46,6 +51,7 @@ enum Changed {
     Class,
     ClassTab,
     ClassOrTab,
+    ClassOrTabAny,
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -169,7 +175,7 @@ impl Plugin for CharacterCreationPlugin {
                         ListName::DescriptionRace,
                     )
                     .run_if(not(BuiltLists::is_built(ListName::DescriptionRace))),
-                    build_button_desc_list::<
+                    build_item_desc_list::<
                         RaceItemDefaultTrait,
                         CreationTab,
                         RaceTab,
@@ -193,12 +199,28 @@ impl Plugin for CharacterCreationPlugin {
                         CreationTab::Race,
                         RaceTab::AltTraitTab,
                         ListName::AltTraitsRace,
+                        true,
                     )
                     .run_if(not(BuiltLists::is_built(ListName::AltTraitsRace))),
+                    // Class Tab
+                    description::build_description_list::<
+                        CreationTab,
+                        ClassTab,
+                        ClassAsset,
+                        ClassItemDescription,
+                        PlayableClass,
+                    >(
+                        CreationTab::Class,
+                        ClassTab::Description,
+                        ListName::ClassDescription,
+                    )
+                    .run_if(not(BuiltLists::is_built(ListName::ClassDescription))),
                     generics::new_selected_tab::<SelectedCreationTab, CreationTab>(),
                     generics::cleanup_tab_button::<SelectedCreationTab, CreationTab>(),
                     generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
                     generics::cleanup_tab_button::<SelectedRaceTab, RaceTab>(),
+                    generics::new_selected_tab::<SelectedClassTab, ClassTab>(),
+                    generics::cleanup_tab_button::<SelectedClassTab, ClassTab>(),
                 )
                     .in_set(SuperSet::Super),
             )
@@ -232,6 +254,7 @@ impl Plugin for CharacterCreationPlugin {
             .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
             .add_systems(
                 (
+                    // RaceTab
                     description::display_node::<SelectedRace, PlayableRace, RaceItemDescription>
                         .run_if(
                             resource_changed::<SelectedCreationTab>().or_else(
@@ -248,6 +271,15 @@ impl Plugin for CharacterCreationPlugin {
                             ),
                         )
                         .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
+                    // ClassTab
+                    description::display_node::<SelectedClass, PlayableClass, RaceItemDescription>
+                        .run_if(
+                            resource_changed::<SelectedCreationTab>().or_else(
+                                resource_changed::<SelectedClassTab>()
+                                    .or_else(resource_changed::<SelectedClass>()),
+                            ),
+                        )
+                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Class))),
                     display_sub_tab::<CreationTab, SelectedCreationTab, RaceTab, SelectedRaceTab>
                         .run_if(
                             resource_changed::<SelectedCreationTab>().or_else(
@@ -312,7 +344,6 @@ impl Plugin for CharacterCreationPlugin {
                                 .or_else(resource_changed::<SelectedClass>()),
                         ),
                     ),
-                    generics::new_selected_tab::<SelectedClassTab, ClassTab>(),
                 )
                     .in_set(CreationTabSet::Class),
             )

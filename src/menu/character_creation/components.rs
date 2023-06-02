@@ -1,5 +1,5 @@
 use crate::{
-    menu::components::SelectedWrapper,
+    menu::{character_creation::generics::SubTabWrapper, components::SelectedWrapper},
     systems::game::{
         archetype::ArchetypeName,
         character::{AbilityScore, PlayableRace},
@@ -9,6 +9,8 @@ use crate::{
 };
 
 use bevy::prelude::*;
+
+use super::generics::Tab;
 
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
 pub enum LeftPanelEnum {
@@ -56,6 +58,9 @@ impl Default for LeftPanelEnum {
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct LeftPanelButton;
+
+#[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
+pub struct SelectedCreationTab(pub CreationTab);
 
 impl ListParent {
     pub fn as_creation_tab(&self) -> Option<CreationTab> {
@@ -115,15 +120,12 @@ pub enum CreationTab {
     BonusFeats,
     Optional,
 }
-
-#[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
-pub struct SelectedCreationTab(pub CreationTab);
-
 impl Into<SelectedCreationTab> for CreationTab {
     fn into(self) -> SelectedCreationTab {
         SelectedCreationTab(self)
     }
 }
+
 // TODO: Delete the inner method for SelectedCreationTab and replace it with
 // the method from SelectedWrapper instead.
 impl SelectedCreationTab {
@@ -151,6 +153,11 @@ pub struct ArchetypeItem;
 pub struct SelectedClass(pub PlayableClass);
 impl SelectedClass {
     pub fn inner(&self) -> PlayableClass {
+        self.0
+    }
+}
+impl SelectedWrapper<PlayableClass> for SelectedClass {
+    fn selected(&self) -> PlayableClass {
         self.0
     }
 }

@@ -3,6 +3,7 @@ use crate::{
     menu::{
         character_creation::{
             components::*,
+            constants::{LIST_DESCRIPTION_TEXT_STYLE, LIST_ITEM_TITLE_STYLE},
             generics::{SubTab, SubTabListParent, Tab},
             layout::{generics::list_traits, resource::*},
         },
@@ -63,6 +64,7 @@ pub fn display_list<A, B, R, P, U>(
     mut query_list_parent: Query<(&mut Style, &SubTabListParent<A, B>, &Name), With<U>>,
     selected_tab: Res<R>,
     selected_sub_tab: Res<P>,
+    with_replaces: bool,
 ) where
     // The type of the tab this node should be displayed in
     A: Tab + Component + Copy + Clone + Eq + std::fmt::Debug,
@@ -104,6 +106,9 @@ pub enum ListName {
     DescriptionRace,
     DefaultTraitsRace,
     AltTraitsRace,
+    ClassDescription,
+    ClassFeaturesDescription,
+    ClassArchetypes,
 }
 
 #[derive(Resource, Clone, Debug, Default)]
@@ -124,11 +129,11 @@ impl BuiltLists {
 // TODO: Make something similar to this function but without the buttons,
 // as that fits better with default traits vs alternate traits.
 use super::list_traits::HasItemVec;
-pub const BUILT_LEN: usize = 3;
 pub fn build_button_desc_list<U, R, S, T, V, Q>(
     tab_identifier: R,
     subtab_identifier: S,
     build_enum: ListName,
+    with_replaces: bool,
 ) -> impl FnMut(
     Commands,
     Query<Entity, (With<ListParent>, With<U>)>,
@@ -168,7 +173,7 @@ where
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
-        mut res_built: ResMut<BuiltLists>
+         mut res_built: ResMut<BuiltLists>,
           // try to remove this later
           | {
         if !res_built.inner_mut().contains(&build_enum) {
@@ -204,7 +209,7 @@ where
                             commands
                                 .spawn((
                                     Name::from("select_item node"),
-                                    list_resource.list_row_node.clone(),
+                                    list_resource.list_node.clone(),
                                     ListNode,
                                     key,
                                     *enum_name,
@@ -212,7 +217,37 @@ where
                                 ))
                                 .set_parent(list_id)
                                 .with_children(|list_node| {
+                                            list_node.spawn((
+                                                Name::from("Node description title"),
+                                                TextBundle {
+                                                    text: Text::from_section(
+                                                        title.to_string(),
+                                                        TextStyle {
+                                                            font: shared_font.clone(),
+                                                            font_size: DESCRIPTION_FONT_SIZE,
+                                                            color: TEXT_COLOR,
+                                                        },
+                                                    ),
+                                                    style: LIST_ITEM_TITLE_STYLE,
+                                                    ..default()
+                                                },
+                                                ListTitle,
+                                                U::default(),
+                                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                            ));
                                     list_node
+                                        .spawn((
+                                            // Each of these nodes is one row,
+                                            // they are shown alongside the button column above
+                                            Name::from("Node text description container"),
+                                            list_resource.list_row_node.clone(),
+                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                            // Label
+                                            U::default(),
+                                        ))
+                                        .with_children(|row_node| {
+                                    if with_replaces {
+                                    row_node
                                         .spawn((
                                             Name::from("button column"),
                                             list_resource.list_col_node.clone(),
@@ -241,6 +276,7 @@ where
                                                         )),
                                                     ));
                                                 });
+                                            if with_replaces {
                                             button_col.spawn((
                                                 Name::from("text that reads 'replace'"),
                                                 list_resource.skill_replaces_text.clone(),
@@ -253,8 +289,10 @@ where
                                                 U::default(),
                                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
+                                            }
                                         });
-                                    list_node
+                                            }
+                                    row_node
                                         .spawn((
                                             // Each of these nodes is one row,
                                             // they are shown alongside the button column above
@@ -264,32 +302,6 @@ where
                                             // Label
                                             U::default(),
                                         ))
-                                        .with_children(|row_node| {
-                                            row_node.spawn((
-                                                Name::from("Node description title"),
-                                                TextBundle {
-                                                    text: Text::from_section(
-                                                        title.to_string(),
-                                                        TextStyle {
-                                                            font: shared_font.clone(),
-                                                            font_size: DESCRIPTION_FONT_SIZE,
-                                                            color: TEXT_COLOR,
-                                                        },
-                                                    ),
-                                                    style: Style {
-                                                        max_size: Size::width(Val::Px(
-                                                            DESCRIPTION_MAX_WIDTH,
-                                                        )),
-                                                        margin: UiRect::left(Val::Px(20.)),
-                                                        ..default()
-                                                    },
-                                                    ..default()
-                                                },
-                                                ListTitle,
-                                                U::default(),
-                                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                            ));
-                                        })
                                         .with_children(|row_node| {
                                             row_node
                                                 .spawn((
@@ -301,11 +313,6 @@ where
                                                     U::default(),
                                                 ))
                                                 .with_children(|inner_row_node| {
-                                                    println!(
-                                                    "--> building node for {} with description: {}",
-                                                    key,
-                                                    descr_text.to_string()
-                                                );
                                                     // Item description
                                                     inner_row_node.spawn((
                                                         Name::from("item description text"),
@@ -319,13 +326,7 @@ where
                                                                     color: TEXT_COLOR,
                                                                 },
                                                             ),
-                                                            style: Style {
-                                                                max_size: Size::width(Val::Px(
-                                                                    DESCRIPTION_MAX_WIDTH,
-                                                                )),
-                                                                margin: UiRect::left(Val::Px(20.)),
-                                                                ..default()
-                                                            },
+                                                            style: LIST_DESCRIPTION_TEXT_STYLE,
                                                             ..default()
                                                         },
                                                         // Description,
@@ -336,6 +337,7 @@ where
                                                         )),
                                                     ));
                                                 });
+                                        });
                                         });
                                 });
                         }

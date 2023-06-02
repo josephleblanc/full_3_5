@@ -1,8 +1,9 @@
-pub mod character;
-pub mod equipment;
-pub mod race;
-pub mod skills;
-pub mod magic;
-pub mod class;
-pub mod resources;
 pub mod archetype;
+pub mod character;
+pub mod class;
+pub mod constants;
+pub mod equipment;
+pub mod magic;
+pub mod race;
+pub mod resources;
+pub mod skills;

@@ -1,10 +1,13 @@
 use crate::menu::character_creation::components::*;
-use crate::menu::character_creation::layout::generics::description::RaceItemDescription;
+use crate::menu::character_creation::layout::generics::description::{
+    ClassItemDescription, RaceItemDescription,
+};
 use crate::menu::character_creation::layout::generics::select_item::{
     RaceItemAltTrait, RaceItemDefaultTrait,
 };
 use crate::menu::components::ScrollingList;
 use crate::menu::styles::*;
+use crate::systems::game::class::PlayableClass;
 use crate::systems::game::{
     archetype::ArchetypeName, character::PlayableRace, race::CharacterBuilder,
 };
@@ -12,6 +15,13 @@ use bevy::prelude::*;
 use bevy::ui::FocusPolicy;
 
 pub const COMMON_TRAIT_FONT_SIZE: f32 = 25.;
+
+#[derive(Component, Copy, Clone, Default)]
+pub struct HighContainer;
+
+pub trait ButtonBar {}
+
+impl ButtonBar for HighContainer {}
 
 pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let shared_font = asset_server.load("fonts/simple_font.TTF");
@@ -73,6 +83,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 background_color: Color::RED.into(),
                 ..default()
             },
+            HighContainer,
             Name::from("high container"),
         ))
         .set_parent(top_level_container_id)
@@ -647,219 +658,15 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .set_parent(central_scroll_list);
     // Class Tab display
-    let class_parent_id = commands
-        .spawn((list_parent.clone(), ListParent::Class))
-        .set_parent(central_scroll_list)
-        .id();
-    // Prepopulate the list items to be filled or hidden by systems
-    use crate::systems::game::class::PlayableClass;
-    let _class_name_array = PlayableClass::array();
-    for _ in 0..default_racial_trait_rows {
-        commands
-            .spawn((
-                // Each of these nodes is one row. The AltRacialTrait Component
-                // can be used to identify this node in a systems and set
-                // Display::Flex to show the alt trait and all it's children.
-                Name::from("Race Trait description"),
-                list_node.clone(),
-                // Label
-                ListNode,
-                ClassItem,
-                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-            ))
-            .with_children(|alt_racial_trait_container| {
-                alt_racial_trait_container.spawn((
-                    // Alternate Racial Trait Title
-                    list_item_title.clone(),
-                    ListTitle,
-                    ClassItem,
-                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                ));
-            })
-            .with_children(|row_node| {
-                row_node
-                    .spawn((
-                        list_row_node.clone(),
-                        // Container node for select button and alt racial
-                        // trait description
-                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                        ClassItem,
-                    ))
-                    // Node Containing button to select trait and list of
-                    // traits it replaces.
-                    //  Show during:
-                    //  - Alternate Traits
-                    //  - Favored Skill
-                    .with_children(|button_and_descr_node| {
-                        button_and_descr_node
-                            .spawn((
-                                list_col_node.clone(),
-                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                ListButtonColumn,
-                                ClassItem,
-                            ))
-                            // Selection button
-                            // Show during:
-                            // - Alternate Trait
-                            // - Favored Skill
-                            .with_children(|button_and_replace_node| {
-                                button_and_replace_node
-                                    .spawn((
-                                        list_button.clone(),
-                                        ListButton,
-                                        ClassItem,
-                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                    ))
-                                    .with_children(|alt_race_select_button| {
-                                        alt_race_select_button.spawn((
-                                            list_button_text.clone(),
-                                            ButtonText,
-                                            ClassItem,
-                                            Name::new("race: moving list item"),
-                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                        ));
-                                    });
-                                // List of the traits this trait will replace.
-                                // Used to load the titles of the traits it will replace, and
-                                // select them below the racial trait button.
-                                button_and_replace_node.spawn((
-                                    skill_replaces_text.clone(),
-                                    ReplacesText,
-                                    ClassItem,
-                                    Name::new("'replaces' text"),
-                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                ));
-                                button_and_replace_node.spawn((
-                                    skill_replacement_item_text.clone(),
-                                    ReplacesContent,
-                                    ClassItem,
-                                    Name::new("Text names of replaced traits"),
-                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                    AltTraitReplaces(Vec::new()),
-                                ));
-                            });
-                        // Text with descrition of selected content, can be
-                        // - Flavor Text,
-                        // - Standard trait description
-                        // - Alternate Trait description
-                        // - Favored Class description
-                        button_and_descr_node.spawn((
-                            // Trait description
-                            list_description_text.clone(),
-                            Description,
-                            ClassItem,
-                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                        ));
-                    });
-            })
-            .set_parent(class_parent_id);
-    }
-    let archetype_list_id = commands
+    // hook for select_item::build_description_list
+    commands
+        .spawn((list_parent.clone(), ListParent::Class, ClassItemDescription))
+        .set_parent(central_scroll_list);
+
+    // Archetype Tab display
+    commands
         .spawn((list_parent.clone(), ListParent::Archetype))
-        .set_parent(central_scroll_list)
-        .id();
-    // Prepopulate the list items to be filled or hidden by systems
-    let _class_name_array = PlayableClass::array();
-    for _ in 0..default_racial_trait_rows {
-        commands
-            .spawn((
-                // Each of these nodes is one row. The AltRacialTrait Component
-                // can be used to identify this node in a systems and set
-                // Display::Flex to show the alt trait and all it's children.
-                Name::from("Race Trait description"),
-                list_node.clone(),
-                // Label
-                ListNode,
-                ArchetypeItem,
-                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-            ))
-            .with_children(|alt_racial_trait_container| {
-                alt_racial_trait_container.spawn((
-                    // Alternate Racial Trait Title
-                    list_item_title.clone(),
-                    ListTitle,
-                    ArchetypeItem,
-                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                ));
-            })
-            .with_children(|row_node| {
-                row_node
-                    .spawn((
-                        list_row_node.clone(),
-                        // Container node for select button and alt racial
-                        // trait description
-                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                        ArchetypeItem,
-                    ))
-                    // Node Containing button to select trait and list of
-                    // traits it replaces.
-                    //  Show during:
-                    //  - Alternate Traits
-                    //  - Favored Skill
-                    .with_children(|button_and_descr_node| {
-                        button_and_descr_node
-                            .spawn((
-                                list_col_node.clone(),
-                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                ListButtonColumn,
-                                ArchetypeItem,
-                            ))
-                            // Selection button
-                            // Show during:
-                            // - Alternate Trait
-                            // - Favored Skill
-                            .with_children(|button_and_replace_node| {
-                                button_and_replace_node
-                                    .spawn((
-                                        list_button.clone(),
-                                        ListButton,
-                                        ArchetypeItem,
-                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                    ))
-                                    .with_children(|alt_race_select_button| {
-                                        alt_race_select_button.spawn((
-                                            list_button_text.clone(),
-                                            ButtonText,
-                                            ArchetypeItem,
-                                            Name::new("race: moving list item"),
-                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                        ));
-                                    });
-                                // List of the traits this trait will replace.
-                                // Used to load the titles of the traits it will replace, and
-                                // select them below the racial trait button.
-                                button_and_replace_node.spawn((
-                                    skill_replaces_text.clone(),
-                                    ReplacesText,
-                                    ArchetypeItem,
-                                    Name::new("'replaces' text"),
-                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                ));
-                                button_and_replace_node.spawn((
-                                    skill_replacement_item_text.clone(),
-                                    ReplacesContent,
-                                    ArchetypeItem,
-                                    Name::new("Text names of replaced traits"),
-                                    AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                    AltTraitReplaces(Vec::new()),
-                                ));
-                            });
-                        // Text with descrition of selected content, can be
-                        // - Flavor Text,
-                        // - Standard trait description
-                        // - Alternate Trait description
-                        // - Favored Class description
-                        button_and_descr_node.spawn((
-                            // Trait description
-                            list_description_text.clone(),
-                            Description,
-                            ArchetypeItem,
-                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                        ));
-                    });
-            })
-            .set_parent(archetype_list_id);
-    }
+        .set_parent(central_scroll_list);
 
     // Panel with chosen racial traits and favored class.
     // Should be located on the right of the screen
