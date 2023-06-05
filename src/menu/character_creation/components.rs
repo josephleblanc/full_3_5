@@ -8,11 +8,11 @@ use crate::{
     },
 };
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 
-use super::layout::generics::list_traits::AsVec;
+use super::layout::generics::list_traits::{AsButtonList, AsVec};
 
-#[derive(Component, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Default)]
+#[derive(Hash, Component, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Default)]
 pub enum Tab {
     #[default]
     Race,
@@ -100,56 +100,40 @@ pub struct SelectSubTabEvent {
 #[derive(Component, Copy, Clone, Debug, Eq, PartialEq, Default)]
 pub enum SubTab {
     #[default]
-    RaceDescription,
-    RaceDefaultTraits,
-    RaceAltTraits,
-    RaceFavoredClass,
-    ClassDescription,
-    ClassFeatures,
-    ClassArchetype,
-}
-
-impl Into<Tab> for SubTab {
-    fn into(self) -> Tab {
-        match self {
-            Self::RaceDescription => Tab::Race,
-            Self::RaceDefaultTraits => Tab::Race,
-            Self::RaceAltTraits => Tab::Race,
-            Self::RaceFavoredClass => Tab::Race,
-            Self::ClassDescription => Tab::Class,
-            Self::ClassFeatures => Tab::Class,
-            Self::ClassArchetype => Tab::Class,
-        }
-    }
+    Description,
+    DefaultTraits,
+    AltTraits,
+    FavoredClass,
+    Features,
+    Archetype,
 }
 
 impl std::fmt::Display for SubTab {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::RaceDescription => write!(f, "Race Description"),
-            Self::RaceDefaultTraits => write!(f, "Race Default Traits"),
-            Self::RaceAltTraits => write!(f, "Race Alt Traits"),
-            Self::RaceFavoredClass => write!(f, "Race Favored Class"),
-            Self::ClassDescription => write!(f, "Class Description"),
-            Self::ClassFeatures => write!(f, "Class Features"),
-            Self::ClassArchetype => write!(f, "Class Archetype"),
+            Self::Description => write!(f, "Description"),
+            Self::DefaultTraits => write!(f, "Default Traits"),
+            Self::AltTraits => write!(f, "Alt Traits"),
+            Self::FavoredClass => write!(f, "Favored Class"),
+            Self::Features => write!(f, "Features"),
+            Self::Archetype => write!(f, "Archetype"),
         }
     }
 }
 
-impl AsVec for SubTab {
-    fn vec() -> Vec<Self> {
-        vec![
-            Self::RaceDescription,
-            Self::RaceDefaultTraits,
-            Self::RaceAltTraits,
-            Self::RaceFavoredClass,
-            Self::ClassDescription,
-            Self::ClassFeatures,
-            Self::ClassArchetype,
-        ]
-    }
-}
+// impl AsVec for SubTab {
+//     fn vec() -> Vec<Self> {
+//         vec![
+//             Self::RaceDescription,
+//             Self::RaceDefaultTraits,
+//             Self::RaceAltTraits,
+//             Self::RaceFavoredClass,
+//             Self::ClassDescription,
+//             Self::ClassFeatures,
+//             Self::ClassArchetype,
+//         ]
+//     }
+// }
 
 #[derive(Component, Copy, Clone, Debug, Eq, PartialEq)]
 pub struct SubTabListParent {
@@ -176,8 +160,60 @@ impl TabButton {
     }
 }
 
-#[derive(Component, Copy, Clone, Debug)]
-pub struct SubTabButton(SubTab);
+#[derive(Component, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct SubTabButton {
+    pub tab: Tab,
+    pub subtab: SubTab,
+}
+
+impl SubTabButton {
+    fn new(tab: Tab, subtab: SubTab) -> Self {
+        Self { tab, subtab }
+    }
+}
+
+impl std::fmt::Display for SubTabButton {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}", self.tab, self.subtab)
+    }
+}
+
+impl AsButtonList for SubTabButton {
+    fn button_list() -> Vec<Self> {
+        vec![
+            Self::new(Tab::Race, SubTab::Description),
+            Self::new(Tab::Race, SubTab::DefaultTraits),
+            Self::new(Tab::Race, SubTab::AltTraits),
+            Self::new(Tab::Class, SubTab::Description), // TODO: Add more later
+        ]
+    }
+}
+
+impl Into<SubTab> for SubTabButton {
+    fn into(self) -> SubTab {
+        self.subtab
+    }
+}
+
+#[derive(Resource, Clone, Debug)]
+pub struct SelectedSubTabsMap(pub HashMap<Tab, SubTab>);
+impl SelectedSubTabsMap {
+    pub fn as_ref_mut(&mut self) -> &mut HashMap<Tab, SubTab> {
+        &mut self.0
+    }
+    pub fn as_ref(&self) -> &HashMap<Tab, SubTab> {
+        &self.0
+    }
+}
+
+impl Default for SelectedSubTabsMap {
+    fn default() -> Self {
+        let mut hash_map: HashMap<Tab, SubTab> = HashMap::new();
+        hash_map.insert(Tab::Race, SubTab::Description);
+        hash_map.insert(Tab::Class, SubTab::Description);
+        SelectedSubTabsMap(hash_map)
+    }
+}
 
 #[derive(Component, Copy, Clone, Debug)]
 pub enum InTab {

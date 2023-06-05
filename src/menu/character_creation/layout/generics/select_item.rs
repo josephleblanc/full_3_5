@@ -107,12 +107,6 @@ where
     // function.
     Q: Component + Copy + Clone,
 {
-    //
-    // So in order for this function to work:
-    //   1. Setup the custom asset.
-    //   2. Setup the list_resource.
-    //   3. Setup the list parent.
-    //   4. add a system with the function, using the subtab_identifier parameter.
     move |mut commands: Commands,
           query_parent: Query<(Entity, &TabListParent)>,
           custom_asset: Res<Assets<T>>,

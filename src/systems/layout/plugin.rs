@@ -7,7 +7,7 @@ use crate::{
                     build_subtab_buttons::{self, BuiltSubTabButtons, CharacterCreationSubTabs},
                     build_tab_buttons::{self, BuiltTabButtons, CharacterTabs},
                     description, recur_description,
-                    select_item::BuiltLists,
+                    select_item::{build_button_desc_list, BuiltLists},
                 },
                 resource::CentralListBundles,
             },
@@ -74,6 +74,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<SelectedArchetype>()
             .init_resource::<SelectedTab>()
             .init_resource::<SelectedSubTab>()
+            .init_resource::<SelectedSubTabsMap>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
@@ -95,8 +96,10 @@ impl Plugin for CharacterCreationPlugin {
                     CentralListBundles::init,
                     apply_system_buffers,
                     build_tab_buttons::build_tab_buttons::<CharacterTabs, Tab>(),
-                    build_subtab_buttons::build_subtab_buttons::<CharacterCreationSubTabs, SubTab>(
-                    ),
+                    build_subtab_buttons::build_subtab_buttons::<
+                        CharacterCreationSubTabs,
+                        SubTabButton,
+                    >(),
                 )
                     .chain()
                     .in_schedule(OnEnter(AppState::CharacterCreation)),
@@ -136,29 +139,38 @@ impl Plugin for CharacterCreationPlugin {
                     // Race Tab
                     description::build_description_list::<RaceAsset, PlayableRace>(
                         Tab::Race,
-                        SubTab::RaceDescription,
+                        SubTab::Description,
                     )
                     .run_if(not(BuiltLists::is_built(SubTabListParent {
                         tab: Tab::Race,
-                        subtab: SubTab::RaceDescription,
+                        subtab: SubTab::Description,
                     }))),
                     recur_description::build_item_desc_list::<
                         DefaultTraitAsset,
                         PlayableRace,
                         RacialTraitName,
-                    >(Tab::Race, SubTab::RaceDefaultTraits)
+                    >(Tab::Race, SubTab::DefaultTraits)
                     .run_if(not(BuiltLists::is_built(SubTabListParent {
                         tab: Tab::Race,
-                        subtab: SubTab::RaceDefaultTraits,
+                        subtab: SubTab::DefaultTraits,
+                    }))),
+                    build_button_desc_list::<AltTraitAsset, PlayableRace, RacialTraitName>(
+                        Tab::Race,
+                        SubTab::AltTraits,
+                        true,
+                    )
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Race,
+                        subtab: SubTab::AltTraits,
                     }))),
                     // Class Tab
                     description::build_description_list::<ClassAsset, PlayableClass>(
                         Tab::Class,
-                        SubTab::ClassDescription,
+                        SubTab::Description,
                     )
                     .run_if(not(BuiltLists::is_built(SubTabListParent {
                         tab: Tab::Class,
-                        subtab: SubTab::ClassDescription,
+                        subtab: SubTab::Description,
                     }))),
                     // generics::new_selected_tab::<SelectedTab, Tab>(),
                     // generics::cleanup_tab_button::<SelectedTab, Tab>(),

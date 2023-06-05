@@ -10,7 +10,7 @@ use crate::{
 };
 use bevy::prelude::*;
 
-use super::{build_tab_buttons::ButtonNodeTemplate, list_traits::AsVec};
+use super::{build_tab_buttons::ButtonNodeTemplate, list_traits::AsButtonList};
 
 // Unit Label used to build the Tab buttons for character creation.
 #[derive(Component, Default)]
@@ -45,15 +45,15 @@ impl ButtonNodeTemplate for CharacterCreationSubTabs {
 
 // Vec of tab buttons which have finished building.
 #[derive(Resource, Clone, Default)]
-pub struct BuiltSubTabButtons(Vec<SubTab>);
+pub struct BuiltSubTabButtons(Vec<SubTabButton>);
 impl BuiltSubTabButtons {
-    pub fn inner_ref_mut(&mut self) -> &mut Vec<SubTab> {
+    pub fn inner_ref_mut(&mut self) -> &mut Vec<SubTabButton> {
         &mut self.0
     }
-    pub fn inner_ref(&self) -> &Vec<SubTab> {
+    pub fn inner_ref(&self) -> &Vec<SubTabButton> {
         &self.0
     }
-    pub fn is_built(button: SubTab) -> impl Fn(Res<Self>) -> bool {
+    pub fn is_built(button: SubTabButton) -> impl Fn(Res<Self>) -> bool {
         move |built_buttons: Res<Self>| built_buttons.inner_ref().contains(&button)
     }
 }
@@ -72,7 +72,7 @@ where
     // but it should be an enum used to differentiate the item buttons, and should be
     // used to send events when the button is selected.
     // e.g. Tab
-    V: Component + AsVec + std::fmt::Display + Copy + Into<SubTab>,
+    V: Component + AsButtonList + std::fmt::Display + Copy + Into<SubTabButton>,
     // This could be used to wrap the identifying enum, e.g. TabButton(Tab), but for now we'll see
     // if just using Tab is satisfactory
     // A: Component + Copy,
@@ -83,28 +83,28 @@ where
           mut built_buttons: ResMut<BuiltSubTabButtons>| {
         let font = asset_server.load(PATH_SIMPLE_FONT);
         let parent_entity = query_parent.get_single().unwrap();
-        for sub_tab in V::vec() {
+        for subtab_button in V::button_list() {
             if !built_buttons
                 .inner_ref()
                 .iter()
-                .any(|&built_tab| built_tab == sub_tab.into())
+                .any(|&built_tab| built_tab == subtab_button.into())
             {
                 commands
                     // The important bit here is the `tab`, which is used to identify the selected tab
                     // and send events when the tab is clicked to make changes elsewhere in the menu
                     .spawn((
                         T::button_bundle(),
-                        sub_tab,
-                        Name::from("{sub_tab} button bundle"),
+                        subtab_button,
+                        Name::from(format!("{subtab_button} button bundle")),
                     ))
                     .with_children(|button| {
                         button.spawn((
-                            T::text_bundle(sub_tab.to_string(), font.clone()),
-                            Name::from("{tab} text bundle in button"),
+                            T::text_bundle(subtab_button.to_string(), font.clone()),
+                            Name::from(format!("{subtab_button} text bundle in button")),
                         ));
                     })
                     .set_parent(parent_entity);
-                built_buttons.inner_ref_mut().push(sub_tab.into())
+                built_buttons.inner_ref_mut().push(subtab_button.into())
             }
         }
     }

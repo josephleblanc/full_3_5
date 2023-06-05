@@ -10,7 +10,7 @@ use bevy::prelude::*;
 
 pub fn race_panel(
     mut query_list: Query<&mut Style, (With<LeftPanelList>, With<RacePanel>)>,
-    selected_tab: Res<SelectedTab>,
+    selected_tab: Res<SelectedSubTabMaps>,
 ) {
     if selected_tab.into_inner().selected() == Tab::Race {
         query_list.get_single_mut().unwrap().display = Display::Flex;
@@ -20,7 +20,7 @@ pub fn race_panel(
 }
 pub fn class_panel(
     mut query_list: Query<&mut Style, (With<LeftPanelList>, With<ClassPanel>)>,
-    selected_tab: Res<SelectedTab>,
+    selected_tab: Res<SelectedSubTabMaps>,
 ) {
     if selected_tab.selected() == Tab::Class {
         query_list.get_single_mut().unwrap().display = Display::Flex;
@@ -30,7 +30,7 @@ pub fn class_panel(
 }
 pub fn archetype_panel(
     mut query_list: Query<&mut Style, (With<LeftPanelList>, With<ArchetypePanel>)>,
-    selected_tab: Res<SelectedTab>,
+    selected_tab: Res<SelectedSubTabMaps>,
     selected_class_tab: Res<SelectedClassTab>,
 ) {
     if selected_tab.selected() == Tab::Class && selected_class_tab.inner() == ClassTab::Archetypes {
@@ -94,11 +94,11 @@ pub fn selected_race_description_type(
 pub fn set_list_text(
     mut query_list_text: Query<&mut Text, With<LeftPanelText>>,
     mut query_list_button: Query<(&mut Style, &mut LeftPanelEnum), With<LeftPanelButton>>,
-    selected_tab: Res<SelectedTab>,
+    selected_tab: Res<SelectedSubTabMaps>,
     asset_server: Res<AssetServer>,
 ) {
     let font: Handle<Font> = asset_server.load("fonts/simple_font.TTF");
-    // system should have a conditional to run when SelectedTab changes.
+    // system should have a conditional to run when SelectedSubTabMaps changes.
     let left_enums: Option<Vec<LeftPanelEnum>> = match selected_tab.selected() {
         Tab::Race => Some(
             PlayableRace::iterator()

@@ -7,6 +7,13 @@ where
     fn vec() -> Vec<Self>;
 }
 
+pub trait AsButtonList
+where
+    Self: Copy + Clone + Sized,
+{
+    fn button_list() -> Vec<Self>;
+}
+
 pub trait HasDescr {
     fn description(&self) -> &String;
 }
