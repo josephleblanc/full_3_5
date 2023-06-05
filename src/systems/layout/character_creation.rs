@@ -502,7 +502,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((list_parent.clone(), TabListParent::Class))
         .set_parent(central_scroll_list);
-
     // Archetype Tab display
     //     commands
     //         .spawn((list_parent.clone(), TabListParent::Archetype))

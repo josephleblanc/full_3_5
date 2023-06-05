@@ -184,6 +184,7 @@ impl Plugin for CharacterCreationPlugin {
                     select_tab::debug_new_display_subtab_list,
                     select_tab::tab_button_color,
                     select_tab::subtab_button_color,
+                    select_tab::display_subtab_buttons,
                 )
                     .in_set(EventSet::Receiving),
             );

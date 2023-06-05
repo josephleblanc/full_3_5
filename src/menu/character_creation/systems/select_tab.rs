@@ -8,7 +8,7 @@ use bevy::prelude::*;
 // TODO: change the below functions to work with generics, so they can be used in other menu
 // items outside the context of character creation
 
-// change display of list container upon event, both on entering and exiting a tab
+/// change display of list container upon event, both on entering and exiting a tab
 pub fn new_display_tab_list(
     mut tab_event_reader: EventReader<SelectTabEvent>,
     mut query_list_parent: Query<(&mut Style, &TabListParent)>,
@@ -29,6 +29,7 @@ pub fn new_display_tab_list(
     }
 }
 
+/// print the SelectTabEvent received for debugging
 pub fn debug_new_display_tab_list(
     mut tab_event_reader: EventReader<SelectTabEvent>,
     query_list_parent: Query<(&mut Style, &TabListParent)>,
@@ -254,6 +255,26 @@ pub fn subtab_button_select(
                     });
                 }
                 _ => {}
+            }
+        }
+    }
+}
+/// Displays tab buttons for the currently selected tab, hides others
+pub fn display_subtab_buttons(
+    mut tab_event_reader: EventReader<SelectTabEvent>,
+    mut query_list_parent: Query<(&mut Style, &SubTab)>,
+) {
+    for tab_event in tab_event_reader.iter() {
+        for (mut style, subtab) in query_list_parent.iter_mut() {
+            if tab_event.tab == Into::<Tab>::into(*subtab) {
+                match tab_event.tab_state {
+                    InTab::Exiting => {
+                        style.display = Display::None;
+                    }
+                    InTab::Entering => {
+                        style.display = Display::Flex;
+                    }
+                }
             }
         }
     }
