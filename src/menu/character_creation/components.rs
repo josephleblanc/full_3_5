@@ -12,10 +12,26 @@ use bevy::prelude::*;
 
 use super::layout::generics::list_traits::AsVec;
 
-#[derive(Component, Copy, Clone, Debug, PartialEq, Eq, PartialOrd)]
+#[derive(Component, Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Default)]
 pub enum Tab {
+    #[default]
     Race,
     Class,
+}
+
+impl std::fmt::Display for Tab {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Race => write!(f, "Race"),
+            Self::Class => write!(f, "Class"),
+        }
+    }
+}
+
+impl Into<SelectedTab> for Tab {
+    fn into(self) -> SelectedTab {
+        SelectedTab(self)
+    }
 }
 
 impl AsVec for Tab {
@@ -30,11 +46,11 @@ impl Into<TabButton> for Tab {
     }
 }
 
-impl Into<ListParent> for Tab {
-    fn into(self) -> ListParent {
+impl Into<TabListParent> for Tab {
+    fn into(self) -> TabListParent {
         match self {
-            Self::Race => ListParent::Race,
-            Self::Class => ListParent::Class,
+            Self::Race => TabListParent::Race,
+            Self::Class => TabListParent::Class,
         }
     }
 }
@@ -46,7 +62,7 @@ pub struct SelectTabEvent {
     pub tab_state: InTab,
 }
 
-#[derive(Resource, Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Resource, Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub struct SelectedTab(pub Tab);
 impl SelectedTab {
     pub fn new(other: Tab) -> SelectedTab {
@@ -59,7 +75,8 @@ impl SelectedWrapper<Tab> for SelectedTab {
     }
 }
 
-#[derive(Resource, Copy, Clone, Debug, PartialEq, Eq)]
+// TODO: Consider changing this to a struct which contains the selected subtab for each tab.
+#[derive(Resource, Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub struct SelectedSubTab(pub SubTab);
 impl SelectedSubTab {
     pub fn new(other: SubTab) -> SelectedSubTab {
@@ -80,8 +97,9 @@ pub struct SelectSubTabEvent {
     pub tab_state: InTab,
 }
 
-#[derive(Component, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Component, Copy, Clone, Debug, Eq, PartialEq, Default)]
 pub enum SubTab {
+    #[default]
     RaceDescription,
     RaceDefaultTraits,
     RaceAltTraits,
@@ -89,6 +107,48 @@ pub enum SubTab {
     ClassDescription,
     ClassFeatures,
     ClassArchetype,
+}
+
+impl Into<Tab> for SubTab {
+    fn into(self) -> Tab {
+        match self {
+            Self::RaceDescription => Tab::Race,
+            Self::RaceDefaultTraits => Tab::Race,
+            Self::RaceAltTraits => Tab::Race,
+            Self::RaceFavoredClass => Tab::Race,
+            Self::ClassDescription => Tab::Class,
+            Self::ClassFeatures => Tab::Class,
+            Self::ClassArchetype => Tab::Class,
+        }
+    }
+}
+
+impl std::fmt::Display for SubTab {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::RaceDescription => write!(f, "Race Description"),
+            Self::RaceDefaultTraits => write!(f, "Race Default Traits"),
+            Self::RaceAltTraits => write!(f, "Race Alt Traits"),
+            Self::RaceFavoredClass => write!(f, "Race Favored Class"),
+            Self::ClassDescription => write!(f, "Class Description"),
+            Self::ClassFeatures => write!(f, "Class Features"),
+            Self::ClassArchetype => write!(f, "Class Archetype"),
+        }
+    }
+}
+
+impl AsVec for SubTab {
+    fn vec() -> Vec<Self> {
+        vec![
+            Self::RaceDescription,
+            Self::RaceDefaultTraits,
+            Self::RaceAltTraits,
+            Self::RaceFavoredClass,
+            Self::ClassDescription,
+            Self::ClassFeatures,
+            Self::ClassArchetype,
+        ]
+    }
 }
 
 #[derive(Component, Copy, Clone, Debug, Eq, PartialEq)]
@@ -172,46 +232,13 @@ impl Default for LeftPanelEnum {
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct LeftPanelButton;
 
-#[derive(Resource, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
-pub struct SelectedCreationTab(pub CreationTab);
-
-#[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash, Default)]
-pub enum CreationTab {
-    #[default]
-    Race,
-    AbilityScores,
-    Class,
-    Skills,
-    Feats,
-    BonusFeats,
-    Optional,
-}
-impl Into<SelectedCreationTab> for CreationTab {
-    fn into(self) -> SelectedCreationTab {
-        SelectedCreationTab(self)
-    }
-}
-
-// TODO: Delete the inner method for SelectedCreationTab and replace it with
-// the method from SelectedWrapper instead.
-impl SelectedCreationTab {
-    pub fn inner(&self) -> CreationTab {
-        self.0
-    }
-}
-impl SelectedWrapper<CreationTab> for SelectedCreationTab {
-    fn selected(&self) -> CreationTab {
-        self.0
-    }
-}
-
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Hash)]
-pub enum ListParent {
+pub enum TabListParent {
     Race,
     Class,
 }
 
-impl std::fmt::Display for ListParent {
+impl std::fmt::Display for TabListParent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Race => write!(f, "Race"),
@@ -220,7 +247,7 @@ impl std::fmt::Display for ListParent {
     }
 }
 
-impl Into<Tab> for ListParent {
+impl Into<Tab> for TabListParent {
     fn into(self) -> Tab {
         match self {
             Self::Race => Tab::Race,

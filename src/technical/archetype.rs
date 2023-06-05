@@ -55,9 +55,9 @@ impl Plugin for MyArchetypeAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<State>()
             .add_asset::<ArchetypeAsset>()
-            .init_asset_loader::<ArchetypeAssetLoader>()
-            .add_startup_system(setup_asset_example)
-            .add_system(print_on_load);
+            .init_asset_loader::<ArchetypeAssetLoader>();
+        // .add_startup_system(setup_asset_example)
+        // .add_system(print_on_load);
     }
 }
 

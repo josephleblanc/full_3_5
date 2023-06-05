@@ -5,7 +5,7 @@ use crate::{
             components::*,
             constants::{LIST_DESCRIPTION_TEXT_STYLE, LIST_ITEM_TITLE_STYLE},
             layout::{
-                generics::{list_traits, select_item::RaceItemDefaultTrait},
+                generics::{list_traits},
                 resource::*,
             },
         },
@@ -25,7 +25,7 @@ pub fn build_item_desc_list<T, V, Q>(
     subtab: SubTab,
 ) -> impl FnMut(
     Commands,
-    Query<Entity, With<ListParent>>,
+    Query<(Entity, &TabListParent)>,
     Res<Assets<T>>,
     Res<AssetServer>,
     Res<CentralListBundles>,
@@ -49,11 +49,11 @@ where
     //   3. Setup the list parent.
     //   4. add a system with the function, using the subtab_identifier parameter.
     move |mut commands: Commands,
-          query_parent: Query<Entity, With<ListParent>>,
+          query_parent: Query<(Entity, &TabListParent)>,
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
-        mut res_built: ResMut<BuiltLists>
+          mut res_built: ResMut<BuiltLists>
           // try to remove this later
           | {
         let subtab_list_parent = SubTabListParent {
@@ -66,14 +66,14 @@ where
                 custom_asset.len()
             );
             let shared_font = asset_server.load(PATH_SIMPLE_FONT);
-            let parent_entity = query_parent.get_single().unwrap();
             let key_vec = V::vec();
             let key_array = key_vec.as_slice();
+            if let Some((parent_entity, _list_parent)) = query_parent.iter().filter(|(_, &list_parent)| list_parent == tab.into()).next() {
                 let list_id = commands
                     .spawn((
                         list_resource.subtab_list_parent.clone(),
                         Name::from("select description node parent"),
-                        RaceItemDefaultTrait,
+                        subtab_list_parent,
                     ))
                     .set_parent(parent_entity)
                     .id();
@@ -163,6 +163,7 @@ where
                         }
                     }
                 }
+            }
             res_built.inner_mut().push(subtab_list_parent)
         }
 }

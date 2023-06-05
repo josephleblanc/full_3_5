@@ -9,7 +9,7 @@ use bevy::prelude::*;
 
 pub fn build_description_list(
     mut commands: Commands,
-    query_parent: Query<Entity, With<ListParent>>,
+    query_parent: Query<Entity, With<TabListParent>>,
     asset_server: Res<AssetServer>,
 ) {
     let parent_entity = query_parent.get_single().unwrap();

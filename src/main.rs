@@ -120,7 +120,6 @@ fn main() {
 fn check_state(state: Res<State<AppState>>) {
     println!("State: {:?}", state.0);
 }
-
 fn spawn_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
     let mut sprite = TextureAtlasSprite::new(1);
     sprite.color = Color::rgb(0.3, 0.3, 0.9);

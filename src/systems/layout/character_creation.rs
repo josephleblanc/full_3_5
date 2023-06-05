@@ -1,10 +1,7 @@
 use crate::menu::character_creation::components::*;
-use crate::menu::character_creation::layout::generics::description::{
-    ClassItemDescription, RaceItemDescription,
-};
-use crate::menu::character_creation::layout::generics::select_item::{
-    RaceItemAltTrait, RaceItemDefaultTrait,
-};
+use crate::menu::character_creation::layout::generics::build_subtab_buttons::CharacterCreationSubTabs;
+use crate::menu::character_creation::layout::generics::build_tab_buttons::CharacterTabs;
+
 use crate::menu::components::ScrollingList;
 use crate::menu::styles::*;
 use crate::systems::game::class::PlayableClass;
@@ -85,6 +82,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 background_color: Color::RED.into(),
                 ..default()
             },
+            // TODO: check HighContainer later to see if it can be deleted
             HighContainer,
             Name::from("high container"),
         ))
@@ -172,6 +170,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Stages of Character Cration
     // Race -> Ability Scores -> Class -> Skills -> Feats -> Optionals
     //  Optionals are: Spells, Class Feats, Animal Companion, etc.
+    //
+    //  These are loaded with bult_tab_buttons
     let stages_of_creation_container_id = commands
         .spawn((
             NodeBundle {
@@ -184,72 +184,12 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Name::from("stages of creation container"),
+            // The identifying label to build buttons.
+            // This unit struct also contains the methods with templates of the buttons used to
+            // build the buttons and their contained text in build_tab_buttons
+            CharacterTabs,
         ))
-        .set_parent(high_container)
-        .id();
-    // Race Button and text
-    let button_name = Name::from("stages of creation button");
-    let button_text = [
-        "Race",
-        "Ability Scores",
-        "Class",
-        "Skills",
-        "Feats",
-        "Bonus Feats",
-        "Optional",
-    ];
-    let text_bundle_name = [
-        "race button text",
-        "ability scores button text",
-        "class button text",
-        "skills button text",
-        "feats button text",
-        "bonus feats button text",
-        "optional button text",
-    ];
-    let button_type = [
-        CreationTab::Race,
-        CreationTab::AbilityScores,
-        CreationTab::Class,
-        CreationTab::Skills,
-        CreationTab::Feats,
-        CreationTab::BonusFeats,
-        CreationTab::Optional,
-    ];
-    for ((&button_text, &text_bundle_name), &button_type) in button_text
-        .iter()
-        .zip(text_bundle_name.iter())
-        .zip(button_type.iter())
-    {
-        commands
-            .spawn((
-                ButtonBundle {
-                    style: STAGES_OF_CREATION_BUTTON,
-                    background_color: Color::PURPLE.into(),
-                    ..default()
-                },
-                button_name.clone(),
-                button_type,
-            ))
-            .with_children(|race_button| {
-                race_button.spawn((
-                    TextBundle {
-                        text: Text::from_section(
-                            button_text,
-                            TextStyle {
-                                font: shared_font.clone(),
-                                font_size: STAGES_OF_CREATION_FONT_SIZE,
-                                color: STAGES_OF_CREATION_TEXT_COLOR,
-                            },
-                        ),
-                        style: STAGES_OF_CREATION_TEXT_STYLE,
-                        ..default()
-                    },
-                    Name::from(text_bundle_name),
-                ));
-            })
-            .set_parent(stages_of_creation_container_id);
-    }
+        .set_parent(high_container);
 
     ////
     //// mid_container children
@@ -490,6 +430,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     // with text descriptions of the selected races.
     // This contains many nodes, but on startup most will be set to
     // Display::None until the correct tab is checked.
+    // TODO: Clean this up. There are better ways than arbitrarily choosing a length of 20
     let default_racial_trait_rows = 20_usize;
     let central_node = commands
         .spawn((
@@ -549,121 +490,24 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             gap: Size::height(Val::Px(8.)),
             ..default()
         },
-        background_color: Color::rgba(32., 32., 32., 0.).into(), // RACIAL_CHOICES_BUTTON_COLOR,
-        ..default()
-    };
-    // List nodes and text
-    use crate::menu::character_creation::constants::*;
-    let list_node = NodeBundle {
-        style: LIST_PARENT_NODE_STYLE,
-        background_color: Color::BLACK.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-        ..default()
-    };
-    let list_item_title = TextBundle {
-        text: Text::from_section(
-            "Select Me!",
-            TextStyle {
-                font: shared_font.clone(),
-                font_size: 30.,
-                color: TEXT_COLOR,
-            },
-        ),
-        style: LIST_ITEM_TITLE_STYLE,
-        ..default()
-    };
-    let list_row_node = NodeBundle {
-        style: Style {
-            // padding: UiRect::all(Val::Px(5.)),
-            margin: UiRect::all(Val::Px(10.)),
-            flex_direction: FlexDirection::Row,
-            ..default()
-        },
-        background_color: Color::GRAY.into(), // RACIAL_CHOICES_BUTTON_COLOR,
-        ..default()
-    };
-    let list_col_node = NodeBundle {
-        style: Style {
-            // padding: UiRect::all(Val::Px(5.)),
-            margin: UiRect::all(Val::Px(10.)),
-            flex_direction: FlexDirection::Column,
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            ..default()
-        },
-        background_color: Color::GRAY.into(),
-        ..default()
-    };
-    let list_button = ButtonBundle {
-        style: Style {
-            size: Size::width(Val::Percent(100.)),
-            // padding: UiRect::left(Val::Percent(7.)),
-            ..default()
-        },
-        background_color: Color::DARK_GREEN.into(),
-        ..default()
-    };
-    let list_button_text = TextBundle::from_section(
-        "List Button Text".to_string(),
-        TextStyle {
-            font: shared_font.clone(),
-            font_size: LIST_BUTTON_TEXT_SIZE,
-            color: TEXT_COLOR,
-        },
-    );
-    let skill_replaces_text = TextBundle::from_section(
-        "Replaces".to_string(),
-        TextStyle {
-            font: shared_font.clone(),
-            font_size: 30.,
-            color: TEXT_COLOR,
-        },
-    );
-    let skill_replacement_item_text = TextBundle {
-        text: Text::from_section(
-            "Alt Race Replaces:".to_string(),
-            TextStyle {
-                font: shared_font.clone(),
-                font_size: 30.,
-                color: TEXT_COLOR,
-            },
-        ),
-        style: Style {
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        ..default()
-    };
-    let list_description_text = TextBundle {
-        text: Text::from_section(
-            "",
-            TextStyle {
-                font: shared_font.clone(),
-                font_size: 30.,
-                color: TEXT_COLOR,
-            },
-        ),
-        style: Style {
-            max_size: Size::width(Val::Px(900.)),
-            margin: UiRect::left(Val::Px(20.)),
-            ..default()
-        },
+        background_color: Color::rgba(0.2, 0.2, 0.2, 0.2).into(), // RACIAL_CHOICES_BUTTON_COLOR,
         ..default()
     };
     // Race Tab display
     commands
-        .spawn((list_parent.clone(), ListParent::Race))
+        .spawn((list_parent.clone(), TabListParent::Race))
         .set_parent(central_scroll_list);
     // Class Tab display
     // hook for select_item::build_description_list
     commands
-        .spawn((list_parent.clone(), ListParent::Class, ClassItemDescription))
+        .spawn((list_parent.clone(), TabListParent::Class))
         .set_parent(central_scroll_list);
 
     // Archetype Tab display
-    commands
-        .spawn((list_parent.clone(), ListParent::Archetype))
-        .set_parent(central_scroll_list);
-
+    //     commands
+    //         .spawn((list_parent.clone(), TabListParent::Archetype))
+    //         .set_parent(central_scroll_list);
+    //
     // Panel with chosen racial traits and favored class.
     // Should be located on the right of the screen
     // This panel should:
@@ -1130,7 +974,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         // })
         .set_parent(chosen_traits_id);
 
-    // Button panel with selections for which details of the selected race should
+    // Horizontal button panel with selections for which details of the selected race should
     // be displayed in the central description area.
     // Includes sections:
     //  - Race Description
@@ -1139,8 +983,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     //  - Racial Subtypes (maybe?)
     //  - Favored Class Options
     //  - Racial Feats
-    // let racial_choices_button_titles = RacialChoicesButtonType::array();
-    let description_select_buttons = RaceTab::array();
+    //
+    //  These are loaded by the function build_subtab_buttons
     commands
         .spawn((
             NodeBundle {
@@ -1152,55 +996,21 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                background_color: Color::BEIGE.into(), // RACIAL_CHOICES_NODE_COLOR,
+                background_color: Color::BEIGE.into(),
                 ..default()
             },
             Name::from("Choose Description Content Container"),
         ))
         .with_children(|button_container| {
-            button_container
-                .spawn((
-                    NodeBundle {
-                        background_color: Color::YELLOW_GREEN.into(), // RACIAL_CHOICES_PANEL_COLOR,
-                        ..default()
-                    },
-                    Name::from("Button Container - Choose Description Content"),
-                ))
-                .with_children(|list| {
-                    for description_button in description_select_buttons {
-                        list.spawn((
-                            ButtonBundle {
-                                style: Style {
-                                    padding: UiRect::all(Val::Px(5.)),
-                                    margin: UiRect::all(Val::Px(5.)),
-                                    ..default()
-                                },
-                                background_color: Color::PURPLE.into(),
-                                ..default()
-                            },
-                            description_button,
-                            SubTabButton::Race(description_button),
-                            Name::from("Button: Choose Description Content"),
-                        ))
-                        .with_children(|list_button| {
-                            list_button.spawn((
-                                TextBundle {
-                                    text: Text::from_section(
-                                        description_button.to_string(),
-                                        TextStyle {
-                                            font: shared_font.clone(),
-                                            font_size: 25.,
-                                            color: TEXT_COLOR,
-                                        },
-                                    ),
-                                    background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
-                                    ..default()
-                                },
-                                SubTabButtonText,
-                            ));
-                        });
-                    }
-                });
+            button_container.spawn((
+                NodeBundle {
+                    background_color: Color::YELLOW_GREEN.into(), // RACIAL_CHOICES_PANEL_COLOR,
+                    ..default()
+                },
+                Name::from("Button Container - Choose Description Content"),
+                // This is what identifies this node for building buttons
+                CharacterCreationSubTabs,
+            ));
         })
         .set_parent(high_container);
 
@@ -1267,7 +1077,7 @@ pub fn setup_class_table(commands: Commands /* query_parent: Query<Entity, With<
     // The table will be made of rows which contain columns of uniform width.
     // Titles in the first row are kept separate from the table.
     // This should:
-    //  - Only be visible in the Class CreationTab
+    //  - Only be visible in the Class Tab
     //  - Be invisible by default
     //  - Include:
     //      + level

@@ -1,10 +1,5 @@
-use crate::menu::{
-    character_creation::components::{RaceTab, SelectedRaceTab},
-    styles::*,
-};
+use crate::menu::styles::*;
 use bevy::prelude::*;
-
-use super::components::{ClassTab, CreationTab, SelectedClassTab, SelectedCreationTab};
 
 pub fn new_selected_tab<T, U>(
 ) -> impl FnMut(Query<(&Interaction, &U, &mut BackgroundColor), Changed<Interaction>>, ResMut<T>) -> ()

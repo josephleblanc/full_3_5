@@ -1,31 +1,33 @@
-use crate::menu::character_creation::layout::generics::description::{
-    self, ClassItemDescription, RaceItemDescription,
-};
-use crate::menu::character_creation::layout::generics::recur_description::build_item_desc_list;
-use crate::menu::character_creation::layout::generics::select_item::{
-    build_button_desc_list, BuiltLists, ListName, RaceItemAltTrait, RaceItemDefaultTrait,
-};
-use crate::menu::character_creation::layout::resource::CentralListBundles;
-use crate::systems::game::character::PlayableRace;
-use crate::systems::game::class::PlayableClass;
-use crate::systems::game::race::RacialTraitName;
-use crate::technical::class::ClassAsset;
 use crate::{
-    menu::character_creation::{
-        components::*,
-        generics,
-        systems::*,
-        systems::{race_tab::*, setup::*, tooltip::*},
+    menu::{
+        character_creation::{
+            components::{SelectedSubTab, *},
+            layout::{
+                generics::{
+                    build_subtab_buttons::{self, BuiltSubTabButtons, CharacterCreationSubTabs},
+                    build_tab_buttons::{self, BuiltTabButtons, CharacterTabs},
+                    description, recur_description,
+                    select_item::BuiltLists,
+                },
+                resource::CentralListBundles,
+            },
+            systems::{setup::*, *},
+        },
+        mouse::mouse_scroll,
     },
-    menu::mouse::{mouse_scroll, scroll_snap_top},
     system_scheduling::states::AppState,
     systems::{
-        game::race::{build_race, RaceBuilder},
+        game::{
+            character::PlayableRace,
+            class::PlayableClass,
+            race::{RaceBuilder, RacialTraitName},
+        },
         layout::character_creation::build_layout,
     },
     technical::{
         alternate_traits::AltTraitAsset,
         archetype::ArchetypeAsset,
+        class::ClassAsset,
         default_race_traits::DefaultTraitAsset,
         favored_class::FavoredClassAsset,
         is_custom_asset_loaded::{is_custom_asset_loaded, CustomAssetLoadState},
@@ -42,18 +44,6 @@ enum ButtonSet {
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-enum Changed {
-    Race,
-    RaceTab,
-    RaceOrTab,
-    RaceTabAny,
-    Class,
-    ClassTab,
-    ClassOrTab,
-    ClassOrTabAny,
-}
-
-#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 enum SuperSet {
     Super,
 }
@@ -66,27 +56,25 @@ enum Build {
     PostBuild,
 }
 
-#[derive(SystemSet, PartialEq, Eq, Debug, Clone, Hash, Default)]
-enum CreationTabSet {
-    #[default]
-    Race,
-    AbilityScores,
-    Class,
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum EventSet {
+    Sending,
+    Receiving,
 }
-
-use bevy::input::common_conditions::input_just_pressed;
 
 impl Plugin for CharacterCreationPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Add Events
+            .add_event::<SelectTabEvent>()
+            .add_event::<SelectSubTabEvent>()
             //// init resources, load custom assets, & build layout
-            .init_resource::<SelectedRaceTab>()
             .init_resource::<SelectedRace>()
-            .init_resource::<SelectedClassTab>()
             .init_resource::<SelectedClass>()
             .init_resource::<SelectedArchetype>()
+            .init_resource::<SelectedTab>()
+            .init_resource::<SelectedSubTab>()
             .init_resource::<FlavorTextSetup>()
-            .init_resource::<SelectedCreationTab>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .init_resource::<CustomAssetLoadState<AltTraitAsset>>()
@@ -94,6 +82,8 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<CustomAssetLoadState<ArchetypeAsset>>()
             .init_resource::<RaceBuilder>()
             .init_resource::<BuiltLists>()
+            .init_resource::<BuiltTabButtons>()
+            .init_resource::<BuiltSubTabButtons>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -104,6 +94,9 @@ impl Plugin for CharacterCreationPlugin {
                     build_layout,
                     CentralListBundles::init,
                     apply_system_buffers,
+                    build_tab_buttons::build_tab_buttons::<CharacterTabs, Tab>(),
+                    build_subtab_buttons::build_subtab_buttons::<CharacterCreationSubTabs, SubTab>(
+                    ),
                 )
                     .chain()
                     .in_schedule(OnEnter(AppState::CharacterCreation)),
@@ -119,244 +112,110 @@ impl Plugin for CharacterCreationPlugin {
             )
             .configure_sets(
                 (
-                    CreationTabSet::Race
-                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
-                    CreationTabSet::Class
-                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Class))),
+                    EventSet::Sending,
+                    EventSet::Receiving.after(EventSet::Sending),
                 )
                     .in_set(SuperSet::Super),
             )
-            .configure_sets(
-                (
-                    Build::Super.run_if(resource_changed::<SelectedRace>()),
-                    Build::PreBuild
-                        .before(Build::Build)
-                        .run_if(resource_changed::<SelectedRace>()),
-                    Build::Build.run_if(resource_changed::<RaceBuilder>()),
-                    Changed::Race.run_if(resource_changed::<SelectedRace>()),
-                    Changed::RaceOrTab.run_if(
-                        resource_changed::<SelectedRace>()
-                            .or_else(resource_changed::<SelectedRaceTab>()),
-                    ),
-                    Changed::ClassOrTab.run_if(
-                        resource_changed::<SelectedClass>()
-                            .or_else(resource_changed::<SelectedClassTab>()),
-                    ),
-                )
-                    .in_set(SuperSet::Super),
-            )
-            .configure_set(
-                Changed::RaceTab
-                    .run_if(resource_changed::<SelectedRaceTab>())
-                    .in_set(CreationTabSet::Race),
-            )
-            .configure_set(
-                ButtonSet::LeftClicked
-                    .in_set(SuperSet::Super)
-                    .run_if(input_just_pressed(bevy::input::mouse::MouseButton::Left)),
-            )
-            // Add default flavor text
-            // .add_system(setup_flavor_text.in_set(SuperSet::Super))
+            // .configure_sets(
+            //     (
+            //         Build::Super.run_if(resource_changed::<SelectedRace>()),
+            //         Build::PreBuild
+            //             .before(Build::Build)
+            //             .run_if(resource_changed::<SelectedRace>()),
+            //         Build::Build.run_if(resource_changed::<RaceBuilder>()),
+            //         Changed::Race.run_if(resource_changed::<SelectedRace>()),
+            //     )
+            //         .in_set(SuperSet::Super),
+            // )
             // Mouse Scroll systems
             .add_system(mouse_scroll.in_set(SuperSet::Super))
             // Tab select button management (Race, Class, etc.)
             .add_systems(
                 (
-                    description::build_description_list::<
-                        CreationTab,
-                        RaceTab,
-                        RaceAsset,
-                        RaceItemDescription,
-                        PlayableRace,
-                    >(
-                        CreationTab::Race,
-                        RaceTab::RaceDescription,
-                        ListName::DescriptionRace,
+                    // Race Tab
+                    description::build_description_list::<RaceAsset, PlayableRace>(
+                        Tab::Race,
+                        SubTab::RaceDescription,
                     )
-                    .run_if(not(BuiltLists::is_built(ListName::DescriptionRace))),
-                    build_item_desc_list::<
-                        RaceItemDefaultTrait,
-                        CreationTab,
-                        RaceTab,
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Race,
+                        subtab: SubTab::RaceDescription,
+                    }))),
+                    recur_description::build_item_desc_list::<
                         DefaultTraitAsset,
                         PlayableRace,
                         RacialTraitName,
-                    >(
-                        CreationTab::Race,
-                        RaceTab::StandardTraitTab,
-                        ListName::DefaultTraitsRace,
-                    )
-                    .run_if(not(BuiltLists::is_built(ListName::DefaultTraitsRace))),
-                    build_button_desc_list::<
-                        RaceItemAltTrait,
-                        CreationTab,
-                        RaceTab,
-                        AltTraitAsset,
-                        PlayableRace,
-                        RacialTraitName,
-                    >(
-                        CreationTab::Race,
-                        RaceTab::AltTraitTab,
-                        ListName::AltTraitsRace,
-                        true,
-                    )
-                    .run_if(not(BuiltLists::is_built(ListName::AltTraitsRace))),
+                    >(Tab::Race, SubTab::RaceDefaultTraits)
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Race,
+                        subtab: SubTab::RaceDefaultTraits,
+                    }))),
                     // Class Tab
-                    description::build_description_list::<
-                        CreationTab,
-                        ClassTab,
-                        ClassAsset,
-                        ClassItemDescription,
-                        PlayableClass,
-                    >(
-                        CreationTab::Class,
-                        ClassTab::Description,
-                        ListName::ClassDescription,
+                    description::build_description_list::<ClassAsset, PlayableClass>(
+                        Tab::Class,
+                        SubTab::ClassDescription,
                     )
-                    .run_if(not(BuiltLists::is_built(ListName::ClassDescription))),
-                    generics::new_selected_tab::<SelectedCreationTab, CreationTab>(),
-                    generics::cleanup_tab_button::<SelectedCreationTab, CreationTab>(),
-                    generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
-                    generics::cleanup_tab_button::<SelectedRaceTab, RaceTab>(),
-                    generics::new_selected_tab::<SelectedClassTab, ClassTab>(),
-                    generics::cleanup_tab_button::<SelectedClassTab, ClassTab>(),
-                )
-                    .in_set(SuperSet::Super),
-            )
-            // Manages displayed racial descriptions in the central area
-            .add_systems((scroll_snap_top,).in_set(Changed::Race))
-            .add_system(update_race_builder.in_set(Build::PreBuild))
-            .add_systems(
-                (
-                    reset_race,
-                    apply_system_buffers,
-                    build_race,
-                    apply_system_buffers,
-                    // only for testing, remove later
-                    // --------------------------
-                    // print_builder,
-                    // print_floating_ability_bonuses,
-                    // print_floating_bonus_feats,
-                    // print_floating_skill_bonuses,
-                    // print_saving_throw_bonuses,
-                    // print_caster_level_bonuses,
-                    // print_armor_class_bonuses,
-                    // print_spell_like_abilities,
-                    // print_spell_dc_bonuses,
-                    // print_attack_roll_bonuses,
-                    // --------------------------
-                    update_common_traits_display,
-                )
-                    .chain()
-                    .in_set(Build::Build),
-            )
-            .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
-            .add_systems(
-                (
-                    // RaceTab
-                    description::display_node::<SelectedRace, PlayableRace, RaceItemDescription>
-                        .run_if(
-                            resource_changed::<SelectedCreationTab>().or_else(
-                                resource_changed::<SelectedRaceTab>()
-                                    .or_else(resource_changed::<SelectedRace>()),
-                            ),
-                        )
-                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
-                    description::display_node::<SelectedRace, PlayableRace, RaceItemDefaultTrait>
-                        .run_if(
-                            resource_changed::<SelectedCreationTab>().or_else(
-                                resource_changed::<SelectedRaceTab>()
-                                    .or_else(resource_changed::<SelectedRace>()),
-                            ),
-                        )
-                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
-                    // ClassTab
-                    description::display_node::<SelectedClass, PlayableClass, RaceItemDescription>
-                        .run_if(
-                            resource_changed::<SelectedCreationTab>().or_else(
-                                resource_changed::<SelectedClassTab>()
-                                    .or_else(resource_changed::<SelectedClass>()),
-                            ),
-                        )
-                        .run_if(resource_equals(SelectedCreationTab(CreationTab::Class))),
-                    // display_subtab::<CreationTab, SelectedCreationTab, RaceTab, SelectedRaceTab>
-                    //     .run_if(
-                    //         resource_changed::<SelectedCreationTab>().or_else(
-                    //             resource_changed::<SelectedRaceTab>()
-                    //                 .or_else(resource_changed::<SelectedRace>()),
-                    //         ),
-                    //     )
-                    //     .run_if(resource_equals(SelectedCreationTab(CreationTab::Race))),
-                )
-                    .in_set(SuperSet::Super),
-            )
-            // .add_system(fill_alt_traits.in_set(Changed::Race));
-            // .add_systems(
-            //     (
-            //         // race_tab::list_node,
-            //         // race_tab::set_list_title,
-            //         // race_tab::button_col,
-            //         // race_tab::replacement_text,
-            //         // race_tab::replace_node,
-            //         // race_tab::replace_text,
-            //         // race_tab::description,
-            //     )
-            //         .chain()
-            //         .in_set(Changed::RaceOrTab),
-            // )
-            .add_systems(
-                (
-                    // Manage the display of left panels.
-                    left_panel::race_panel.run_if(resource_changed::<SelectedCreationTab>()),
-                    left_panel::class_panel.run_if(resource_changed::<SelectedCreationTab>()),
-                    left_panel::archetype_panel.run_if(
-                        resource_changed::<SelectedCreationTab>()
-                            .or_else(resource_changed::<SelectedClassTab>()),
-                    ),
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Class,
+                        subtab: SubTab::ClassDescription,
+                    }))),
+                    // generics::new_selected_tab::<SelectedTab, Tab>(),
+                    // generics::cleanup_tab_button::<SelectedTab, Tab>(),
+                    // generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
+                    // generics::cleanup_tab_button::<SelectedRaceTab, RaceTab>(),
+                    // generics::new_selected_tab::<SelectedClassTab, ClassTab>(),
+                    // generics::cleanup_tab_button::<SelectedClassTab, ClassTab>(),
                 )
                     .in_set(SuperSet::Super),
             )
             .add_systems(
                 (
-                    subtab_button::display.run_if(resource_changed::<SelectedCreationTab>()),
-                    subtab_button::text.run_if(resource_changed::<SelectedCreationTab>()),
-                    // I'm afraid I deleted this in the re-organization. Maybe grab it from a
-                    // roll-back
-                    // SubTabButtonText::display.run_if(resource_changed::<SelectedCreationTab>()),
+                    select_tab::tab_button_select,
+                    select_tab::subtab_button_select,
                 )
-                    .in_set(SuperSet::Super),
-            )
-            .add_systems(
-                (left_panel::cleanup_buttons, left_panel::button_system).in_set(SuperSet::Super),
+                    .in_set(EventSet::Sending),
             )
             .add_systems(
                 (
-                    archetype::archetype_panel_display.run_if(
-                        resource_changed::<SelectedCreationTab>()
-                            .or_else(resource_changed::<SelectedClassTab>()),
-                    ),
-                    archetype::archetype_panel_text
-                        .run_if(
-                            resource_changed::<SelectedClass>()
-                                .and_then(resource_equals(SelectedClassTab(ClassTab::Archetypes))),
-                        )
-                        .after(archetype::archetype_panel_display),
-                    archetype::archetype_panel_title
-                        .after(archetype::archetype_panel_display)
-                        .run_if(
-                            resource_changed::<SelectedClass>()
-                                .and_then(resource_equals(SelectedClassTab(ClassTab::Archetypes))),
-                        ),
+                    select_tab::new_display_tab_list,
+                    select_tab::debug_new_display_tab_list,
+                    select_tab::new_display_subtab_list,
+                    select_tab::debug_new_display_subtab_list,
+                    select_tab::tab_button_color,
+                    select_tab::subtab_button_color,
                 )
-                    .in_set(SuperSet::Super),
-            )
-            .add_system(
-                ListParent::display
-                    .run_if(
-                        resource_changed::<SelectedCreationTab>()
-                            .or_else(resource_changed::<SelectedClassTab>()),
-                    )
-                    .in_set(SuperSet::Super),
+                    .in_set(EventSet::Receiving),
             );
+        // Manages displayed racial descriptions in the central area
+        // .add_systems((scroll_snap_top,).in_set(Changed::Race))
+        // .add_system(update_race_builder.in_set(Build::PreBuild))
+        // .add_systems(
+        //     (
+        //         reset_race,
+        //         apply_system_buffers,
+        //         build_race,
+        //         apply_system_buffers,
+        //         update_common_traits_display,
+        //     )
+        //         .chain()
+        //         .in_set(Build::Build),
+        // )
+        // .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
+        // .add_systems(
+        //     (
+        //         // Manage the display of left panels.
+        //         left_panel::race_panel.run_if(resource_changed::<SelectedTab>()),
+        //         left_panel::class_panel.run_if(resource_changed::<SelectedTab>()),
+        //         left_panel::archetype_panel.run_if(
+        //             resource_changed::<SelectedTab>()
+        //                 .or_else(resource_changed::<SelectedClassTab>()),
+        //         ),
+        //     )
+        //         .in_set(SuperSet::Super),
+        // )
+        // .add_systems(
+        //     (left_panel::cleanup_buttons, left_panel::button_system).in_set(SuperSet::Super),
+        // );
     }
 }

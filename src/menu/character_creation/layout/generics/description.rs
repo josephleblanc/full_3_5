@@ -75,7 +75,7 @@ pub fn build_description_list<T, V>(
     subtab: SubTab,
 ) -> impl FnMut(
     Commands,
-    Query<Entity, With<ListParent>>,
+    Query<(Entity, &TabListParent)>,
     Res<Assets<T>>,
     Res<AssetServer>,
     Res<CentralListBundles>,
@@ -85,10 +85,11 @@ where
     // This is the CustomAsset
     T: TypeUuid + Send + Sync + 'static + list_traits::HasDescr + list_traits::HasKey<V>,
     // This is the identifying enum
+    // e.g. PlayableRace, PlayableClass
     V: Component + list_traits::AsVec + Eq + PartialEq + std::fmt::Display + Copy,
 {
     move |mut commands: Commands,
-          query_parent: Query<Entity, With<ListParent>>,
+          query_parent: Query<(Entity, &TabListParent)>,
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
@@ -98,18 +99,15 @@ where
         let subtab_list_parent = SubTabListParent { tab, subtab };
         if !res_built.inner_mut().contains(&subtab_list_parent) {
         let shared_font = asset_server.load(PATH_SIMPLE_FONT);
-        let parent_entity = query_parent.get_single().unwrap();
         let key_vec = V::vec();
         let key_array = key_vec.as_slice();
+        if let Some((parent_entity, _list_parent)) = query_parent.iter().filter(|(_, &list_parent)| list_parent == tab.into()).next() {
         println!("{} assets loaded", custom_asset.len());
             let list_id = commands
                 .spawn((
                     list_resource.subtab_list_parent.clone(),
                     Name::from("description nodes list parent"),
-                    SubTabListParent {
-                        tab,
-                        subtab
-                    }
+                    subtab_list_parent,
                 ))
                 .set_parent(parent_entity)
                 .id();
@@ -122,7 +120,7 @@ where
                     println!("--> building description node for {}", key);
                     commands
                         .spawn((
-                            // Each of these nodes is one row.
+                            // Each of these nodes is one row.SubTabListParent
                             Name::from("Race description node"),
                             ListNode,
                             list_resource.list_node.clone(),
@@ -183,6 +181,7 @@ where
                 }
             }
             res_built.inner_mut().push(subtab_list_parent)
+        }
         }
         }
 }

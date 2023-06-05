@@ -1,5 +1,18 @@
 use crate::systems::game::{character::*, equipment::*, race::*};
 use bevy::prelude::*;
+// copy and paste below into add_system as needed
+// --------------------------
+// print_builder,
+// print_floating_ability_bonuses,
+// print_floating_bonus_feats,
+// print_floating_skill_bonuses,
+// print_saving_throw_bonuses,
+// print_caster_level_bonuses,
+// print_armor_class_bonuses,
+// print_spell_like_abilities,
+// print_spell_dc_bonuses,
+// print_attack_roll_bonuses,
+// --------------------------
 
 pub fn race_builder(race_builder: Res<RaceBuilder>) {
     info!("RaceBuilder: {:#?}", race_builder);

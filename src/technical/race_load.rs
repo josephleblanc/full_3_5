@@ -43,9 +43,9 @@ impl Plugin for MyRaceAssetPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<State>()
             .add_asset::<RaceAsset>()
-            .init_asset_loader::<RaceAssetLoader>()
-            .add_startup_system(setup_asset_example)
-            .add_system(print_on_load);
+            .init_asset_loader::<RaceAssetLoader>();
+        // .add_startup_system(setup_asset_example)
+        // .add_system(print_on_load);
     }
 }
 

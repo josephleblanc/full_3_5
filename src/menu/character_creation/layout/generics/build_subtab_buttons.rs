@@ -13,7 +13,7 @@ use bevy::prelude::*;
 use super::{build_tab_buttons::ButtonNodeTemplate, list_traits::AsVec};
 
 // Unit Label used to build the Tab buttons for character creation.
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct CharacterCreationSubTabs;
 impl ButtonNodeTemplate for CharacterCreationSubTabs {
     fn button_bundle() -> ButtonBundle {
@@ -44,16 +44,16 @@ impl ButtonNodeTemplate for CharacterCreationSubTabs {
 }
 
 // Vec of tab buttons which have finished building.
-#[derive(Resource, Clone)]
-pub struct BuiltSubTabButtons(Vec<Tab>);
+#[derive(Resource, Clone, Default)]
+pub struct BuiltSubTabButtons(Vec<SubTab>);
 impl BuiltSubTabButtons {
-    pub fn inner_mut(&mut self) -> &mut Vec<Tab> {
+    pub fn inner_ref_mut(&mut self) -> &mut Vec<SubTab> {
         &mut self.0
     }
-    pub fn inner_ref(&self) -> &Vec<Tab> {
+    pub fn inner_ref(&self) -> &Vec<SubTab> {
         &self.0
     }
-    pub fn is_built(button: Tab) -> impl Fn(Res<Self>) -> bool {
+    pub fn is_built(button: SubTab) -> impl Fn(Res<Self>) -> bool {
         move |built_buttons: Res<Self>| built_buttons.inner_ref().contains(&button)
     }
 }
@@ -72,7 +72,7 @@ where
     // but it should be an enum used to differentiate the item buttons, and should be
     // used to send events when the button is selected.
     // e.g. Tab
-    V: Component + AsVec + std::fmt::Display + Copy,
+    V: Component + AsVec + std::fmt::Display + Copy + Into<SubTab>,
     // This could be used to wrap the identifying enum, e.g. TabButton(Tab), but for now we'll see
     // if just using Tab is satisfactory
     // A: Component + Copy,
@@ -80,24 +80,32 @@ where
     move |mut commands: Commands,
           query_parent: Query<Entity, With<T>>,
           asset_server: Res<AssetServer>,
-          built_buttons: ResMut<BuiltSubTabButtons>| {
+          mut built_buttons: ResMut<BuiltSubTabButtons>| {
         let font = asset_server.load(PATH_SIMPLE_FONT);
         let parent_entity = query_parent.get_single().unwrap();
         for sub_tab in V::vec() {
-            commands
-                // The important bit here is the `tab`, which is used to identify the selected tab
-                // and send events when the tab is clicked to make changes elsewhere in the menu
-                .spawn((
-                    T::button_bundle(),
-                    sub_tab,
-                    Name::from("{sub_tab} button bundle"),
-                ))
-                .with_children(|button| {
-                    button.spawn((
-                        T::text_bundle(sub_tab.to_string(), font.clone()),
-                        Name::from("{tab} text bundle in button"),
-                    ));
-                });
+            if !built_buttons
+                .inner_ref()
+                .iter()
+                .any(|&built_tab| built_tab == sub_tab.into())
+            {
+                commands
+                    // The important bit here is the `tab`, which is used to identify the selected tab
+                    // and send events when the tab is clicked to make changes elsewhere in the menu
+                    .spawn((
+                        T::button_bundle(),
+                        sub_tab,
+                        Name::from("{sub_tab} button bundle"),
+                    ))
+                    .with_children(|button| {
+                        button.spawn((
+                            T::text_bundle(sub_tab.to_string(), font.clone()),
+                            Name::from("{tab} text bundle in button"),
+                        ));
+                    })
+                    .set_parent(parent_entity);
+                built_buttons.inner_ref_mut().push(sub_tab.into())
+            }
         }
     }
 }

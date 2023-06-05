@@ -15,8 +15,8 @@ pub trait ButtonNodeTemplate {
 // perhaps live editing of their parameters.
 // Unit Label used to build the Tab buttons for character creation.
 #[derive(Component)]
-pub struct CharacterCreationTabs;
-impl ButtonNodeTemplate for CharacterCreationTabs {
+pub struct CharacterTabs;
+impl ButtonNodeTemplate for CharacterTabs {
     fn button_bundle() -> ButtonBundle {
         ButtonBundle {
             style: STAGES_OF_CREATION_BUTTON,
@@ -41,10 +41,10 @@ impl ButtonNodeTemplate for CharacterCreationTabs {
 }
 
 // Vec of tab buttons which have finished building.
-#[derive(Resource, Clone)]
+#[derive(Resource, Clone, Default)]
 pub struct BuiltTabButtons(Vec<Tab>);
 impl BuiltTabButtons {
-    pub fn inner_mut(&mut self) -> &mut Vec<Tab> {
+    pub fn inner_ref_mut(&mut self) -> &mut Vec<Tab> {
         &mut self.0
     }
     pub fn inner_ref(&self) -> &Vec<Tab> {
@@ -72,12 +72,14 @@ where
     // Used for two things:
     // 1. Identify the parent container of the buttons.
     // 2. Stores the methods which build template buttons.
+    // e.g. CharacterTabs,
+    //
     T: Component + ButtonNodeTemplate,
     // The Tab struct used as the enum identifier. This does not have to actually be Tab,
     // but it should be an enum used to differentiate the item buttons, and should be
     // used to send events when the button is selected.
     // e.g. Tab
-    V: Component + AsVec + std::fmt::Display + Copy,
+    V: Component + AsVec + std::fmt::Display + Copy + Into<Tab>,
     // This could be used to wrap the identifying enum, e.g. TabButton(Tab), but for now we'll see
     // if just using Tab is satisfactory
     // A: Component + Copy,
@@ -85,21 +87,32 @@ where
     move |mut commands: Commands,
           query_parent: Query<Entity, With<T>>,
           asset_server: Res<AssetServer>,
-          built_lists: ResMut<BuiltTabButtons>| {
+          mut built_lists: ResMut<BuiltTabButtons>| {
         let font = asset_server.load(PATH_SIMPLE_FONT);
         let parent_entity = query_parent.get_single().unwrap();
         for tab in V::vec() {
-            commands
-                // The important bit here is the `tab`, which is used to identify the selected tab
-                // and send events when the tab is clicked to make changes elsewhere in the menu
-                .spawn((T::button_bundle(), tab, Name::from("{tab} button bundle")))
-                .with_children(|button| {
-                    button.spawn((
-                        T::text_bundle(tab.to_string(), font.clone()),
-                        Name::from("{tab} text bundle in button"),
-                    ));
-                })
-                .set_parent(parent_entity);
+            if !built_lists
+                .inner_ref()
+                .iter()
+                .any(|&built_tab| built_tab == tab.into())
+            {
+                commands
+                    // The important bit here is the `tab`, which is used to identify the selected tab
+                    // and send events when the tab is clicked to make changes elsewhere in the menu
+                    .spawn((
+                        T::button_bundle(),
+                        tab,
+                        Name::from(format!("{tab} button bundle")),
+                    ))
+                    .with_children(|button| {
+                        button.spawn((
+                            T::text_bundle(tab.to_string(), font.clone()),
+                            Name::from(format!("{tab} text bundle in button")),
+                        ));
+                    })
+                    .set_parent(parent_entity);
+                built_lists.inner_ref_mut().push(tab.into())
+            }
         }
     }
 }
