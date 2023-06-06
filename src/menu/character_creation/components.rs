@@ -1,7 +1,7 @@
 use crate::{
     menu::components::SelectedWrapper,
     systems::game::{
-        archetype::ArchetypeName,
+        archetype::MyArchetypeName,
         character::{AbilityScore, PlayableRace},
         class::PlayableClass,
         race::RacialTraitName,
@@ -225,28 +225,69 @@ pub enum InTab {
 pub enum LeftPanelEnum {
     Race(PlayableRace),
     Class(PlayableClass),
+    Archetype(MyArchetypeName),
 }
 
-impl Into<LeftPanelEvent> for LeftPanelEnum {
-    fn into(self) -> LeftPanelEvent {
-        match self {
-            Self::Race(race) => LeftPanelEvent {
-                race: Some(race),
-                ..default()
-            },
-            Self::Class(class) => LeftPanelEvent {
-                class: Some(class),
-                ..default()
-            },
+// impl Into<LeftPanelEvent> for LeftPanelEnum {
+//     fn into(self) -> LeftPanelEvent {
+//         match self {
+//             Self::Race(race) => LeftPanelEvent {
+//                 race: Some(race),
+//                 ..default()
+//             },
+//             Self::Class(class) => LeftPanelEvent {
+//                 class: Some(class),
+//                 ..default()
+//             },
+//         }
+//     }
+// }
+
+#[derive(Copy, Clone, Debug)]
+/// Event sent when clicking on a button in the left panel of character creation.
+/// Used to determine whether a node in the central area is displayed or hidden.
+pub struct LeftPanelEvent {
+    pub race: Option<PlayableRace>,
+    pub class: Option<PlayableClass>,
+    pub archetype: Option<MyArchetypeName>,
+    pub status: Option<Status>,
+}
+
+impl LeftPanelEvent {
+    pub fn set_status(mut self, other: Status) -> Self {
+        self.status = Some(other);
+        self
+    }
+}
+impl From<PlayableRace> for LeftPanelEvent {
+    fn from(value: PlayableRace) -> Self {
+        Self {
+            race: Some(value),
+            ..default()
+        }
+    }
+}
+impl From<PlayableClass> for LeftPanelEvent {
+    fn from(value: PlayableClass) -> Self {
+        Self {
+            class: Some(value),
+            ..default()
+        }
+    }
+}
+impl From<MyArchetypeName> for LeftPanelEvent {
+    fn from(value: MyArchetypeName) -> Self {
+        Self {
+            archetype: Some(value),
+            ..default()
         }
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct LeftPanelEvent {
-    race: Option<PlayableRace>,
-    class: Option<PlayableClass>,
-    archetype: Option<ArchetypeName>,
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Status {
+    Entering,
+    Exiting,
 }
 
 impl Default for LeftPanelEvent {
@@ -255,6 +296,26 @@ impl Default for LeftPanelEvent {
             race: None,
             class: None,
             archetype: None,
+            status: None,
+        }
+    }
+}
+
+impl From<LeftPanelEnum> for LeftPanelEvent {
+    fn from(value: LeftPanelEnum) -> Self {
+        match value {
+            LeftPanelEnum::Race(race) => Self {
+                race: Some(race),
+                ..default()
+            },
+            LeftPanelEnum::Class(class) => Self {
+                class: Some(class),
+                ..default()
+            },
+            LeftPanelEnum::Archetype(archetype) => Self {
+                archetype: Some(archetype),
+                ..default()
+            },
         }
     }
 }
@@ -263,6 +324,7 @@ impl Default for LeftPanelEvent {
 pub struct LeftPanelList {
     pub tab: Tab,
     pub subtab: Option<SubTab>,
+    pub excluded_subtab: Option<SubTab>,
 }
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
@@ -284,12 +346,19 @@ impl LeftPanelEnum {
             _ => None,
         }
     }
+    pub fn get_archetype(&self) -> Option<MyArchetypeName> {
+        match self {
+            Self::Archetype(playable_archetype) => Some(*playable_archetype),
+            _ => None,
+        }
+    }
 }
 impl std::fmt::Display for LeftPanelEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Race(race) => write!(f, "{}", race),
             Self::Class(class) => write!(f, "{}", class),
+            Self::Archetype(archetype) => write!(f, "{}", archetype),
         }
     }
 }
@@ -336,10 +405,19 @@ impl SelectedClass {
     pub fn inner(&self) -> PlayableClass {
         self.0
     }
+    pub fn set(&mut self, other: PlayableClass) -> &mut Self {
+        self.0 = other;
+        self
+    }
 }
 impl SelectedWrapper<PlayableClass> for SelectedClass {
     fn selected(&self) -> PlayableClass {
         self.0
+    }
+}
+impl From<PlayableClass> for SelectedClass {
+    fn from(value: PlayableClass) -> Self {
+        Self(value)
     }
 }
 
@@ -397,14 +475,24 @@ pub struct ClassPanel;
 pub struct ArchetypePanel;
 
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct SelectedArchetype(pub ArchetypeName);
+pub struct SelectedArchetype(pub MyArchetypeName);
 impl SelectedArchetype {
-    pub fn inner(&self) -> ArchetypeName {
+    pub fn inner(&self) -> MyArchetypeName {
+        self.0
+    }
+    pub fn set(&mut self, other: MyArchetypeName) -> &mut Self {
+        self.0 = other;
+        self
+    }
+}
+impl SelectedWrapper<MyArchetypeName> for SelectedArchetype {
+    fn selected(&self) -> MyArchetypeName {
         self.0
     }
 }
 
 #[derive(Resource, Copy, Clone, Debug, Default)]
+/// Stores the currently selected race
 pub struct SelectedRace(pub PlayableRace);
 
 // used in character_creation generics
@@ -414,9 +502,18 @@ impl SelectedWrapper<PlayableRace> for SelectedRace {
     }
 }
 
+impl From<PlayableRace> for SelectedRace {
+    fn from(value: PlayableRace) -> Self {
+        Self(value)
+    }
+}
+
 impl SelectedRace {
     pub fn inner(&self) -> PlayableRace {
         self.0
+    }
+    pub fn set(&mut self, other: PlayableRace) {
+        self.0 = other;
     }
 }
 

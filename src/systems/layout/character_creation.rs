@@ -6,7 +6,7 @@ use crate::menu::components::ScrollingList;
 use crate::menu::styles::*;
 use crate::systems::game::class::PlayableClass;
 use crate::systems::game::{
-    archetype::ArchetypeName, character::PlayableRace, race::CharacterBuilder,
+    archetype::MyArchetypeName, character::PlayableRace, race::CharacterBuilder,
 };
 use bevy::prelude::*;
 use bevy::ui::FocusPolicy;
@@ -233,7 +233,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             AccessibilityNode(NodeBuilder::new(Role::List)),
             Name::from("Race panel"),
             Interaction::default(),
-            LeftPanelList,
+            LeftPanelList {
+                tab: Tab::Race,
+                subtab: None,
+                excluded_subtab: None,
+            },
             RacePanel,
         ))
         .with_children(|list| {
@@ -292,7 +296,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             AccessibilityNode(NodeBuilder::new(Role::List)),
             Name::from("moving panel"),
             Interaction::default(),
-            LeftPanelList,
+            LeftPanelList {
+                tab: Tab::Class,
+                subtab: None,
+                excluded_subtab: Some(SubTab::Archetype),
+            },
         ))
         .with_children(|list| {
             for class_enum in PlayableClass::iterator() {
@@ -346,7 +354,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Name::from("moving panel"),
-            LeftPanelList,
+            LeftPanelList {
+                tab: Tab::Class,
+                subtab: Some(SubTab::Archetype),
+                excluded_subtab: None,
+            },
             ArchetypePanel,
         ))
         .with_children(|scrolling_list_parent| {
@@ -384,7 +396,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ArchetypePanel,
                 ))
                 .with_children(|list| {
-                    for (i, archetype_name) in ArchetypeName::iterator().enumerate() {
+                    for (i, archetype_name) in MyArchetypeName::iterator().enumerate() {
                         let mut color = RACE_BUTTON_COLOR;
                         if i == 0 {
                             color = RACE_BUTTON_COLOR_SELECTED;

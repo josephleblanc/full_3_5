@@ -21,7 +21,7 @@ impl fmt::Display for ClassArchetype {
 
 #[derive(Default, Debug, Deserialize, Clone, Hash)]
 pub struct FighterArchetype {
-    name: ArchetypeName,
+    name: MyArchetypeName,
     class: PlayableClass,
     restrictions: Option<Vec<Restriction>>,
     archetype_features: Option<Vec<ArchetypeFeature>>,
@@ -32,17 +32,17 @@ pub struct FighterArchetype {
 }
 
 #[derive(Component, Default, Debug, Deserialize, Copy, Clone, Eq, PartialEq, PartialOrd, Hash)]
-pub enum ArchetypeName {
+pub enum MyArchetypeName {
     #[default]
     Archer,
 }
 
-impl ArchetypeName {
-    pub fn array() -> [ArchetypeName; 1] {
+impl MyArchetypeName {
+    pub fn array() -> [MyArchetypeName; 1] {
         [Self::Archer]
     }
 
-    pub fn iterator() -> impl Iterator<Item = ArchetypeName> {
+    pub fn iterator() -> impl Iterator<Item = MyArchetypeName> {
         [Self::Archer].iter().copied()
     }
     pub fn class(&self) -> PlayableClass {
@@ -52,7 +52,7 @@ impl ArchetypeName {
     }
 }
 
-impl fmt::Display for ArchetypeName {
+impl fmt::Display for MyArchetypeName {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             Self::Archer => write!(f, "Archer"),

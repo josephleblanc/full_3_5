@@ -1,6 +1,6 @@
 use super::super::components::*;
 use crate::menu::styles::{SUBTAB_BUTTON_FONT, TEXT_COLOR};
-use crate::systems::game::archetype::ArchetypeName;
+use crate::systems::game::archetype::MyArchetypeName;
 use crate::systems::game::class::PlayableClass;
 use crate::technical::archetype::ArchetypeAsset;
 use bevy::prelude::*;
@@ -42,7 +42,7 @@ pub fn archetype_panel_text(
         (
             With<LeftPanelText>,
             With<ArchetypePanel>,
-            With<ArchetypeName>,
+            With<MyArchetypeName>,
         ),
     >,
     selected_tab: Res<SelectedClassTab>,
@@ -94,7 +94,7 @@ pub fn panel_text(
         (
             With<LeftPanelText>,
             With<ArchetypePanel>,
-            With<ArchetypeName>,
+            With<MyArchetypeName>,
         ),
     >,
     selected_tab: Res<SelectedClassTab>,

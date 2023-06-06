@@ -102,7 +102,6 @@ where
         let key_vec = V::vec();
         let key_array = key_vec.as_slice();
         if let Some((parent_entity, _list_parent)) = query_parent.iter().filter(|(_, &list_parent)| list_parent == tab.into()).next() {
-        println!("{} assets loaded", custom_asset.len());
             let list_id = commands
                 .spawn((
                     list_resource.subtab_list_parent.clone(),
@@ -112,12 +111,10 @@ where
                 .set_parent(parent_entity)
                 .id();
             for (asset_key, descr_text) in custom_asset.iter().map(|(_handle, asset)| {
-                println!("asset found: {}", asset.key());
                 (asset.key(), asset.description())
             }) {
                 if key_array.contains(&asset_key) {
                     let key = asset_key;
-                    println!("--> building description node for {}", key);
                     commands
                         .spawn((
                             // Each of these nodes is one row.SubTabListParent

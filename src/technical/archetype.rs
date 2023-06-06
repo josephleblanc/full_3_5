@@ -1,6 +1,6 @@
 //! Implements loader for a custom asset type.
 
-use crate::systems::game::archetype::ArchetypeName;
+use crate::systems::game::archetype::MyArchetypeName;
 use crate::systems::game::class::ClassFeature;
 use crate::systems::game::class::PlayableClass;
 use bevy::{
@@ -15,7 +15,7 @@ use serde::Deserialize;
 #[uuid = "7eb2e325-a3a2-4a0c-a6b0-e2387ca6bd7d"]
 pub struct ArchetypeAsset {
     pub class_name: PlayableClass,
-    pub archetype_name: ArchetypeName,
+    pub archetype_name: MyArchetypeName,
     pub title: String,
     pub description: String,
     pub class_features: Vec<ArchFeatureDescr>,

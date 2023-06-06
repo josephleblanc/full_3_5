@@ -18,6 +18,7 @@ use crate::{
     system_scheduling::states::AppState,
     systems::{
         game::{
+            archetype::MyArchetypeName,
             character::PlayableRace,
             class::PlayableClass,
             race::{RaceBuilder, RacialTraitName},
@@ -68,6 +69,7 @@ impl Plugin for CharacterCreationPlugin {
             // Add Events
             .add_event::<SelectTabEvent>()
             .add_event::<SelectSubTabEvent>()
+            .add_event::<LeftPanelEvent>()
             //// init resources, load custom assets, & build layout
             .init_resource::<SelectedRace>()
             .init_resource::<SelectedClass>()
@@ -184,44 +186,33 @@ impl Plugin for CharacterCreationPlugin {
             .add_systems(
                 (
                     select_tab::new_display_tab_list,
-                    select_tab::debug_new_display_tab_list,
                     select_tab::new_display_subtab_list,
-                    select_tab::debug_new_display_subtab_list,
                     select_tab::tab_button_color,
                     select_tab::subtab_button_color,
                     select_tab::display_subtab_buttons,
                 )
                     .in_set(EventSet::Receiving),
+            )
+            // left panel management
+            .add_systems(
+                (
+                    left_panel::button_event::<PlayableRace, SelectedRace>,
+                    left_panel::button_event::<PlayableClass, SelectedClass>,
+                    left_panel::button_event::<MyArchetypeName, SelectedArchetype>,
+                )
+                    .in_set(EventSet::Sending),
+            )
+            .add_systems(
+                (
+                    left_panel::panel_recv_tab_display,
+                    left_panel::select_race,
+                    left_panel::select_class,
+                    left_panel::select_archetype,
+                )
+                    .in_set(EventSet::Receiving),
+            )
+            .add_systems(
+                (left_panel::button_color, left_panel::cleanup_buttons).in_set(SuperSet::Super),
             );
-        // Manages displayed racial descriptions in the central area
-        // .add_systems((scroll_snap_top,).in_set(Changed::Race))
-        // .add_system(update_race_builder.in_set(Build::PreBuild))
-        // .add_systems(
-        //     (
-        //         reset_race,
-        //         apply_system_buffers,
-        //         build_race,
-        //         apply_system_buffers,
-        //         update_common_traits_display,
-        //     )
-        //         .chain()
-        //         .in_set(Build::Build),
-        // )
-        // .add_system(chosen_trait_tooltip.in_set(SuperSet::Super))
-        // .add_systems(
-        //     (
-        //         // Manage the display of left panels.
-        //         left_panel::race_panel.run_if(resource_changed::<SelectedTab>()),
-        //         left_panel::class_panel.run_if(resource_changed::<SelectedTab>()),
-        //         left_panel::archetype_panel.run_if(
-        //             resource_changed::<SelectedTab>()
-        //                 .or_else(resource_changed::<SelectedClassTab>()),
-        //         ),
-        //     )
-        //         .in_set(SuperSet::Super),
-        // )
-        // .add_systems(
-        //     (left_panel::cleanup_buttons, left_panel::button_system).in_set(SuperSet::Super),
-        // );
     }
 }

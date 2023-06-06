@@ -61,10 +61,6 @@ where
             subtab,
         };
         if !res_built.inner_ref().contains(&subtab_list_parent) {
-            println!(
-                "custom_asset len when running build_button desc_list: {}",
-                custom_asset.len()
-            );
             let shared_font = asset_server.load(PATH_SIMPLE_FONT);
             let key_vec = V::vec();
             let key_array = key_vec.as_slice();
@@ -78,17 +74,11 @@ where
                     .set_parent(parent_entity)
                     .id();
                 for (asset_key, asset_items_vec) in custom_asset.iter().map(|(_handle, asset)| {
-                    println!("asset found: {}", asset.key());
                     (asset.key(), asset.vec())
                 }) {
                     for (enum_name, title, descr_text) in asset_items_vec {
                         if key_array.contains(&asset_key) {
                             let key = asset_key;
-                            println!(
-                                "--> building select descr node for {} with title: {}",
-                                key,
-                                title.to_string()
-                            );
                             commands
                                 .spawn((
                                     Name::from("select_item node"),
@@ -129,11 +119,6 @@ where
                                             
                                         ))
                                         .with_children(|inner_row_node| {
-                                            println!(
-                                            "--> building node for {} with description: {}",
-                                            key,
-                                            descr_text
-                                        );
                                             // Item description
                                             inner_row_node.spawn((
                                                 Name::from("item description text"),
