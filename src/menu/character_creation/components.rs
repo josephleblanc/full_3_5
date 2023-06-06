@@ -227,8 +227,43 @@ pub enum LeftPanelEnum {
     Class(PlayableClass),
 }
 
-#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct LeftPanelList;
+impl Into<LeftPanelEvent> for LeftPanelEnum {
+    fn into(self) -> LeftPanelEvent {
+        match self {
+            Self::Race(race) => LeftPanelEvent {
+                race: Some(race),
+                ..default()
+            },
+            Self::Class(class) => LeftPanelEvent {
+                class: Some(class),
+                ..default()
+            },
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct LeftPanelEvent {
+    race: Option<PlayableRace>,
+    class: Option<PlayableClass>,
+    archetype: Option<ArchetypeName>,
+}
+
+impl Default for LeftPanelEvent {
+    fn default() -> Self {
+        LeftPanelEvent {
+            race: None,
+            class: None,
+            archetype: None,
+        }
+    }
+}
+
+#[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct LeftPanelList {
+    pub tab: Tab,
+    pub subtab: Option<SubTab>,
+}
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
 pub struct LeftPanelTitle;

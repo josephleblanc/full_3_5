@@ -73,7 +73,6 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<SelectedClass>()
             .init_resource::<SelectedArchetype>()
             .init_resource::<SelectedTab>()
-            .init_resource::<SelectedSubTab>()
             .init_resource::<SelectedSubTabsMap>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
@@ -172,12 +171,6 @@ impl Plugin for CharacterCreationPlugin {
                         tab: Tab::Class,
                         subtab: SubTab::Description,
                     }))),
-                    // generics::new_selected_tab::<SelectedTab, Tab>(),
-                    // generics::cleanup_tab_button::<SelectedTab, Tab>(),
-                    // generics::new_selected_tab::<SelectedRaceTab, RaceTab>(),
-                    // generics::cleanup_tab_button::<SelectedRaceTab, RaceTab>(),
-                    // generics::new_selected_tab::<SelectedClassTab, ClassTab>(),
-                    // generics::cleanup_tab_button::<SelectedClassTab, ClassTab>(),
                 )
                     .in_set(SuperSet::Super),
             )
