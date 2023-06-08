@@ -212,6 +212,14 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(EventSet::Receiving),
             )
             .add_systems(
+                (
+                    display_central::display_race.run_if(on_event::<LeftPanelEvent>()),
+                    display_central::display_class.run_if(on_event::<LeftPanelEvent>()),
+                    display_central::display_archetype.run_if(on_event::<LeftPanelEvent>()),
+                )
+                    .in_set(EventSet::Receiving),
+            )
+            .add_systems(
                 (left_panel::button_color, left_panel::cleanup_buttons).in_set(SuperSet::Super),
             );
     }

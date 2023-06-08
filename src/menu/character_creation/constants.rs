@@ -18,6 +18,7 @@ pub const LIST_NODE_STYLE: Style = Style {
     padding: UiRect::all(Val::Px(5.)),
     // margin: UiRect::all(Val::Px(10.)),
     flex_direction: FlexDirection::Column,
+    display: Display::None,
     ..Style::DEFAULT
 };
 pub const LIST_ITEM_TITLE_STYLE: Style = Style {

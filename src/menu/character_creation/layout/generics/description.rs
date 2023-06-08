@@ -83,6 +83,7 @@ pub fn build_description_list<T, V>(
 )
 where
     // This is the CustomAsset
+    // e.g. RaceAsset
     T: TypeUuid + Send + Sync + 'static + list_traits::HasDescr + list_traits::HasKey<V>,
     // This is the identifying enum
     // e.g. PlayableRace, PlayableClass
@@ -124,7 +125,6 @@ where
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                             // SelectionEnum
                             key,
-                            // Label
                         ))
                         .set_parent(list_id)
                         .with_children(|row_node| {

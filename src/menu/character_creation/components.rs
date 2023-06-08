@@ -1,3 +1,5 @@
+use std::num::TryFromIntError;
+
 use crate::{
     menu::components::SelectedWrapper,
     systems::game::{
@@ -259,6 +261,7 @@ impl LeftPanelEvent {
         self
     }
 }
+
 impl From<PlayableRace> for LeftPanelEvent {
     fn from(value: PlayableRace) -> Self {
         Self {
@@ -317,6 +320,34 @@ impl From<LeftPanelEnum> for LeftPanelEvent {
                 ..default()
             },
         }
+    }
+}
+
+impl TryFrom<LeftPanelEvent> for PlayableRace {
+    type Error = &'static str;
+    fn try_from(value: LeftPanelEvent) -> Result<Self, Self::Error> {
+        if let Some(race) = value.race {
+            return Ok(race);
+        }
+        Err("Invalid LeftPanelEvent passed as parameter to TryFrom<LeftPanelEvent> for PlayableRace")
+    }
+}
+impl TryFrom<LeftPanelEvent> for PlayableClass {
+    type Error = &'static str;
+    fn try_from(value: LeftPanelEvent) -> Result<Self, Self::Error> {
+        if let Some(class) = value.class {
+            return Ok(class);
+        }
+        Err("Invalid LeftPanelEvent passed as parameter to TryFrom<LeftPanelEvent> for PlayableClass")
+    }
+}
+impl TryFrom<LeftPanelEvent> for MyArchetypeName {
+    type Error = &'static str;
+    fn try_from(value: LeftPanelEvent) -> Result<Self, Self::Error> {
+        if let Some(archetype) = value.archetype {
+            return Ok(archetype);
+        }
+        Err("Invalid LeftPanelEvent passed as parameter to TryFrom<LeftPanelEvent> for MyArchetypeName")
     }
 }
 
