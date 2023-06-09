@@ -7,6 +7,15 @@ pub const CLASS_DESCRIPTIONS_FOLDER: &str = "text/descriptions/class";
 pub const ARCHETYPE_DESCRIPTIONS_FOLDER: &str = "text/descriptions/class/archetypes";
 pub const CLASS_DESCRIPTION_TITLE: &'static str = "Class Description";
 
+pub const PROGRESSION_TABLE_HEADERS: [&'static str; 6] = [
+    "Level",
+    "Base Attack Bonus",
+    "Fort Save",
+    "Ref Save",
+    "Will Save",
+    "Special",
+];
+
 // Central List Styles
 pub const LIST_PARENT_NODE_STYLE: Style = Style {
     // padding: UiRect::all(Val::Px(5.)),

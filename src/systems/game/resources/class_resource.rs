@@ -10,7 +10,7 @@ pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>
     use SavingThrowName::*;
     let mut class_map = ClassMap::new();
 
-    let mut fighter = ClassInfo {
+    let mut fighter_info = ClassInfo {
         name_str: String::new(),
         description: String::new(),
         class_name: PlayableClass::Fighter,
@@ -62,4 +62,9 @@ pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>
             vec![Fighter(BonusFeat), Fighter(WeaponMastery)], // 20
         ],
     };
+    class_map
+        .inner_ref_mut()
+        .insert(PlayableClass::Fighter, fighter_info);
+
+    commands.insert_resource(class_map);
 }

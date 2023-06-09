@@ -244,8 +244,12 @@ use std::collections::HashMap;
 #[derive(Resource, Default, Deserialize, Clone, Debug)]
 pub struct ClassMap(pub HashMap<PlayableClass, ClassInfo>);
 impl ClassMap {
-    pub fn inner(&self) -> &HashMap<PlayableClass, ClassInfo> {
+    pub fn inner_ref(&self) -> &HashMap<PlayableClass, ClassInfo> {
         &self.0
+    }
+
+    pub fn inner_ref_mut(&mut self) -> &mut HashMap<PlayableClass, ClassInfo> {
+        &mut self.0
     }
 
     pub fn new() -> Self {
@@ -455,7 +459,7 @@ pub fn add_class_savingthrowbonuses(
     class_map: Res<ClassMap>,
     mut commands: Commands,
 ) {
-    for class in class_map.inner().values() {
+    for class in class_map.inner_ref().values() {
         if let Ok(class_bonuses) = SavingThrowBonuses::try_from(class) {
             if let Some((_entity, mut existing_bonuses, _class_levels)) = query_character
                 .iter_mut()

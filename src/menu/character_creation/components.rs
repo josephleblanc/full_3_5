@@ -110,6 +110,7 @@ pub enum SubTab {
     AltTraits,
     FavoredClass,
     Features,
+    Progression,
 }
 
 impl std::fmt::Display for SubTab {
@@ -120,6 +121,7 @@ impl std::fmt::Display for SubTab {
             Self::AltTraits => write!(f, "Alt Traits"),
             Self::FavoredClass => write!(f, "Favored Class"),
             Self::Features => write!(f, "Features"),
+            Self::Progression => write!(f, "Progression"),
         }
     }
 }
@@ -188,6 +190,7 @@ impl AsButtonList for SubTabButton {
             Self::new(Tab::Race, SubTab::DefaultTraits),
             Self::new(Tab::Race, SubTab::AltTraits),
             Self::new(Tab::Class, SubTab::Description),
+            Self::new(Tab::Class, SubTab::Progression),
             Self::new(Tab::Class, SubTab::Features),
             Self::new(Tab::Archetype, SubTab::Description), // TODO: Add more later
         ]

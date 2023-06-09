@@ -8,6 +8,7 @@ use crate::{
                     build_tab_buttons::{self, BuiltTabButtons, CharacterTabs},
                     description, recur_description,
                     select_item::{build_button_desc_list, BuiltLists},
+                    table,
                 },
                 resource::CentralListBundles,
             },
@@ -26,6 +27,7 @@ use crate::{
             character::PlayableRace,
             class::{ClassFeature, PlayableClass},
             race::{build_race, RaceBuilder, RacialTraitName},
+            resources::class_resource,
         },
         layout::character_creation::build_layout,
     },
@@ -105,6 +107,7 @@ impl Plugin for CharacterCreationPlugin {
                     setup_assets,
                     build_layout,
                     CentralListBundles::init,
+                    class_resource::setup_classes,
                     apply_system_buffers,
                     build_tab_buttons::build_tab_buttons::<CharacterTabs, Tab>(),
                     build_subtab_buttons::build_subtab_buttons::<
@@ -192,6 +195,14 @@ impl Plugin for CharacterCreationPlugin {
                     .run_if(not(BuiltLists::is_built(SubTabListParent {
                         tab: Tab::Class,
                         subtab: SubTab::Features,
+                    }))),
+                    table::build_progression::<ClassAsset, PlayableClass, ClassFeature>(
+                        Tab::Class,
+                        SubTab::Progression,
+                    )
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Class,
+                        subtab: SubTab::Progression,
                     }))),
                     // Archetype Tab
                     description::build_description_list::<ArchetypeAsset, MyArchetypeName>(
