@@ -11,7 +11,11 @@ use crate::{
                 },
                 resource::CentralListBundles,
             },
-            systems::{setup::*, *},
+            systems::{
+                race_tab::{reset_race, update_common_traits_display, update_race_builder},
+                setup::*,
+                *,
+            },
         },
         mouse::mouse_scroll,
     },
@@ -21,7 +25,7 @@ use crate::{
             archetype::MyArchetypeName,
             character::PlayableRace,
             class::{ClassFeature, PlayableClass},
-            race::{RaceBuilder, RacialTraitName},
+            race::{build_race, RaceBuilder, RacialTraitName},
         },
         layout::character_creation::build_layout,
     },
@@ -55,6 +59,11 @@ enum Build {
     PreBuild,
     Build,
     PostBuild,
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum Changed {
+    Race,
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -123,17 +132,17 @@ impl Plugin for CharacterCreationPlugin {
                 )
                     .in_set(SuperSet::Super),
             )
-            // .configure_sets(
-            //     (
-            //         Build::Super.run_if(resource_changed::<SelectedRace>()),
-            //         Build::PreBuild
-            //             .before(Build::Build)
-            //             .run_if(resource_changed::<SelectedRace>()),
-            //         Build::Build.run_if(resource_changed::<RaceBuilder>()),
-            //         Changed::Race.run_if(resource_changed::<SelectedRace>()),
-            //     )
-            //         .in_set(SuperSet::Super),
-            // )
+            .configure_sets(
+                (
+                    Build::Super.run_if(resource_changed::<SelectedRace>()),
+                    Build::PreBuild
+                        .before(Build::Build)
+                        .run_if(resource_changed::<SelectedRace>()),
+                    Build::Build.run_if(resource_changed::<RaceBuilder>()),
+                    Changed::Race.run_if(resource_changed::<SelectedRace>()),
+                )
+                    .in_set(SuperSet::Super),
+            )
             // Mouse Scroll systems
             .add_system(mouse_scroll.in_set(SuperSet::Super))
             // Tab select button management (Race, Class, etc.)
@@ -241,6 +250,31 @@ impl Plugin for CharacterCreationPlugin {
             )
             .add_systems(
                 (left_panel::button_color, left_panel::cleanup_buttons).in_set(SuperSet::Super),
+            )
+            .add_system(update_race_builder.in_set(Build::PreBuild))
+            .add_systems(
+                (
+                    reset_race,
+                    apply_system_buffers,
+                    build_race,
+                    apply_system_buffers,
+                    // only for testing, remove later
+                    // --------------------------
+                    // print_builder,
+                    // print_floating_ability_bonuses,
+                    // print_floating_bonus_feats,
+                    // print_floating_skill_bonuses,
+                    // print_saving_throw_bonuses,
+                    // print_caster_level_bonuses,
+                    // print_armor_class_bonuses,
+                    // print_spell_like_abilities,
+                    // print_spell_dc_bonuses,
+                    // print_attack_roll_bonuses,
+                    // --------------------------
+                    update_common_traits_display,
+                )
+                    .chain()
+                    .in_set(Build::Build),
             );
     }
 }
