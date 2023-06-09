@@ -299,7 +299,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             LeftPanelList {
                 tab: Tab::Class,
                 subtab: None,
-                excluded_subtab: Some(SubTab::Archetype),
+                excluded_subtab: None,
             },
         ))
         .with_children(|list| {
@@ -355,8 +355,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Name::from("moving panel"),
             LeftPanelList {
-                tab: Tab::Class,
-                subtab: Some(SubTab::Archetype),
+                tab: Tab::Archetype,
+                subtab: Some(SubTab::Description),
                 excluded_subtab: None,
             },
             ArchetypePanel,

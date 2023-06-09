@@ -1,4 +1,7 @@
-use crate::systems::game::{character::*, class::*, skills::*};
+use crate::{
+    menu::character_creation::layout::generics::list_traits::AsVec,
+    systems::game::{character::*, class::*, skills::*},
+};
 use bevy::prelude::*;
 use serde::Deserialize;
 use std::fmt;
@@ -52,6 +55,11 @@ impl MyArchetypeName {
     }
 }
 
+impl AsVec for MyArchetypeName {
+    fn vec() -> Vec<Self> {
+        Vec::from(MyArchetypeName::array())
+    }
+}
 impl fmt::Display for MyArchetypeName {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {

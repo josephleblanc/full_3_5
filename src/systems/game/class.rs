@@ -318,14 +318,14 @@ pub enum BABProgression {
     None,
 }
 
-#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy, Component)]
 pub enum ClassFeature {
     Fighter(FighterFeature),
     #[default]
     None,
 }
 
-#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy)]
 pub enum FighterFeature {
     BonusFeat,
     Bravery,

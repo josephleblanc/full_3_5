@@ -1232,10 +1232,6 @@ impl AsVec for PlayableRace {
     }
 }
 
-pub trait HasKey<T> {
-    fn key(&self) -> T;
-}
-
 //// iterator impls
 impl PlayableRace {
     pub fn iterator() -> impl Iterator<Item = PlayableRace> {

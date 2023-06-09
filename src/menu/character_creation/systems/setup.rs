@@ -1,15 +1,18 @@
-use crate::menu::character_creation::components::*;
-use crate::menu::character_creation::constants::*;
-use crate::systems::game::character::PlayableRace;
-use crate::technical::{
-    default_race_traits::DefaultTraitAsset, is_custom_asset_loaded::CustomAssetLoadState,
-    race_load::RaceAsset,
+use crate::{
+    menu::character_creation::{components::*, constants::*},
+    systems::game::character::PlayableRace,
+    technical::{
+        alternate_traits::AltTraitAsset, class::ClassAsset, default_race_traits::DefaultTraitAsset,
+        is_custom_asset_loaded::CustomAssetLoadState, race_load::RaceAsset,
+    },
 };
 use bevy::prelude::*;
 
 pub fn setup_assets(
     mut races_asset_struct: ResMut<CustomAssetLoadState<RaceAsset>>,
     mut default_trait_struct: ResMut<CustomAssetLoadState<DefaultTraitAsset>>,
+    mut alt_trait_struct: ResMut<CustomAssetLoadState<AltTraitAsset>>,
+    mut class_asset_struct: ResMut<CustomAssetLoadState<ClassAsset>>,
     asset_server: Res<AssetServer>,
 ) {
     let finding_assets = asset_server.load_folder(RACE_DESCRIPTION_FOLDER);
@@ -22,6 +25,18 @@ pub fn setup_assets(
     if let Ok(found_assets) = finding_assets {
         for handle in found_assets {
             default_trait_struct.add_untyped(&handle);
+        }
+    }
+    let finding_assets = asset_server.load_folder(RACIAL_ALT_TRAITS_FOLDER);
+    if let Ok(found_assets) = finding_assets {
+        for handle in found_assets {
+            alt_trait_struct.add_untyped(&handle);
+        }
+    }
+    let finding_assets = asset_server.load_folder(CLASS_DESCRIPTIONS_FOLDER);
+    if let Ok(found_assets) = finding_assets {
+        for handle in found_assets {
+            class_asset_struct.add_untyped(&handle);
         }
     }
 }

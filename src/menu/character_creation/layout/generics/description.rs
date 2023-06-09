@@ -9,8 +9,8 @@ use crate::{
         components::SelectedWrapper,
         styles::*,
     },
-    systems::game::{character::PlayableRace, class::PlayableClass},
-    technical::{class::ClassAsset, race_load::RaceAsset},
+    systems::game::{archetype::MyArchetypeName, character::PlayableRace, class::PlayableClass},
+    technical::{archetype::ArchetypeAsset, class::ClassAsset, race_load::RaceAsset},
 };
 use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
@@ -53,6 +53,11 @@ impl list_traits::HasDescr for ClassAsset {
         &self.description
     }
 }
+impl list_traits::HasDescr for ArchetypeAsset {
+    fn description(&self) -> &String {
+        &self.description
+    }
+}
 
 impl list_traits::HasKey<PlayableRace> for RaceAsset {
     fn key(&self) -> PlayableRace {
@@ -62,6 +67,11 @@ impl list_traits::HasKey<PlayableRace> for RaceAsset {
 impl list_traits::HasKey<PlayableClass> for ClassAsset {
     fn key(&self) -> PlayableClass {
         self.class_name
+    }
+}
+impl list_traits::HasKey<MyArchetypeName> for ArchetypeAsset {
+    fn key(&self) -> MyArchetypeName {
+        self.archetype_name
     }
 }
 

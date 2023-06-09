@@ -20,7 +20,7 @@ use crate::{
         game::{
             archetype::MyArchetypeName,
             character::PlayableRace,
-            class::PlayableClass,
+            class::{ClassFeature, PlayableClass},
             race::{RaceBuilder, RacialTraitName},
         },
         layout::character_creation::build_layout,
@@ -78,6 +78,7 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<SelectedSubTabsMap>()
             .init_resource::<FlavorTextSetup>()
             .init_resource::<CustomAssetLoadState<RaceAsset>>()
+            .init_resource::<CustomAssetLoadState<ClassAsset>>()
             .init_resource::<CustomAssetLoadState<DefaultTraitAsset>>()
             .init_resource::<CustomAssetLoadState<AltTraitAsset>>()
             .init_resource::<CustomAssetLoadState<FavoredClassAsset>>()
@@ -109,6 +110,7 @@ impl Plugin for CharacterCreationPlugin {
                 // Ensure custom assets loaded, only run in character creation
                 SuperSet::Super
                     .run_if(is_custom_asset_loaded::<RaceAsset>())
+                    .run_if(is_custom_asset_loaded::<ClassAsset>())
                     .run_if(is_custom_asset_loaded::<DefaultTraitAsset>())
                     .run_if(is_custom_asset_loaded::<AltTraitAsset>())
                     .run_if(is_custom_asset_loaded::<FavoredClassAsset>())
@@ -171,6 +173,24 @@ impl Plugin for CharacterCreationPlugin {
                     )
                     .run_if(not(BuiltLists::is_built(SubTabListParent {
                         tab: Tab::Class,
+                        subtab: SubTab::Description,
+                    }))),
+                    recur_description::build_item_desc_list::<
+                        ClassAsset,
+                        PlayableClass,
+                        ClassFeature,
+                    >(Tab::Class, SubTab::Features)
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Class,
+                        subtab: SubTab::Features,
+                    }))),
+                    // Archetype Tab
+                    description::build_description_list::<ArchetypeAsset, MyArchetypeName>(
+                        Tab::Archetype,
+                        SubTab::Description,
+                    )
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Archetype,
                         subtab: SubTab::Description,
                     }))),
                 )

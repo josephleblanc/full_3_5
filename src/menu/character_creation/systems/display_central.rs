@@ -33,15 +33,12 @@ pub fn display_race(
     mut query_list_items: Query<(&mut Style, &PlayableRace), With<ListNode>>,
     mut event_reader: EventReader<LeftPanelEvent>,
 ) {
-    info!("running display_race");
     let mut peekable_reader = event_reader.iter().peekable();
     while let (Some(current), Some(peeked)) = (peekable_reader.next(), peekable_reader.peek()) {
         for event in [current, peeked] {
-            info!("-> event received");
             if let Some(status) = event.status {
-                info!("{}", format!("--> event status: {:?}", status));
-                for (mut style, identifier) in
-                    query_list_items.iter_mut().filter(|(_, identifier)| {
+                for (mut style, _identifier) in
+                    query_list_items.iter_mut().filter(|(_style, identifier)| {
                         if let Some(race) = event.race {
                             race == **identifier
                         } else {
@@ -49,18 +46,11 @@ pub fn display_race(
                         }
                     })
                 {
-                    info!(
-                        "---> identifier match found for event {} and race {}",
-                        event.race.unwrap(),
-                        identifier
-                    );
                     match status {
                         Status::Entering => {
-                            info!("----> setting display to Flex");
                             style.display = Display::Flex;
                         }
                         Status::Exiting => {
-                            info!("----> setting display to None");
                             style.display = Display::None;
                         }
                     }
@@ -73,21 +63,24 @@ pub fn display_class(
     mut query_list_items: Query<(&mut Style, &PlayableClass), With<ListNode>>,
     mut event_reader: EventReader<LeftPanelEvent>,
 ) {
-    for event in event_reader.iter() {
-        if let Some(status) = event.status {
-            for (mut style, _) in query_list_items.iter_mut().filter(|(_, identifier)| {
-                if let Some(class) = event.class {
-                    class == **identifier
-                } else {
-                    false
-                }
-            }) {
-                match status {
-                    Status::Entering => {
-                        style.display = Display::Flex;
+    let mut peekable_reader = event_reader.iter().peekable();
+    while let (Some(current), Some(peeked)) = (peekable_reader.next(), peekable_reader.peek()) {
+        for event in [current, peeked] {
+            if let Some(status) = event.status {
+                for (mut style, _) in query_list_items.iter_mut().filter(|(_, identifier)| {
+                    if let Some(class) = event.class {
+                        class == **identifier
+                    } else {
+                        false
                     }
-                    Status::Exiting => {
-                        style.display = Display::None;
+                }) {
+                    match status {
+                        Status::Entering => {
+                            style.display = Display::Flex;
+                        }
+                        Status::Exiting => {
+                            style.display = Display::None;
+                        }
                     }
                 }
             }
@@ -98,21 +91,24 @@ pub fn display_archetype(
     mut query_list_items: Query<(&mut Style, &MyArchetypeName), With<ListNode>>,
     mut event_reader: EventReader<LeftPanelEvent>,
 ) {
-    for event in event_reader.iter() {
-        if let Some(status) = event.status {
-            for (mut style, _) in query_list_items.iter_mut().filter(|(_, identifier)| {
-                if let Some(archetype) = event.archetype {
-                    archetype == **identifier
-                } else {
-                    false
-                }
-            }) {
-                match status {
-                    Status::Entering => {
-                        style.display = Display::Flex;
+    let mut peekable_reader = event_reader.iter().peekable();
+    while let (Some(current), Some(peeked)) = (peekable_reader.next(), peekable_reader.peek()) {
+        for event in [current, peeked] {
+            if let Some(status) = event.status {
+                for (mut style, _) in query_list_items.iter_mut().filter(|(_, identifier)| {
+                    if let Some(archetype) = event.archetype {
+                        archetype == **identifier
+                    } else {
+                        false
                     }
-                    Status::Exiting => {
-                        style.display = Display::None;
+                }) {
+                    match status {
+                        Status::Entering => {
+                            style.display = Display::Flex;
+                        }
+                        Status::Exiting => {
+                            style.display = Display::None;
+                        }
                     }
                 }
             }

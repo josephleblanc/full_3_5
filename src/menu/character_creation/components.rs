@@ -19,6 +19,7 @@ pub enum Tab {
     #[default]
     Race,
     Class,
+    Archetype,
 }
 
 impl std::fmt::Display for Tab {
@@ -26,6 +27,7 @@ impl std::fmt::Display for Tab {
         match self {
             Self::Race => write!(f, "Race"),
             Self::Class => write!(f, "Class"),
+            Self::Archetype => write!(f, "Archetype"),
         }
     }
 }
@@ -38,7 +40,7 @@ impl Into<SelectedTab> for Tab {
 
 impl AsVec for Tab {
     fn vec() -> Vec<Self> {
-        vec![Self::Race, Self::Class]
+        vec![Self::Race, Self::Class, Self::Archetype]
     }
 }
 
@@ -53,6 +55,7 @@ impl Into<TabListParent> for Tab {
         match self {
             Self::Race => TabListParent::Race,
             Self::Class => TabListParent::Class,
+            Self::Archetype => TabListParent::Archetype,
         }
     }
 }
@@ -107,7 +110,6 @@ pub enum SubTab {
     AltTraits,
     FavoredClass,
     Features,
-    Archetype,
 }
 
 impl std::fmt::Display for SubTab {
@@ -118,7 +120,6 @@ impl std::fmt::Display for SubTab {
             Self::AltTraits => write!(f, "Alt Traits"),
             Self::FavoredClass => write!(f, "Favored Class"),
             Self::Features => write!(f, "Features"),
-            Self::Archetype => write!(f, "Archetype"),
         }
     }
 }
@@ -186,7 +187,9 @@ impl AsButtonList for SubTabButton {
             Self::new(Tab::Race, SubTab::Description),
             Self::new(Tab::Race, SubTab::DefaultTraits),
             Self::new(Tab::Race, SubTab::AltTraits),
-            Self::new(Tab::Class, SubTab::Description), // TODO: Add more later
+            Self::new(Tab::Class, SubTab::Description),
+            Self::new(Tab::Class, SubTab::Features),
+            Self::new(Tab::Archetype, SubTab::Description), // TODO: Add more later
         ]
     }
 }
@@ -213,6 +216,7 @@ impl Default for SelectedSubTabsMap {
         let mut hash_map: HashMap<Tab, SubTab> = HashMap::new();
         hash_map.insert(Tab::Race, SubTab::Description);
         hash_map.insert(Tab::Class, SubTab::Description);
+        hash_map.insert(Tab::Archetype, SubTab::Description);
         SelectedSubTabsMap(hash_map)
     }
 }
@@ -407,6 +411,7 @@ pub struct LeftPanelButton;
 pub enum TabListParent {
     Race,
     Class,
+    Archetype,
 }
 
 impl std::fmt::Display for TabListParent {
@@ -414,6 +419,7 @@ impl std::fmt::Display for TabListParent {
         match self {
             Self::Race => write!(f, "Race"),
             Self::Class => write!(f, "Class"),
+            Self::Archetype => write!(f, "Archetype"),
         }
     }
 }
@@ -422,7 +428,8 @@ impl Into<Tab> for TabListParent {
     fn into(self) -> Tab {
         match self {
             Self::Race => Tab::Race,
-            Self::Class => Tab::Race,
+            Self::Class => Tab::Class,
+            Self::Archetype => Tab::Archetype,
         }
     }
 }
