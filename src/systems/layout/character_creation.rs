@@ -545,7 +545,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             ScrollingList::default(),
-            Name::from("Right Panel - Racial Trait Effects"),
+            Name::from("Right Panel Parent"),
+            Panel {
+                tab: Tab::Race,
+                ..default()
+            },
         ))
         .set_parent(mid_container)
         .id();
