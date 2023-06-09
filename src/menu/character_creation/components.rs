@@ -356,7 +356,7 @@ impl TryFrom<LeftPanelEvent> for MyArchetypeName {
 }
 
 #[derive(Component, Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub struct LeftPanelList {
+pub struct Panel {
     pub tab: Tab,
     pub subtab: Option<SubTab>,
     pub excluded_subtab: Option<SubTab>,
@@ -715,6 +715,8 @@ pub struct DescriptionSection;
 
 #[derive(Component, Clone, Debug)]
 pub struct RightPanel;
+#[derive(Component, Clone, Debug)]
+pub struct RightPanelContainer;
 
 // Holds the currently selected race for reference by other functions.
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd)]

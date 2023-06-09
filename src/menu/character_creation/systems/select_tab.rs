@@ -61,7 +61,9 @@ pub fn new_display_subtab_list(
                 "new_display_subtab_list queried: tab = {}, subtab = {}",
                 subtab_list_parent.tab, subtab_list_parent.subtab
             );
-            if subtab_list_parent.subtab == subtab_event.subtab {
+            if subtab_list_parent.subtab == subtab_event.subtab
+                && subtab_list_parent.tab == subtab_event.tab
+            {
                 println!(
                     "--> match found: subtab list parent = {}, subtab event = {}",
                     subtab_list_parent.subtab, subtab_event.subtab,

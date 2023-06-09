@@ -233,7 +233,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             AccessibilityNode(NodeBuilder::new(Role::List)),
             Name::from("Race panel"),
             Interaction::default(),
-            LeftPanelList {
+            Panel {
                 tab: Tab::Race,
                 subtab: None,
                 excluded_subtab: None,
@@ -296,7 +296,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             AccessibilityNode(NodeBuilder::new(Role::List)),
             Name::from("moving panel"),
             Interaction::default(),
-            LeftPanelList {
+            Panel {
                 tab: Tab::Class,
                 subtab: None,
                 excluded_subtab: None,
@@ -354,7 +354,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Name::from("moving panel"),
-            LeftPanelList {
+            Panel {
                 tab: Tab::Archetype,
                 subtab: Some(SubTab::Description),
                 excluded_subtab: None,
@@ -545,7 +545,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             ScrollingList::default(),
-            Name::from("Current Racial Trait Stat Effects"),
+            Name::from("Right Panel - Racial Trait Effects"),
         ))
         .set_parent(mid_container)
         .id();

@@ -29,7 +29,7 @@ use bevy::prelude::*;
 /// Display the panel when a tab or subtab event is received.
 /// Should run after the tab and subtab events
 pub fn panel_recv_tab_display(
-    mut query_panel: Query<(&mut Style, &LeftPanelList)>,
+    mut query_panel: Query<(&mut Style, &Panel)>,
     mut tab_event_reader: EventReader<SelectTabEvent>,
     mut subtab_event_reader: EventReader<SelectSubTabEvent>,
 ) {
