@@ -228,16 +228,6 @@ where
                                         });
                                             }
                                     row_node
-                                        .spawn((
-                                            // Each of these nodes is one row,
-                                            // they are shown alongside the button column above
-                                            Name::from("Node text description container"),
-                                            list_resource.list_node.clone(),
-                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                            // Label
-                                        ))
-                                        .with_children(|row_node| {
-                                            row_node
                                                 .spawn((
                                                     Name::from("text container"),
                                                     list_resource.list_row_node.clone(),
@@ -269,7 +259,6 @@ where
                                                         )),
                                                     ));
                                                 });
-                                        });
                                         });
                                 });
                         }

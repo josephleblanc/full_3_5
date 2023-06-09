@@ -34,30 +34,35 @@ pub fn display_race(
     mut event_reader: EventReader<LeftPanelEvent>,
 ) {
     info!("running display_race");
-    for event in event_reader.iter() {
-        info!("-> event received");
-        if let Some(status) = event.status {
-            info!("{}", format!("--> event status: {:?}", status));
-            for (mut style, identifier) in query_list_items.iter_mut().filter(|(_, identifier)| {
-                if let Some(race) = event.race {
-                    race == **identifier
-                } else {
-                    false
-                }
-            }) {
-                info!(
-                    "---> identifier match found for event {} and race {}",
-                    event.race.unwrap(),
-                    identifier
-                );
-                match status {
-                    Status::Entering => {
-                        info!("----> setting display to Flex");
-                        style.display = Display::Flex;
-                    }
-                    Status::Exiting => {
-                        info!("----> setting display to None");
-                        style.display = Display::None;
+    let mut peekable_reader = event_reader.iter().peekable();
+    while let (Some(current), Some(peeked)) = (peekable_reader.next(), peekable_reader.peek()) {
+        for event in [current, peeked] {
+            info!("-> event received");
+            if let Some(status) = event.status {
+                info!("{}", format!("--> event status: {:?}", status));
+                for (mut style, identifier) in
+                    query_list_items.iter_mut().filter(|(_, identifier)| {
+                        if let Some(race) = event.race {
+                            race == **identifier
+                        } else {
+                            false
+                        }
+                    })
+                {
+                    info!(
+                        "---> identifier match found for event {} and race {}",
+                        event.race.unwrap(),
+                        identifier
+                    );
+                    match status {
+                        Status::Entering => {
+                            info!("----> setting display to Flex");
+                            style.display = Display::Flex;
+                        }
+                        Status::Exiting => {
+                            info!("----> setting display to None");
+                            style.display = Display::None;
+                        }
                     }
                 }
             }
