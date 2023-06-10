@@ -274,46 +274,44 @@ pub struct ClassInfo {
 }
 
 impl ClassInfo {
-    pub fn saving_throw_bonus(&self, level: i32) -> Vec<SavingThrowBonus> {
+    pub fn saving_throw_bonus(&self, level: usize) -> Vec<SavingThrowBonus> {
         use crate::systems::game::character::BonusType::*;
         use crate::systems::game::character::SavingThrowName::*;
-        let mut fort_save = [1, 3];
-        let mut reflex_save = [1, 3];
-        let mut will_save = [1, 3];
-        if self.save_progression.contains(&Fort) {
-            fort_save = [2, 3];
-        }
-        if self.save_progression.contains(&Will) {
-            will_save = [2, 3];
-        }
-        if self.save_progression.contains(&Reflex) {
-            reflex_save = [2, 3];
-        }
 
         vec![
             SavingThrowBonus {
-                bonus: level * fort_save[0] / fort_save[1],
+                bonus: self.saving_throw_at_level(&Fort, level) as i32,
                 bonus_type: Untyped,
                 saving_throw: Fort,
                 limitation: LimitationEnum::None,
             },
             SavingThrowBonus {
-                bonus: level * reflex_save[0] / reflex_save[1],
+                bonus: self.saving_throw_at_level(&Reflex, level) as i32,
                 bonus_type: Untyped,
                 saving_throw: Reflex,
                 limitation: LimitationEnum::None,
             },
             SavingThrowBonus {
-                bonus: level * will_save[0] / will_save[1],
+                bonus: self.saving_throw_at_level(&Will, level) as i32,
                 bonus_type: Untyped,
                 saving_throw: Will,
                 limitation: LimitationEnum::None,
             },
         ]
     }
+    pub fn saving_throw_at_level(&self, saving_throw: &SavingThrowName, level: usize) -> usize {
+        let (base_value, save_fraction) = {
+            if self.save_progression.contains(saving_throw) {
+                (2, [1, 2])
+            } else {
+                (0, [1, 3])
+            }
+        };
+        base_value + level * save_fraction[0] / save_fraction[1]
+    }
 }
 
-#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Copy, Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
 pub enum BABProgression {
     Full,
     ThreeFourths,
@@ -322,7 +320,40 @@ pub enum BABProgression {
     None,
 }
 
-#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy, Component)]
+#[derive(Copy, Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash)]
+pub struct BaseAttack {
+    pub base: usize,
+}
+impl BaseAttack {
+    pub fn from_progression(progression: &BABProgression, level: usize) -> Self {
+        match progression {
+            BABProgression::Full => Self::from(level),
+            BABProgression::ThreeFourths => Self::from(level * 3 / 4),
+            BABProgression::Half => Self::from(level / 2),
+            BABProgression::None => {
+                panic!("invalid BABProgression::None passed to BaseAttack::from_progression")
+            }
+        }
+    }
+}
+impl From<usize> for BaseAttack {
+    fn from(value: usize) -> Self {
+        Self { base: value }
+    }
+}
+impl std::fmt::Display for BaseAttack {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut bab = self.base;
+        let mut output = String::from(format!("+{bab}"));
+        while let Some(_) = bab.checked_sub(6) {
+            bab -= 5;
+            output.push_str(format!("/+{bab}").as_str());
+        }
+        write!(f, "{}", output)
+    }
+}
+
+#[derive(Component, Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy)]
 pub enum ClassFeature {
     Fighter(FighterFeature),
     #[default]
@@ -349,6 +380,17 @@ pub enum FighterFeature {
     WeaponMasteryArcher,
     #[default]
     None,
+}
+
+impl From<ClassFeature> for FighterFeature {
+    fn from(value: ClassFeature) -> Self {
+        match value {
+            ClassFeature::Fighter(feature) => feature,
+            ClassFeature::None => {
+                panic!("invalid value passed to From<ClassFeature> for FighterFeature")
+            }
+        }
+    }
 }
 
 pub trait IntoComponent<T: Component> {

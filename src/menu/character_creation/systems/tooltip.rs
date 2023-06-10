@@ -1,7 +1,7 @@
 use crate::menu::character_creation::components::*;
 use bevy::prelude::*;
 
-pub fn chosen_trait_tooltip(
+pub fn display_on_hover(
     query_trait: Query<(&Interaction, &TooltipText)>,
     query_change: Query<&Interaction, (Changed<Interaction>, With<TooltipText>)>,
     mut timer: ResMut<TooltipTimer>,
@@ -37,4 +37,15 @@ pub fn chosen_trait_tooltip(
             timer.inner_mut().reset();
         }
     }
+}
+
+pub fn first_99_words(string: String) -> String {
+    let tooltip_text = string
+        .split(' ')
+        .enumerate()
+        .filter(|(i, _)| *i < 100)
+        .map(|(i, word)| if i != 99 { word } else { "..." })
+        .collect::<Vec<&str>>()
+        .join(" ");
+    tooltip_text
 }

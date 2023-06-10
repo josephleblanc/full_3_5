@@ -196,14 +196,12 @@ impl Plugin for CharacterCreationPlugin {
                         tab: Tab::Class,
                         subtab: SubTab::Features,
                     }))),
-                    table::build_progression::<ClassAsset, PlayableClass, ClassFeature>(
-                        Tab::Class,
-                        SubTab::Progression,
-                    )
-                    .run_if(not(BuiltLists::is_built(SubTabListParent {
-                        tab: Tab::Class,
-                        subtab: SubTab::Progression,
-                    }))),
+                    class_resource::progression_table.run_if(not(BuiltLists::is_built(
+                        SubTabListParent {
+                            tab: Tab::Class,
+                            subtab: SubTab::Progression,
+                        },
+                    ))),
                     // Archetype Tab
                     description::build_description_list::<ArchetypeAsset, MyArchetypeName>(
                         Tab::Archetype,
@@ -286,6 +284,7 @@ impl Plugin for CharacterCreationPlugin {
                 )
                     .chain()
                     .in_set(Build::Build),
-            );
+            )
+            .add_system(tooltip::display_on_hover.in_set(SuperSet::Super));
     }
 }
