@@ -362,10 +362,10 @@ pub enum ClassFeature {
 
 #[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy)]
 pub enum FighterFeature {
-    BonusFeat,
-    Bravery,
-    WeaponTraining,
-    ArmorTraining,
+    BonusFeat(Option<usize>),
+    Bravery(Option<usize>),
+    WeaponTraining(Option<usize>),
+    ArmorTraining(Option<usize>),
     ArmorMastery,
     WeaponMastery,
     //// Archetypes
@@ -378,6 +378,13 @@ pub enum FighterFeature {
     Volley,
     RangedDefense,
     WeaponMasteryArcher,
+    // Brawler
+    CloseControl(Option<usize>),
+    CloseCombatant(Option<usize>),
+    MenacingStance(Option<usize>),
+    NoEscape(Option<usize>),
+    StandStill,
+    WeaponMasteryBrawler,
     #[default]
     None,
 }
@@ -419,7 +426,7 @@ impl TryFrom<&ClassInfo> for FloatingBonusFeats {
                 match feature {
                     ClassFeature::Fighter(fighter_feature) => {
                         match fighter_feature {
-                            FighterFeature::BonusFeat => {
+                            FighterFeature::BonusFeat(_) => {
                                 vec.push(FloatingBonusFeat {
                                     group: FloatingFeatGroup::Fighter,
                                     number: 1,
@@ -451,10 +458,10 @@ impl TryFrom<&ClassInfo> for SavingThrowBonuses {
             for feature in features_per_level {
                 match feature {
                     ClassFeature::Fighter(fighter_feature) => match fighter_feature {
-                        FighterFeature::Bravery => {
+                        FighterFeature::Bravery(Some(bonus_size)) => {
                             vec.push(SavingThrowBonus {
                                 // change later [001]
-                                bonus: 1,
+                                bonus: *bonus_size as i32,
                                 bonus_type: BonusType::Untyped,
                                 saving_throw: SavingThrowName::Will,
                                 limitation: LimitationEnum::SpellCauses(SpellCauses::Fear),

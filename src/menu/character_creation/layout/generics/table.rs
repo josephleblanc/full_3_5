@@ -43,10 +43,6 @@ where
             tab,
             subtab,
         };
-        if tab == Tab::Class {
-            println!("running buiild_tiem_desc_list for Tab::Class, subtab: {:?}", subtab);
-            println!("--> BuiltLists: {:#?}", res_built);
-        }
         
         if !res_built.inner_ref().contains(&subtab_list_parent) {
             let table_headers = PROGRESSION_TABLE_HEADERS;
@@ -62,10 +58,6 @@ where
             let key_vec = V::vec();
             let key_array = key_vec.as_slice();
             if let Some((parent_entity, _list_parent)) = query_parent.iter().filter(|(_, &list_parent)| list_parent == tab.into()).next() {
-                if tab == Tab::Class && subtab == SubTab::Progression {
-                    println!("--> Parent entity found");
-                    println!("---> key_vec len: {}, custom_asset len: {}", key_vec.len(), custom_asset.len());
-                }
                 let list_id = commands
                     .spawn((
                         list_resource.subtab_list_parent.clone(),

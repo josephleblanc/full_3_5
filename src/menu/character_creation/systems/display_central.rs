@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     menu::character_creation::components::{LeftPanelEvent, ListNode, Status},
-    systems::game::{archetype::MyArchetypeName, character::PlayableRace, class::PlayableClass},
+    systems::game::{archetype::ArchetypeName, character::PlayableRace, class::PlayableClass},
 };
 
 // The display systems for the central area of character creation.
@@ -104,7 +104,7 @@ pub fn display_class(
     }
 }
 pub fn display_archetype(
-    mut query_list_items: Query<(&mut Style, &MyArchetypeName), With<ListNode>>,
+    mut query_list_items: Query<(&mut Style, &ArchetypeName), With<ListNode>>,
     mut event_reader: EventReader<LeftPanelEvent>,
 ) {
     let mut peekable_reader = event_reader.iter().peekable();

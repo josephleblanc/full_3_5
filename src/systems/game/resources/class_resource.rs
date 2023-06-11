@@ -42,34 +42,34 @@ pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>
         bab_progression: Full,
         save_progression: [Fort, SavingThrowName::None, SavingThrowName::None],
         class_features_list: vec![
-            Fighter(BonusFeat),
-            Fighter(Bravery),
-            Fighter(ArmorTraining),
-            Fighter(WeaponTraining),
+            Fighter(BonusFeat(Option::None)),
+            Fighter(Bravery(Option::None)),
+            Fighter(ArmorTraining(Option::None)),
+            Fighter(WeaponTraining(Option::None)),
             Fighter(ArmorMastery),
             Fighter(WeaponMastery),
         ],
         class_features: vec![
-            vec![Fighter(BonusFeat)],                         // 1
-            vec![Fighter(Bravery)],                           // 2
-            vec![Fighter(ArmorTraining)],                     // 3
-            vec![Fighter(BonusFeat)],                         // 4
-            vec![Fighter(WeaponTraining)],                    // 5
-            vec![Fighter(BonusFeat), Fighter(Bravery)],       // 6
-            vec![Fighter(ArmorTraining)],                     // 7
-            vec![Fighter(BonusFeat)],                         // 8
-            vec![Fighter(WeaponTraining)],                    // 9
-            vec![Fighter(BonusFeat), Fighter(Bravery)],       // 10
-            vec![Fighter(ArmorTraining)],                     // 11
-            vec![Fighter(BonusFeat)],                         // 12
-            vec![Fighter(WeaponTraining)],                    // 13
-            vec![Fighter(BonusFeat), Fighter(Bravery)],       // 14
-            vec![Fighter(ArmorTraining)],                     // 15
-            vec![Fighter(BonusFeat)],                         // 16
-            vec![Fighter(WeaponTraining)],                    // 17
-            vec![Fighter(BonusFeat), Fighter(Bravery)],       // 18
-            vec![Fighter(ArmorMastery)],                      // 19
-            vec![Fighter(BonusFeat), Fighter(WeaponMastery)], // 20
+            vec![Fighter(BonusFeat(Some(1)))],                             // 1
+            vec![Fighter(Bravery(Some(1))), Fighter(BonusFeat(Some(2)))],  // 2
+            vec![Fighter(ArmorTraining(Some(1)))],                         // 3
+            vec![Fighter(BonusFeat(Some(3)))],                             // 4
+            vec![Fighter(WeaponTraining(Some(1)))],                        // 5
+            vec![Fighter(BonusFeat(Some(4))), Fighter(Bravery(Some(2)))],  // 6
+            vec![Fighter(ArmorTraining(Some(2)))],                         // 7
+            vec![Fighter(BonusFeat(Some(5)))],                             // 8
+            vec![Fighter(WeaponTraining(Some(2)))],                        // 9
+            vec![Fighter(BonusFeat(Some(6))), Fighter(Bravery(Some(3)))],  // 10
+            vec![Fighter(ArmorTraining(Some(3)))],                         // 11
+            vec![Fighter(BonusFeat(Some(7)))],                             // 12
+            vec![Fighter(WeaponTraining(Some(3)))],                        // 13
+            vec![Fighter(BonusFeat(Some(8))), Fighter(Bravery(Some(4)))],  // 14
+            vec![Fighter(ArmorTraining(Some(4)))],                         // 15
+            vec![Fighter(BonusFeat(Some(9)))],                             // 16
+            vec![Fighter(WeaponTraining(Some(4)))],                        // 17
+            vec![Fighter(BonusFeat(Some(10))), Fighter(Bravery(Some(5)))], // 18
+            vec![Fighter(ArmorMastery)],                                   // 19
+            vec![Fighter(BonusFeat(Some(11))), Fighter(WeaponMastery)],    // 20
         ],
     };
     class_map
@@ -79,6 +79,7 @@ pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>
     commands.insert_resource(class_map);
 }
 
+// TODO: Fix display so the table is only shown for the correct class
 pub fn progression_table(
     mut commands: Commands,
     query_parent: Query<(Entity, &TabListParent)>,
@@ -205,7 +206,7 @@ pub fn progression_table(
                                                         text_style.clone()
                                                         ),
                                                     TextSection::new(
-                                                                tooltip::first_99_words(feature.description.clone()),
+                                                        tooltip::first_99_words(feature.description.clone()),
                                                         text_style.clone()
                                                         )
                                                     ])

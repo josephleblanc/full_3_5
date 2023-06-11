@@ -23,7 +23,7 @@ use crate::{
     system_scheduling::states::AppState,
     systems::{
         game::{
-            archetype::MyArchetypeName,
+            archetype::ArchetypeName,
             character::PlayableRace,
             class::{ClassFeature, PlayableClass},
             race::{build_race, RaceBuilder, RacialTraitName},
@@ -203,13 +203,22 @@ impl Plugin for CharacterCreationPlugin {
                         },
                     ))),
                     // Archetype Tab
-                    description::build_description_list::<ArchetypeAsset, MyArchetypeName>(
+                    description::build_description_list::<ArchetypeAsset, ArchetypeName>(
                         Tab::Archetype,
                         SubTab::Description,
                     )
                     .run_if(not(BuiltLists::is_built(SubTabListParent {
                         tab: Tab::Archetype,
                         subtab: SubTab::Description,
+                    }))),
+                    recur_description::build_item_desc_list::<
+                        ArchetypeAsset,
+                        ArchetypeName,
+                        ClassFeature,
+                    >(Tab::Archetype, SubTab::Features)
+                    .run_if(not(BuiltLists::is_built(SubTabListParent {
+                        tab: Tab::Archetype,
+                        subtab: SubTab::Features,
                     }))),
                 )
                     .in_set(SuperSet::Super),
@@ -236,7 +245,7 @@ impl Plugin for CharacterCreationPlugin {
                 (
                     left_panel::button_event::<PlayableRace, SelectedRace>,
                     left_panel::button_event::<PlayableClass, SelectedClass>,
-                    left_panel::button_event::<MyArchetypeName, SelectedArchetype>,
+                    left_panel::button_event::<ArchetypeName, SelectedArchetype>,
                 )
                     .in_set(EventSet::Sending),
             )

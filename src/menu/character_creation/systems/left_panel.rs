@@ -157,9 +157,11 @@ pub fn button_event<S, T>(
     for (interaction, left_enum) in &interaction_query {
         if *interaction == Interaction::Clicked {
             let exit_event: LeftPanelEvent = selected.selected().into();
+            info!("sending event {exit_event:#?}");
             left_panel_event.send(exit_event.set_status(Status::Exiting));
 
             let event: LeftPanelEvent = (*left_enum).into();
+            info!("sending event {event:#?}");
             left_panel_event.send(event.set_status(Status::Entering));
         }
     }

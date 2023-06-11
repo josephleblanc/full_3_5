@@ -10,7 +10,8 @@ use crate::{
     },
     systems::game::{character, class::ClassFeature, race::RacialTraitName},
     technical::{
-        alternate_traits::AltTraitAsset, class::ClassAsset, default_race_traits::DefaultTraitAsset,
+        alternate_traits::AltTraitAsset, archetype::ArchetypeAsset, class::ClassAsset,
+        default_race_traits::DefaultTraitAsset,
     },
 };
 use bevy::a11y::accesskit::NodeBuilder;
@@ -65,6 +66,21 @@ impl HasItemVec<ClassFeature> for ClassAsset {
             .map(|class_feature| {
                 (
                     &class_feature.class_feature_name,
+                    &class_feature.title,
+                    &class_feature.description,
+                )
+            })
+            .collect()
+    }
+}
+
+impl HasItemVec<ClassFeature> for ArchetypeAsset {
+    fn vec(&self) -> Vec<(&ClassFeature, &String, &String)> {
+        self.class_features
+            .iter()
+            .map(|class_feature| {
+                (
+                    &class_feature.feature,
                     &class_feature.title,
                     &class_feature.description,
                 )

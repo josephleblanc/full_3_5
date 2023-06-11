@@ -6,7 +6,7 @@ use crate::menu::components::ScrollingList;
 use crate::menu::styles::*;
 use crate::systems::game::class::PlayableClass;
 use crate::systems::game::{
-    archetype::MyArchetypeName, character::PlayableRace, race::CharacterBuilder,
+    archetype::ArchetypeName, character::PlayableRace, race::CharacterBuilder,
 };
 use bevy::prelude::*;
 use bevy::ui::FocusPolicy;
@@ -231,7 +231,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             ScrollingList::default(),
             AccessibilityNode(NodeBuilder::new(Role::List)),
-            Name::from("Race panel"),
+            Name::from("Race LeftPanel"),
             Interaction::default(),
             Panel {
                 tab: Tab::Race,
@@ -294,7 +294,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             ClassPanel,
             ScrollingList::default(),
             AccessibilityNode(NodeBuilder::new(Role::List)),
-            Name::from("moving panel"),
+            Name::from("Class LeftPanel"),
             Interaction::default(),
             Panel {
                 tab: Tab::Class,
@@ -332,7 +332,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 color: TEXT_COLOR,
                             },
                         ),
-                        Name::new("race: moving list item"),
+                        Name::new("Race leftpanel list item"),
                         Label,
                         LeftPanelText,
                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
@@ -353,10 +353,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..default()
             },
-            Name::from("moving panel"),
+            Name::from("Archetype left panel"),
             Panel {
                 tab: Tab::Archetype,
-                subtab: Some(SubTab::Description),
+                subtab: None,
                 excluded_subtab: None,
             },
             ArchetypePanel,
@@ -396,7 +396,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ArchetypePanel,
                 ))
                 .with_children(|list| {
-                    for (i, archetype_name) in MyArchetypeName::iterator().enumerate() {
+                    for (i, archetype_name) in ArchetypeName::iterator().enumerate() {
                         let mut color = RACE_BUTTON_COLOR;
                         if i == 0 {
                             color = RACE_BUTTON_COLOR_SELECTED;
@@ -412,6 +412,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             },
                             LeftPanelButton,
+                            LeftPanelEnum::Archetype(archetype_name),
                             ArchetypePanel,
                         ))
                         .with_children(|list_button| {
@@ -442,8 +443,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     // with text descriptions of the selected races.
     // This contains many nodes, but on startup most will be set to
     // Display::None until the correct tab is checked.
-    // TODO: Clean this up. There are better ways than arbitrarily choosing a length of 20
-    let default_racial_trait_rows = 20_usize;
     let central_node = commands
         .spawn((
             NodeBundle {
@@ -507,18 +506,30 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     // Race Tab display
     commands
-        .spawn((list_parent.clone(), TabListParent::Race))
+        .spawn((
+            list_parent.clone(),
+            TabListParent::Race,
+            Name::from("Race TabListParent"),
+        ))
         .set_parent(central_scroll_list);
     // Class Tab display
     // hook for select_item::build_description_list
     commands
-        .spawn((list_parent.clone(), TabListParent::Class))
+        .spawn((
+            list_parent.clone(),
+            TabListParent::Class,
+            Name::from("Class TabListParent"),
+        ))
         .set_parent(central_scroll_list);
     // Archetype Tab display
-    //     commands
-    //         .spawn((list_parent.clone(), TabListParent::Archetype))
-    //         .set_parent(central_scroll_list);
-    //
+    commands
+        .spawn((
+            list_parent.clone(),
+            TabListParent::Archetype,
+            Name::from("Archetype TabListParent"),
+        ))
+        .set_parent(central_scroll_list);
+
     // Panel with chosen racial traits and favored class.
     // Should be located on the right of the screen
     // This panel should:

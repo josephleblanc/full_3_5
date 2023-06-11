@@ -3,7 +3,7 @@ use std::num::TryFromIntError;
 use crate::{
     menu::components::SelectedWrapper,
     systems::game::{
-        archetype::MyArchetypeName,
+        archetype::ArchetypeName,
         character::{AbilityScore, PlayableRace},
         class::PlayableClass,
         race::RacialTraitName,
@@ -135,7 +135,7 @@ impl std::fmt::Display for SubTab {
 //             Self::RaceFavoredClass,
 //             Self::ClassDescription,
 //             Self::ClassFeatures,
-//             Self::ClassArchetype,
+//             Self::ArchetypeInfo,
 //         ]
 //     }
 // }
@@ -193,6 +193,7 @@ impl AsButtonList for SubTabButton {
             Self::new(Tab::Class, SubTab::Progression),
             Self::new(Tab::Class, SubTab::Features),
             Self::new(Tab::Archetype, SubTab::Description), // TODO: Add more later
+            Self::new(Tab::Archetype, SubTab::Features),    // TODO: Add more later
         ]
     }
 }
@@ -234,7 +235,7 @@ pub enum InTab {
 pub enum LeftPanelEnum {
     Race(PlayableRace),
     Class(PlayableClass),
-    Archetype(MyArchetypeName),
+    Archetype(ArchetypeName),
 }
 
 // impl Into<LeftPanelEvent> for LeftPanelEnum {
@@ -258,7 +259,7 @@ pub enum LeftPanelEnum {
 pub struct LeftPanelEvent {
     pub race: Option<PlayableRace>,
     pub class: Option<PlayableClass>,
-    pub archetype: Option<MyArchetypeName>,
+    pub archetype: Option<ArchetypeName>,
     pub status: Option<Status>,
 }
 
@@ -285,8 +286,8 @@ impl From<PlayableClass> for LeftPanelEvent {
         }
     }
 }
-impl From<MyArchetypeName> for LeftPanelEvent {
-    fn from(value: MyArchetypeName) -> Self {
+impl From<ArchetypeName> for LeftPanelEvent {
+    fn from(value: ArchetypeName) -> Self {
         Self {
             archetype: Some(value),
             ..default()
@@ -348,13 +349,13 @@ impl TryFrom<LeftPanelEvent> for PlayableClass {
         Err("Invalid LeftPanelEvent passed as parameter to TryFrom<LeftPanelEvent> for PlayableClass")
     }
 }
-impl TryFrom<LeftPanelEvent> for MyArchetypeName {
+impl TryFrom<LeftPanelEvent> for ArchetypeName {
     type Error = &'static str;
     fn try_from(value: LeftPanelEvent) -> Result<Self, Self::Error> {
         if let Some(archetype) = value.archetype {
             return Ok(archetype);
         }
-        Err("Invalid LeftPanelEvent passed as parameter to TryFrom<LeftPanelEvent> for MyArchetypeName")
+        Err("Invalid LeftPanelEvent passed as parameter to TryFrom<LeftPanelEvent> for ArchetypeName")
     }
 }
 
@@ -384,7 +385,7 @@ impl LeftPanelEnum {
             _ => None,
         }
     }
-    pub fn get_archetype(&self) -> Option<MyArchetypeName> {
+    pub fn get_archetype(&self) -> Option<ArchetypeName> {
         match self {
             Self::Archetype(playable_archetype) => Some(*playable_archetype),
             _ => None,
@@ -516,18 +517,18 @@ pub struct ClassPanel;
 pub struct ArchetypePanel;
 
 #[derive(Resource, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Hash)]
-pub struct SelectedArchetype(pub MyArchetypeName);
+pub struct SelectedArchetype(pub ArchetypeName);
 impl SelectedArchetype {
-    pub fn inner(&self) -> MyArchetypeName {
+    pub fn inner(&self) -> ArchetypeName {
         self.0
     }
-    pub fn set(&mut self, other: MyArchetypeName) -> &mut Self {
+    pub fn set(&mut self, other: ArchetypeName) -> &mut Self {
         self.0 = other;
         self
     }
 }
-impl SelectedWrapper<MyArchetypeName> for SelectedArchetype {
-    fn selected(&self) -> MyArchetypeName {
+impl SelectedWrapper<ArchetypeName> for SelectedArchetype {
+    fn selected(&self) -> ArchetypeName {
         self.0
     }
 }

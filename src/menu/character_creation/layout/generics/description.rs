@@ -9,7 +9,7 @@ use crate::{
         components::SelectedWrapper,
         styles::*,
     },
-    systems::game::{archetype::MyArchetypeName, character::PlayableRace, class::PlayableClass},
+    systems::game::{archetype::ArchetypeName, character::PlayableRace, class::PlayableClass},
     technical::{archetype::ArchetypeAsset, class::ClassAsset, race_load::RaceAsset},
 };
 use bevy::a11y::accesskit::NodeBuilder;
@@ -69,8 +69,8 @@ impl list_traits::HasKey<PlayableClass> for ClassAsset {
         self.class_name
     }
 }
-impl list_traits::HasKey<MyArchetypeName> for ArchetypeAsset {
-    fn key(&self) -> MyArchetypeName {
+impl list_traits::HasKey<ArchetypeName> for ArchetypeAsset {
+    fn key(&self) -> ArchetypeName {
         self.archetype_name
     }
 }
@@ -129,7 +129,7 @@ where
                     commands
                         .spawn((
                             // Each of these nodes is one row.SubTabListParent
-                            Name::from("Race description node"),
+                            Name::from(format!("{tab} description node")),
                             ListNode,
                             list_resource.list_node.clone(),
                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
