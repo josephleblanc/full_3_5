@@ -190,8 +190,9 @@ impl AsButtonList for SubTabButton {
             Self::new(Tab::Class, SubTab::Description),
             Self::new(Tab::Class, SubTab::Progression),
             Self::new(Tab::Class, SubTab::Features),
-            Self::new(Tab::Archetype, SubTab::Description), // TODO: Add more later
-            Self::new(Tab::Archetype, SubTab::Features),    // TODO: Add more later
+            Self::new(Tab::Archetype, SubTab::Description),
+            Self::new(Tab::Archetype, SubTab::Features),
+            Self::new(Tab::Archetype, SubTab::Progression),
         ]
     }
 }

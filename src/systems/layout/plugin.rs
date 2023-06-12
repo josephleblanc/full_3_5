@@ -22,12 +22,15 @@ use crate::{
     system_scheduling::states::AppState,
     systems::{
         game::{
-            archetype::ArchetypeName,
+            archetype::{
+                ArchTableBuilt, ArchTableSpawned, ArchTablesMap, ArchetypeMap, ArchetypeName,
+            },
             character::PlayableRace,
             class::{ClassFeature, PlayableClass},
             race::{build_race, RaceBuilder, RacialTraitName},
-            resources::class_resource::{
-                self, ClassTablesBuilt, ClassTablesMap, ClassTablesSpawned,
+            resources::{
+                archetype_resource,
+                class_resource::{self, ClassTablesBuilt, ClassTablesMap, ClassTablesSpawned},
             },
         },
         layout::character_creation::build_layout,
@@ -102,6 +105,10 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<ClassTablesMap>()
             .init_resource::<ClassTablesBuilt>()
             .init_resource::<ClassTablesSpawned>()
+            .init_resource::<ArchTableSpawned>()
+            .init_resource::<ArchTablesMap>()
+            .init_resource::<ArchetypeMap>()
+            .init_resource::<ArchTableBuilt>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -112,6 +119,7 @@ impl Plugin for CharacterCreationPlugin {
                     build_layout,
                     CentralListBundles::init,
                     class_resource::setup_classes,
+                    archetype_resource::setup_archetypes,
                     apply_system_buffers,
                     build_tab_buttons::build_tab_buttons::<CharacterTabs, Tab>(),
                     build_subtab_buttons::build_subtab_buttons::<
@@ -223,6 +231,14 @@ impl Plugin for CharacterCreationPlugin {
                         tab: Tab::Archetype,
                         subtab: SubTab::Features,
                     }))),
+                    archetype_resource::modify_class_map
+                        .run_if(resource_equals(ClassTablesBuilt(true)))
+                        .run_if(resource_equals(ArchTableBuilt(false)))
+                        .run_if(on_event::<LeftPanelEvent>()),
+                    archetype_resource::spawn_tables
+                        .run_if(resource_equals(ClassTablesBuilt(true)))
+                        .run_if(resource_equals(ArchTableBuilt(true)))
+                        .run_if(resource_equals(ArchTableSpawned(false))),
                 )
                     .in_set(SuperSet::Super),
             )

@@ -5,35 +5,34 @@ use crate::{
 use bevy::{prelude::*, utils::HashMap};
 use serde::Deserialize;
 use std::fmt;
-/////////////// probably delete this //////////////////////////////////////////////////
-// #[derive(Default, Debug, Deserialize, Clone, Component)]
-// pub enum ArchetypeInfo {
-//     Fighter(FighterArchetype),
-//     #[default]
-//     None,
-// }
-//
-// impl fmt::Display for ArchetypeInfo {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-//         match self {
-//             Self::Fighter(_) => write!(f, "Archer"),
-//             Self::None => write!(f, "None"),
-//         }
-//     }
-// }
-//
-// #[derive(Default, Debug, Deserialize, Clone, Hash)]
-// pub struct FighterArchetype {
-//     name: ArchetypeName,
-//     class: PlayableClass,
-//     restrictions: Option<Vec<Restriction>>,
-//     archetype_features: Option<Vec<ArchetypeFeature>>,
-//     skills: Option<Vec<SkillName>>,
-//     skill_ranks: Option<usize>,
-//     gains_proficiency: Option<usize>,
-//     loses_proficiency: Option<usize>,
-// }
-////////////////////////////////////////////////////////////////////////////////////////
+
+use super::resources::class_resource::ClassTable;
+
+#[derive(Resource, Copy, Clone, Default, PartialEq)]
+pub struct ArchTableBuilt(pub bool);
+impl ArchTableBuilt {
+    pub fn set_true(&mut self) {
+        self.0 = true;
+    }
+}
+#[derive(Resource, Copy, Clone, Default, PartialEq)]
+pub struct ArchTableSpawned(pub bool);
+impl ArchTableSpawned {
+    pub fn set_true(&mut self) {
+        self.0 = true;
+    }
+}
+
+#[derive(Resource, Default)]
+pub struct ArchTablesMap(pub HashMap<ArchetypeName, ClassTable>);
+impl ArchTablesMap {
+    pub fn inner_ref(&self) -> &HashMap<ArchetypeName, ClassTable> {
+        &self.0
+    }
+    pub fn inner_ref_mut(&mut self) -> &mut HashMap<ArchetypeName, ClassTable> {
+        &mut self.0
+    }
+}
 
 #[derive(Resource, Default, Deserialize, Clone, Debug)]
 pub struct ArchetypeMap(HashMap<ArchetypeName, ArchetypeInfo>);
@@ -41,6 +40,9 @@ impl ArchetypeMap {
     pub fn new() -> Self {
         let map: HashMap<ArchetypeName, ArchetypeInfo> = HashMap::new();
         Self(map)
+    }
+    pub fn inner_ref(&self) -> &HashMap<ArchetypeName, ArchetypeInfo> {
+        &self.0
     }
     pub fn inner_ref_mut(&mut self) -> &mut HashMap<ArchetypeName, ArchetypeInfo> {
         &mut self.0
@@ -119,7 +121,6 @@ pub enum Restriction {
 
 #[derive(Default, Debug, Deserialize, Clone, Component, Hash)]
 pub struct ArchetypeFeature {
-    pub feature: ClassFeature,
+    pub features: Vec<(usize, ClassFeature)>,
     pub replaces: Vec<ClassFeature>,
-    pub level: usize,
 }

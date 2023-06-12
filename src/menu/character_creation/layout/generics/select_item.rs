@@ -153,10 +153,6 @@ where
             subtab,
         };
         if !res_built.inner_mut().contains(&subtab_list_parent) {
-            println!(
-                "custom_asset len when running build_button desc_list: {}",
-                custom_asset.len()
-            );
             if let Some((parent_entity, _list_parent)) = query_parent.iter().filter(|(_, &list_parent)| list_parent == tab.into()).next() {
             let shared_font = asset_server.load(PATH_SIMPLE_FONT);
             let key_vec = V::vec();
@@ -171,17 +167,11 @@ where
                     .set_parent(parent_entity)
                     .id();
                 for (asset_key, asset_items_vec) in custom_asset.iter().map(|(_handle, asset)| {
-                    println!("asset found: {}", asset.key());
                     (asset.key(), asset.vec())
                 }) {
                     for (enum_name, title, descr_text) in asset_items_vec {
                         if key_array.contains(&asset_key) {
                             let key = asset_key;
-                            println!(
-                                "--> building select descr node for {} with title: {}",
-                                key,
-                                title.to_string()
-                            );
                             commands
                                 .spawn((
                                     Name::from("select_item node"),

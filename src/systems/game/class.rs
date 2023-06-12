@@ -387,11 +387,30 @@ pub enum FighterFeature {
     CloseControl(Option<usize>),
     CloseCombatant(Option<usize>),
     MenacingStance(Option<usize>),
-    NoEscape(Option<usize>),
+    NoEscape,
     StandStill,
     WeaponMasteryBrawler,
     #[default]
     None,
+}
+
+#[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy)]
+pub struct FighterFeatureInfo {
+    feature: FighterFeature,
+    first_appears: usize,
+    upgrades: bool,
+    up_every: Option<usize>,
+}
+
+impl FighterFeatureInfo {
+    fn lvl_div(&self, level: usize) -> Option<usize> {
+        if let Some(div) = self.up_every {
+            if level >= self.first_appears {
+                return Some((level - self.first_appears) / div + 1);
+            }
+        }
+        None
+    }
 }
 
 impl FighterFeature {
@@ -408,8 +427,63 @@ impl FighterFeature {
             Self::CloseControl(_) => Self::CloseControl(None),
             Self::CloseCombatant(_) => Self::CloseCombatant(None),
             Self::MenacingStance(_) => Self::MenacingStance(None),
-            Self::NoEscape(_) => Self::NoEscape(None),
             _ => *self,
+        }
+    }
+
+    /// Used to find the bonus or version of a feat at a given level,
+    /// where `level` is the level in question,
+    /// div is the number of levels required for the feature to upgrade,
+    /// and start is the level at which this feature first appears.
+    fn lvl_div(level: usize, div: usize, start: usize) -> Option<usize> {
+        if level >= start {
+            Some((level - start) / div + 1)
+        } else {
+            None
+        }
+    }
+
+    /// Used to find the levels at which a feature receives an upgrade.
+    /// If the feature improves at the given level, it will return `Some(n)`,
+    /// where `n` is the iteration of the feature, otherwise `None`.
+    /// For example, the fighter feature BonusFeat gives a bonus feat at level 1, and at every
+    /// other level starting at 0. So for the following levels the following values will
+    /// be returned:
+    ///   level 1: Some(1),
+    ///   level 2: Some(2),
+    ///   level 3: None
+    ///   level 4: Some(3)
+    fn lvl_div_mod(level: usize, div: usize, start: usize) -> Option<usize> {
+        if level >= start && (level - start / div + 1) % div == 0 {
+            Some((level - start) / div + 1)
+        } else {
+            None
+        }
+    }
+
+    /// Takes a fighter feature and returns the bonus or feature version at the given level.
+    /// If the feature is not level-dependent or is not present at that level, it will return None
+    /// e.g. It will take `Self::BonusFeat(_)` and return `Some(Self::BonusFeat(3))` at level = 4
+    pub fn bonus_at_level(&self, level: usize) -> Option<Self> {
+        match self {
+            Self::CloseControl(_) => Some(Self::CloseControl(Self::lvl_div(level, 4, 2))),
+            Self::CloseCombatant(_) => Some(Self::CloseCombatant(Self::lvl_div(level, 4, 3))),
+            Self::MenacingStance(_) => Some(Self::MenacingStance(Self::lvl_div(level, 4, 7))),
+            _ => None,
+        }
+    }
+
+    /// Takes a fighter feature and returns the version at that level only if there is an upgrade.
+    /// For example, the fighter feature BonusFeat upgrades from 1 to 2 at level 2, but is
+    /// unchanged at level 3, so for level 2 this functio will return:
+    ///     `Some(Self::CloseControl(Some(2))`
+    /// while at level 3 the function will return `None`
+    pub fn upgrade_at_level(&self, level: usize) -> Option<Self> {
+        match self {
+            Self::CloseControl(_) => Some(Self::CloseControl(Self::lvl_div_mod(level, 4, 2))),
+            Self::CloseCombatant(_) => Some(Self::CloseCombatant(Self::lvl_div_mod(level, 4, 3))),
+            Self::MenacingStance(_) => Some(Self::MenacingStance(Self::lvl_div_mod(level, 4, 7))),
+            _ => None,
         }
     }
 }

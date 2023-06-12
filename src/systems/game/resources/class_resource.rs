@@ -101,7 +101,7 @@ impl ClassTablesSpawned {
 #[derive(Resource, Default)]
 pub struct ClassTablesMap(pub HashMap<PlayableClass, ClassTable>);
 impl ClassTablesMap {
-    fn inner_ref(&self) -> &HashMap<PlayableClass, ClassTable> {
+    pub fn inner_ref(&self) -> &HashMap<PlayableClass, ClassTable> {
         &self.0
     }
     fn inner_ref_mut(&mut self) -> &mut HashMap<PlayableClass, ClassTable> {
@@ -131,12 +131,20 @@ pub struct TableParent {
     tab: Tab,
     subtab: SubTab,
 }
+impl TableParent {
+    pub fn set_tab(&mut self, other: Tab) {
+        self.tab = other;
+    }
+    pub fn set_subtab(&mut self, other: SubTab) {
+        self.subtab = other;
+    }
+}
 
 #[derive(Bundle, Clone)]
 pub struct ProgressionRowNode {
-    node_bundle: NodeBundle,
-    class: PlayableClass,
-    row: MyTable,
+    pub node_bundle: NodeBundle,
+    pub class: PlayableClass,
+    pub row: MyTable,
 }
 
 #[derive(Bundle, Clone)]
@@ -148,26 +156,26 @@ pub struct ProgressionHeader {
 
 #[derive(Bundle, Clone)]
 pub struct TextCell {
-    text_bundle: TextBundle,
-    column: MyTable,
-    cell: CellPosition,
+    pub text_bundle: TextBundle,
+    pub column: MyTable,
+    pub cell: CellPosition,
 }
 
 #[derive(Clone)]
 pub struct FeaturesCell {
-    cell_node: NodeBundle,
-    feature_items: Vec<FeatureItem>,
-    column: MyTable,
-    cell: CellPosition,
+    pub cell_node: NodeBundle,
+    pub feature_items: Vec<FeatureItem>,
+    pub column: MyTable,
+    pub cell: CellPosition,
 }
 
 #[derive(Clone, Debug)]
 pub struct FeatureItem {
-    title_string: String,
-    text_style: TextStyle,
-    class_feature: ClassFeature,
-    interaction: Interaction,
-    tooltip: TooltipText,
+    pub title_string: String,
+    pub text_style: TextStyle,
+    pub class_feature: ClassFeature,
+    pub interaction: Interaction,
+    pub tooltip: TooltipText,
 }
 
 pub fn progression_table_resource(
