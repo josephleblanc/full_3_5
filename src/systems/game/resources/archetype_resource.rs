@@ -1,14 +1,11 @@
 use bevy::prelude::*;
 
-use crate::{
-    systems::game::{
-        archetype::{ArchetypeFeature, ArchetypeInfo, ArchetypeMap, ArchetypeName},
-        class::{ClassFeature, FighterFeature, PlayableClass},
-    },
-    technical::archetype::ArchetypeAsset,
+use crate::systems::game::{
+    archetype::{ArchetypeFeature, ArchetypeInfo, ArchetypeMap, ArchetypeName},
+    class::{ClassFeature, FighterFeature, PlayableClass},
 };
 
-pub fn setup_archetypes(mut commands: Commands, archetype_asset: Res<Assets<ArchetypeAsset>>) {
+pub fn setup_archetypes(mut commands: Commands) {
     let mut archetype_map = ArchetypeMap::new();
 
     //// brawler features

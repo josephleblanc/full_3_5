@@ -172,7 +172,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     //  Optionals are: Spells, Class Feats, Animal Companion, etc.
     //
     //  These are loaded with bult_tab_buttons
-    let stages_of_creation_container_id = commands
+    commands
         .spawn((
             NodeBundle {
                 style: Style {
@@ -725,14 +725,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // Speed value
                 col1_row1.spawn((
                     TextBundle {
-                        text: Text::from_section(
-                            "-".to_string(),
-                            TextStyle {
-                                font: shared_font.clone(),
-                                font_size: 25.,
-                                color: TEXT_COLOR,
-                            },
-                        ),
+                        text: Text::from_section("-".to_string(), common_trait_text_style.clone()),
                         style: common_trait_value_style.clone(),
                         background_color: Color::VIOLET.into(),
                         ..default()
@@ -823,7 +816,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             display: Display::Flex,
             ..default()
         },
-        background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
+        background_color: Color::PURPLE.into(),
         ..default()
     };
     let chosen_traits_title_style = TextStyle {

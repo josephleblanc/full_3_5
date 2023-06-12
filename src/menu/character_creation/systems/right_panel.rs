@@ -1,7 +1,3 @@
-use crate::menu::character_creation::components::{RightPanelContainer, SelectTabEvent};
-
-use bevy::prelude::*;
-
 // Display or hide the right panel depending on the tab selected.
 // pub fn display(
 //     mut query_panel: Query<&mut Style, RightPanelContainer>,

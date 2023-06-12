@@ -4,4 +4,3 @@ pub mod description;
 pub mod list_traits;
 pub mod recur_description;
 pub mod select_item;
-pub mod table;

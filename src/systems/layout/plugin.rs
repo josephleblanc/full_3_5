@@ -1,14 +1,13 @@
 use crate::{
     menu::{
         character_creation::{
-            components::{SelectedSubTab, *},
+            components::*,
             layout::{
                 generics::{
                     build_subtab_buttons::{self, BuiltSubTabButtons, CharacterCreationSubTabs},
                     build_tab_buttons::{self, BuiltTabButtons, CharacterTabs},
                     description, recur_description,
                     select_item::{build_button_desc_list, BuiltLists},
-                    table,
                 },
                 resource::CentralListBundles,
             },

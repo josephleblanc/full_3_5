@@ -2,9 +2,9 @@
 use crate::constants::PATH_SIMPLE_FONT;
 use crate::menu::{
     character_creation::{
-        components::{SelectedClass, SubTab, SubTabListParent, Tab, TabListParent, TooltipText},
+        components::{SubTab, SubTabListParent, Tab, TabListParent, TooltipText},
         constants::PROGRESSION_TABLE_HEADERS,
-        layout::{generics::select_item::BuiltLists, resource::CentralListBundles},
+        layout::resource::CentralListBundles,
         systems::tooltip,
     },
     components::{CellPosition, MyTable},

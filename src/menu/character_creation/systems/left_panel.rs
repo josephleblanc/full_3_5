@@ -106,7 +106,6 @@ pub fn button_color(
                 Interaction::None => {
                     *color = RACE_BUTTON_COLOR.into();
                 }
-                _ => (),
             }
         };
     }
