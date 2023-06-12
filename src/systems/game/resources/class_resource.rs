@@ -1,5 +1,6 @@
 #![allow(unused_mut, unused_variables)]
 use crate::constants::PATH_SIMPLE_FONT;
+use crate::menu::character_creation::components::ListNode;
 use crate::menu::{
     character_creation::{
         components::{SubTab, SubTabListParent, Tab, TabListParent, TooltipText},
@@ -370,6 +371,9 @@ pub fn progression_table_resource(
     }
 }
 
+/// Spawns a table from `ClassMap` and `ClassTablesMap` resources.
+/// The table must already have been built and inserted into the `ClassTablesMap` resource for this
+/// function to work correctly.
 pub fn spawn_tables(
     class_tables: Res<ClassTablesMap>,
     class_map: Res<ClassMap>,
@@ -377,7 +381,6 @@ pub fn spawn_tables(
     mut class_tables_spawned: ResMut<ClassTablesSpawned>,
     mut commands: Commands,
 ) {
-    info!("running spawn_tables");
     class_tables_spawned.set_true();
     let list_parent = class_tables
         .inner_ref()
@@ -386,17 +389,33 @@ pub fn spawn_tables(
         .unwrap()
         .parent
         .unwrap();
-    let table_container = commands
+
+    let tab = Tab::Class;
+    let subtab = SubTab::Progression;
+
+    // The subtab_container is used to manage whether to display/hide itself based on the events
+    // sent by changing tab select_tab::new_display_subtab_list
+    let subtab_container = commands
         .spawn((
             list_resource.subtab_list_parent.clone(),
-            SubTabListParent {
-                tab: Tab::Class,
-                subtab: SubTab::Progression,
-            },
+            SubTabListParent { tab, subtab },
+            Name::from(format!("{tab} {subtab} subtab container")),
         ))
         .set_parent(list_parent)
         .id();
     for class in PlayableClass::array() {
+        // One table is made for every class with an entry in both ClassMap and ClassTablesMap
+        let table_container = commands
+            .spawn((
+                list_resource.list_node.clone(),
+                // ListNode is required for left_panel::display_class to manage the display of the
+                // items.
+                ListNode,
+                class,
+                Name::from(format!("{class} table container - listnode")),
+            ))
+            .set_parent(subtab_container)
+            .id();
         if let Some(class_info) = class_map.inner_ref().get(&class) {
             let mut row_ids: HashMap<MyTable, Entity> = HashMap::new();
             if let Some(class_table) = class_tables.inner_ref().get(&class) {
