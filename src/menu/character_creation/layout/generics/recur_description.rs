@@ -4,10 +4,7 @@ use crate::{
         character_creation::{
             components::*,
             constants::{LIST_DESCRIPTION_TEXT_STYLE, LIST_ITEM_TITLE_STYLE},
-            layout::{
-                generics::list_traits,
-                resource::*,
-            },
+            layout::{generics::list_traits, resource::*},
         },
         styles::*,
     },
@@ -103,7 +100,7 @@ where
                                     ListNode,
                                     key,
                                     *enum_name,
-                                    
+
                                 ))
                                 .set_parent(list_id)
                                 .with_children(|list_node| {
@@ -123,7 +120,7 @@ where
                                                 ..default()
                                             },
                                             ListTitle,
-                                            
+
                                             AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                                             ));
                                     list_node
@@ -133,7 +130,7 @@ where
                                             AccessibilityNode(NodeBuilder::new(
                                                 Role::ListItem,
                                             )),
-                                            
+
                                         ))
                                         .with_children(|inner_row_node| {
                                             // Item description
@@ -154,7 +151,7 @@ where
                                                 },
                                                 // Description,
                                                 // Label
-                                                
+
                                                 AccessibilityNode(NodeBuilder::new(
                                                     Role::ListItem,
                                                 )),

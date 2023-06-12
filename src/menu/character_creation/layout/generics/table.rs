@@ -1,7 +1,16 @@
-use crate::{menu::{character_creation::{
-    components::{SubTab, Tab, TabListParent, SubTabListParent},
-    layout::resource::CentralListBundles, constants::PROGRESSION_TABLE_HEADERS,
-}, components::{MyTable, CellPosition}, styles::TEXT_COLOR}, constants::PATH_SIMPLE_FONT, systems::game::class::ClassMap};
+use crate::{
+    constants::PATH_SIMPLE_FONT,
+    menu::{
+        character_creation::{
+            components::{SubTab, SubTabListParent, Tab, TabListParent},
+            constants::PROGRESSION_TABLE_HEADERS,
+            layout::resource::CentralListBundles,
+        },
+        components::{CellPosition, MyTable},
+        styles::TEXT_COLOR,
+    },
+    systems::game::class::ClassMap,
+};
 
 use bevy::{prelude::*, reflect::TypeUuid};
 
@@ -43,7 +52,7 @@ where
             tab,
             subtab,
         };
-        
+
         if !res_built.inner_ref().contains(&subtab_list_parent) {
             let table_headers = PROGRESSION_TABLE_HEADERS;
             let table_2d = MyTable::build_2d::<6, 21>();

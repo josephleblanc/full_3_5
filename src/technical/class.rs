@@ -54,8 +54,8 @@ impl Plugin for MyClassAssetPlugin {
         app.init_resource::<State>()
             .add_asset::<ClassAsset>()
             .init_asset_loader::<ClassAssetLoader>();
-        //             .add_startup_system(setup_asset_example)
-        //             .add_system(print_on_load);
+        // .add_startup_system(setup_asset_example)
+        // .add_system(print_on_load);
     }
 }
 

@@ -22,7 +22,6 @@ pub enum PlayableClass {
     Barbarian,
     Bard,
     Bloodrager,
-    Brawler,
     Cavalier,
     Cleric,
     Druid,
@@ -65,7 +64,6 @@ impl PlayableClass {
             Self::Barbarian,
             Self::Bard,
             Self::Bloodrager,
-            Self::Brawler,
             Self::Cavalier,
             Self::Cleric,
             Self::Druid,
@@ -100,14 +98,13 @@ impl PlayableClass {
         .iter()
         .copied()
     }
-    pub fn array() -> [PlayableClass; 36] {
+    pub fn array() -> [PlayableClass; 35] {
         [
             Self::Alchemist,
             Self::Arcanist,
             Self::Barbarian,
             Self::Bard,
             Self::Bloodrager,
-            Self::Brawler,
             Self::Cavalier,
             Self::Cleric,
             Self::Druid,
@@ -162,7 +159,6 @@ impl fmt::Display for PlayableClass {
             Self::Barbarian => write!(f, "Barbarian"),
             Self::Bard => write!(f, "Bard"),
             Self::Bloodrager => write!(f, "Bloodrager"),
-            Self::Brawler => write!(f, "Brawler"),
             Self::Cavalier => write!(f, "Cavalier"),
             Self::Cleric => write!(f, "Cleric"),
             Self::Druid => write!(f, "Druid"),
@@ -360,6 +356,15 @@ pub enum ClassFeature {
     None,
 }
 
+impl ClassFeature {
+    pub fn as_default(&self) -> Self {
+        match self {
+            Self::Fighter(fighter_feature) => Self::Fighter(fighter_feature.as_default()),
+            Self::None => Self::None,
+        }
+    }
+}
+
 #[derive(Default, Deserialize, Clone, Debug, PartialEq, PartialOrd, Eq, Hash, Copy)]
 pub enum FighterFeature {
     BonusFeat(Option<usize>),
@@ -387,6 +392,26 @@ pub enum FighterFeature {
     WeaponMasteryBrawler,
     #[default]
     None,
+}
+
+impl FighterFeature {
+    /// matches for enum variants with an `Option<usize>` field and returns `FighterFeature(None)`,
+    /// e.g. `FighterFeature::BonusFeat(1)` becomes `FighterFeature::BonusFeat(None)`
+    ///
+    /// Otherwise returns the non-variant enum unchanged
+    pub fn as_default(&self) -> Self {
+        match self {
+            Self::BonusFeat(_) => Self::BonusFeat(None),
+            Self::Bravery(_) => Self::Bravery(None),
+            Self::WeaponTraining(_) => Self::WeaponTraining(None),
+            Self::ArmorTraining(_) => Self::ArmorTraining(None),
+            Self::CloseControl(_) => Self::CloseControl(None),
+            Self::CloseCombatant(_) => Self::CloseCombatant(None),
+            Self::MenacingStance(_) => Self::MenacingStance(None),
+            Self::NoEscape(_) => Self::NoEscape(None),
+            _ => *self,
+        }
+    }
 }
 
 impl From<ClassFeature> for FighterFeature {

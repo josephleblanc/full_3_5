@@ -62,7 +62,7 @@ pub struct CellPosition {
     pub col: usize,
 }
 
-#[derive(Component, Debug, Copy, Clone, Default)]
+#[derive(Component, Debug, Copy, Clone, Default, Eq, Hash, PartialEq)]
 pub enum MyTable {
     Row(usize),
     Col(usize),

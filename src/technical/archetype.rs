@@ -69,7 +69,7 @@ pub struct State {
 
 pub fn setup_asset_example(mut state: ResMut<State>, asset_server: Res<AssetServer>) {
     state.handle =
-        asset_server.load("text/descriptions/class/archetypes/fighter_archer.archetype.ron");
+        asset_server.load("text/descriptions/class/archetypes/fighter_brawler.archetype.ron");
 }
 
 pub fn print_on_load(mut state: ResMut<State>, text_assets: ResMut<Assets<ArchetypeAsset>>) {

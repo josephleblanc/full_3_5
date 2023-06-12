@@ -27,7 +27,9 @@ use crate::{
             character::PlayableRace,
             class::{ClassFeature, PlayableClass},
             race::{build_race, RaceBuilder, RacialTraitName},
-            resources::class_resource,
+            resources::class_resource::{
+                self, ClassTablesBuilt, ClassTablesMap, ClassTablesSpawned,
+            },
         },
         layout::character_creation::build_layout,
     },
@@ -98,6 +100,9 @@ impl Plugin for CharacterCreationPlugin {
             .init_resource::<BuiltLists>()
             .init_resource::<BuiltTabButtons>()
             .init_resource::<BuiltSubTabButtons>()
+            .init_resource::<ClassTablesMap>()
+            .init_resource::<ClassTablesBuilt>()
+            .init_resource::<ClassTablesSpawned>()
             .insert_resource::<TooltipTimer>(TooltipTimer(Timer::from_seconds(
                 0.5,
                 TimerMode::Once,
@@ -196,12 +201,11 @@ impl Plugin for CharacterCreationPlugin {
                         tab: Tab::Class,
                         subtab: SubTab::Features,
                     }))),
-                    class_resource::progression_table.run_if(not(BuiltLists::is_built(
-                        SubTabListParent {
-                            tab: Tab::Class,
-                            subtab: SubTab::Progression,
-                        },
-                    ))),
+                    class_resource::progression_table_resource
+                        .run_if(resource_equals(ClassTablesBuilt(false))),
+                    class_resource::spawn_tables
+                        .run_if(resource_equals(ClassTablesSpawned(false)))
+                        .run_if(resource_equals(ClassTablesBuilt(true))),
                     // Archetype Tab
                     description::build_description_list::<ArchetypeAsset, ArchetypeName>(
                         Tab::Archetype,

@@ -1,1 +1,1 @@
-pub const PLAYABLE_CLASSES_LEN: usize = 36;
+pub const PLAYABLE_CLASSES_LEN: usize = 35;
