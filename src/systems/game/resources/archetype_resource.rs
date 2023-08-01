@@ -19,7 +19,7 @@ use crate::{
             ArchTableBuilt, ArchTableSpawned, ArchTablesMap, ArchetypeFeature, ArchetypeInfo,
             ArchetypeMap, ArchetypeName,
         },
-        class::{BaseAttack, ClassFeature, ClassMap, FighterFeature, PlayableClass},
+        class::{ClassFeature, ClassMap, FighterFeature, PlayableClass},
     },
     technical::{archetype::ArchetypeAsset, class::ClassAsset},
 };
@@ -168,6 +168,8 @@ pub fn modify_class_map(
     mut arch_tables_built: ResMut<ArchTableBuilt>,
     query_parent: Query<(Entity, &TabListParent)>,
 ) {
+    // ensure the archetype selectedc by the user has a corresponding class_info,
+    // class_table, and archetype_info data structure.
     if let Some((class_info, class_table, archetype_info)) = event_reader
         .iter()
         .filter(|event| event.status.is_some() && event.archetype.is_some())
@@ -177,7 +179,7 @@ pub fn modify_class_map(
         .filter(|archetype| {
             class_map.inner_ref().contains_key(&archetype.class())
                 && class_table_map.inner_ref().contains_key(&archetype.class())
-                && archetype_map.inner_ref().contains_key(&archetype)
+                && archetype_map.inner_ref().contains_key(archetype)
         })
         .map(|archetype| {
             (
@@ -194,6 +196,8 @@ pub fn modify_class_map(
         // })
         .last()
     {
+        // get the parent entity of the location where the table will be created, so when the
+        // table is created later it can be spawned in the correct location.
         let (parent_entity, _list_parent) = query_parent
             .iter()
             .filter(|(_, &list_parent)| list_parent == (Tab::Archetype).into())
@@ -218,6 +222,8 @@ pub fn modify_class_map(
             .next()
             .unwrap();
 
+        // Now that all of the required resources have been extracted from the above data
+        // structures, we can create the new table for the archetype.
         let mut new_table = class_table.clone();
 
         new_table.subtab_list_parent.set_tab(Tab::Archetype);
@@ -237,6 +243,9 @@ pub fn modify_class_map(
                 .filter(|base_feature| !replaced_features.contains(base_feature))
                 .for_each(|base_feature| new_class_level.push(*base_feature));
 
+            // TODO: This is an inefficient method of getting the archetype features for each
+            // level, find a better way of doing this outside the loop so the iterator doesn't have
+            // to be made each time.
             let arch_ftr_iter = &archetype_info
                 .archetype_features
                 .iter()
@@ -356,6 +365,7 @@ pub fn spawn_tables(
 
     // The subtab_container is used to manage whether to display/hide itself based on the events
     // sent by changing tab select_tab::new_display_subtab_list
+    // This contains the table.
     let subtab_container = commands
         .spawn((
             list_resource.subtab_list_parent.clone(),
@@ -364,22 +374,33 @@ pub fn spawn_tables(
         ))
         .set_parent(list_parent)
         .id();
+
+    // Iterate over all enums in ArchetypeName
     for class in ArchetypeName::array() {
-        // One table is made for every class with an entry in both ClassMap and ClassTablesMap
-        let table_container = commands
-            .spawn((
-                list_resource.list_node.clone(),
-                // ListNode is required for left_panel::display_class to manage the display of the
-                // items.
-                ListNode,
-                class,
-                Name::from(format!("{class} table container - listnode")),
-            ))
-            .set_parent(subtab_container)
-            .id();
-        if let Some(class_info) = class_map.inner_ref().get(&class) {
-            let mut row_ids: HashMap<MyTable, Entity> = HashMap::new();
+        // Check is the class has a corresponding archetype info struct.
+        if let Some(archetype_info) = class_map.inner_ref().get(&class) {
             if let Some(class_table) = class_tables.inner_ref().get(&class) {
+                let mut row_ids: HashMap<MyTable, Entity> = HashMap::new();
+                // One table is made for every class with an entry in both ClassMap and ClassTablesMap
+                // This is ensured by having table_container only be spawned inside the nested
+                // if-let statements.
+                let table_container = commands
+                    // This container holds the table and is used to manage the display of the table when
+                    // the chosen archetype is selected, as opposed to the `subtab_container` above, which
+                    // is used to manage display when the corresponding subtab is selected.
+                    .spawn((
+                        list_resource.list_node.clone(),
+                        // ListNode is required for left_panel::display_class to manage the display of the
+                        // items.
+                        ListNode,
+                        class,
+                        Name::from(format!("{class} table container - listnode")),
+                    ))
+                    .set_parent(subtab_container)
+                    .id();
+
+                // iterate over the original class table and clone each row into a hashmap that
+                // will be used to construct the new archetype class table.
                 for (row_i, row_node) in class_table.row_nodes.iter().enumerate() {
                     let row_node_id = commands
                         .spawn(row_node.clone())
@@ -391,14 +412,14 @@ pub fn spawn_tables(
                 for header in &class_table.headers {
                     if let Some(row_entity) = row_ids.get(&MyTable::Row(header.cell.row)) {
                         commands
-                            .spawn(header.clone().text_bundle)
+                            .spawn((header.text_bundle)())
                             .set_parent(*row_entity);
                     }
                 }
                 for text_cell in &class_table.text_cells {
                     if let Some(row_entity) = row_ids.get(&MyTable::Row(text_cell.cell.row)) {
                         commands
-                            .spawn(text_cell.clone().text_bundle)
+                            .spawn((text_cell.text_bundle)())
                             .set_parent(*row_entity);
                     }
                 }

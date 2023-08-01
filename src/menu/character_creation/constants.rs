@@ -17,51 +17,59 @@ pub const PROGRESSION_TABLE_HEADERS: [&'static str; 6] = [
 ];
 
 // Central List Styles
-pub const LIST_PARENT_NODE_STYLE: Style = Style {
+pub const LIST_PARENT_NODE_STYLE: Style = {
     // padding: UiRect::all(Val::Px(5.)),
-    margin: UiRect::all(Val::Px(10.)),
-    flex_direction: FlexDirection::Column,
-    gap: Size::height(Val::Px(10.)),
-    ..Style::DEFAULT
+    let mut style = Style::DEFAULT;
+    style.margin = UiRect::all(Val::Px(10.));
+    style.flex_direction = FlexDirection::Column;
+    style.row_gap = Val::Px(10.);
+    style
 };
-pub const LIST_NODE_STYLE: Style = Style {
-    padding: UiRect::all(Val::Px(5.)),
-    // margin: UiRect::all(Val::Px(10.)),
-    flex_direction: FlexDirection::Column,
-    display: Display::None,
-    ..Style::DEFAULT
+pub const LIST_NODE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.padding = UiRect::all(Val::Px(5.));
+    // style.margin = UiRect::all(Val::Px(10.));
+    style.flex_direction = FlexDirection::Column;
+    style.display = Display::None;
+    style
 };
-pub const LIST_ITEM_TITLE_STYLE: Style = Style {
-    max_size: Size::width(Val::Px(1200.)),
-    margin: UiRect::all(Val::Px(10.)),
-    ..Style::DEFAULT
+pub const LIST_ITEM_TITLE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.max_width = Val::Px(1200.);
+    style.margin = UiRect::all(Val::Px(10.));
+    style
 };
-pub const LIST_ROW_NODE_STYLE: Style = Style {
-    // padding: UiRect::all(Val::Px(5.)),
-    margin: UiRect::all(Val::Px(10.)),
-    flex_direction: FlexDirection::Row,
-    ..Style::DEFAULT
+pub const LIST_ROW_NODE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    // style.padding = UiRect::all(Val::Px(5.));
+    style.margin = UiRect::all(Val::Px(10.));
+    style.flex_direction = FlexDirection::Row;
+    style
 };
-pub const LIST_COL_NODE_STYLE: Style = Style {
-    margin: UiRect::all(Val::Px(10.)),
-    flex_direction: FlexDirection::Column,
-    align_items: AlignItems::Center,
-    justify_content: JustifyContent::Center,
-    ..Style::DEFAULT
+pub const LIST_COL_NODE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.margin = UiRect::all(Val::Px(10.));
+    style.flex_direction = FlexDirection::Column;
+    style.align_items = AlignItems::Center;
+    style.justify_content = JustifyContent::Center;
+    style
 };
-pub const LIST_BUTTON_STYLE: Style = Style {
-    size: Size::width(Val::Percent(100.)),
-    // padding: UiRect::left(Val::Percent(7.)),
-    ..Style::DEFAULT
+pub const LIST_BUTTON_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.width = Val::Percent(100.);
+    // style.padding = UiRect::left(Val::Percent(7.));
+    style
 };
-pub const REPLACEMENT_ITEM_TEXT_STYLE: Style = Style {
-    align_items: AlignItems::Center,
-    ..Style::DEFAULT
+pub const REPLACEMENT_ITEM_TEXT_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.align_items = AlignItems::Center;
+    style
 };
-pub const LIST_DESCRIPTION_TEXT_STYLE: Style = Style {
-    max_size: Size::width(Val::Px(900.)),
-    margin: UiRect::all(Val::Px(20.)),
-    ..Style::DEFAULT
+pub const LIST_DESCRIPTION_TEXT_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.max_width = Val::Px(900.);
+    style.margin = UiRect::all(Val::Px(20.));
+    style
 };
 
 // SubTab Button Styles

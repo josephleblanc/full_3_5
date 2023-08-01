@@ -97,7 +97,7 @@ pub fn button_color(
         };
         if !matches {
             match *interaction {
-                Interaction::Clicked => {
+                Interaction::Pressed => {
                     *color = RACE_BUTTON_COLOR_SELECTED.into();
                 }
                 Interaction::Hovered => {
@@ -154,7 +154,7 @@ pub fn button_event<S, T>(
     T: SelectedWrapper<S> + Resource,
 {
     for (interaction, left_enum) in &interaction_query {
-        if *interaction == Interaction::Clicked {
+        if *interaction == Interaction::Pressed {
             let exit_event: LeftPanelEvent = selected.selected().into();
             info!("sending event {exit_event:#?}");
             left_panel_event.send(exit_event.set_status(Status::Exiting));

@@ -3,6 +3,7 @@
 use crate::systems::game::archetype::ArchetypeName;
 use crate::systems::game::class::ClassFeature;
 use crate::systems::game::class::PlayableClass;
+use bevy::reflect::TypePath;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -11,8 +12,9 @@ use bevy::{
 };
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, TypeUuid, Default)]
+#[derive(Debug, Deserialize, TypeUuid, Default, TypePath)]
 #[uuid = "7eb2e325-a3a2-4a0c-a6b0-e2387ca6bd7d"]
+#[type_path = "crate::technical::archetype"]
 pub struct ArchetypeAsset {
     pub class_name: PlayableClass,
     pub archetype_name: ArchetypeName,

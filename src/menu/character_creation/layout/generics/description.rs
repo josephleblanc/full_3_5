@@ -12,11 +12,11 @@ use crate::{
     systems::game::{archetype::ArchetypeName, character::PlayableRace, class::PlayableClass},
     technical::{archetype::ArchetypeAsset, class::ClassAsset, race_load::RaceAsset},
 };
-use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
 use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
+use bevy::{a11y::accesskit::NodeBuilder, reflect::TypePath};
 
 use super::select_item::BuiltLists;
 
@@ -94,7 +94,7 @@ pub fn build_description_list<T, V>(
 where
     // This is the CustomAsset
     // e.g. RaceAsset
-    T: TypeUuid + Send + Sync + 'static + list_traits::HasDescr + list_traits::HasKey<V>,
+    T: TypeUuid + Send + Sync + 'static + list_traits::HasDescr + list_traits::HasKey<V> + TypePath,
     // This is the identifying enum
     // e.g. PlayableRace, PlayableClass
     V: Component + list_traits::AsVec + Eq + PartialEq + std::fmt::Display + Copy,
@@ -121,6 +121,7 @@ where
                 ))
                 .set_parent(parent_entity)
                 .id();
+            // let new_custom_asset: &Assets<T> = custom_asset.into_inner();
             for (asset_key, descr_text) in custom_asset.iter().map(|(_handle, asset)| {
                 (asset.key(), asset.description())
             }) {

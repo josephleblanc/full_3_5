@@ -2,6 +2,7 @@
 
 use crate::systems::game::class::ClassFeature;
 use crate::systems::game::class::PlayableClass;
+use bevy::reflect::TypePath;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -10,8 +11,9 @@ use bevy::{
 };
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, TypeUuid, Default)]
+#[derive(Debug, Deserialize, TypeUuid, Default, TypePath)]
 #[uuid = "26e3c774-fe4d-4ac7-bf5c-ee9f2337ad4d"]
+#[type_path = "crate::systems::game::class::ClassAsset"]
 pub struct ClassAsset {
     pub class_name: PlayableClass,
     pub title: String,

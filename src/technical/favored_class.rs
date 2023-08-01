@@ -2,6 +2,7 @@
 
 use crate::systems::game::character::PlayableRace;
 use crate::systems::game::class::FavoredClass;
+use bevy::reflect::TypePath;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -10,8 +11,9 @@ use bevy::{
 };
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, TypeUuid, Default)]
+#[derive(Debug, Deserialize, TypeUuid, Default, TypePath)]
 #[uuid = "455bd79e-ee91-40f8-b28a-d1ad3377e26e"]
+#[type_path = "crate::technical::favored_class"]
 pub struct FavoredClassAsset {
     pub race: PlayableRace,
     pub favored_classes: Vec<FavoredClass>,

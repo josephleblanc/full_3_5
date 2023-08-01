@@ -19,7 +19,7 @@ use technical::default_race_traits::MyDefaultTraitAssetPlugin;
 use technical::favored_class::MyFavoredClassAssetPlugin;
 use technical::race_load::MyRaceAssetPlugin;
 // #[cfg(feature = "debug")]
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+// use bevy_inspector_egui::quick::WorldInspectorPlugin; // disable due to tupdate to 0.11.0
 
 use system_scheduling::states::AppState;
 
@@ -45,22 +45,25 @@ fn main() {
             },
         ))
         .insert_resource(WinitSettings::desktop_app())
-        .add_plugin(WorldInspectorPlugin::new())
-        .add_plugin(MyRaceAssetPlugin)
-        .add_plugin(MyDefaultTraitAssetPlugin)
-        .add_plugin(MyAltTraitAssetPlugin)
-        .add_plugin(MyFavoredClassAssetPlugin)
-        .add_plugin(MyClassAssetPlugin)
-        .add_plugin(MyArchetypeAssetPlugin)
-        .add_system(load_ascii.in_base_set(StartupSet::PreStartup))
+        // .add_plugins(WorldInspectorPlugin::new()) // disbled due to update to bevy 0.11.0
+        .add_plugins(MyRaceAssetPlugin)
+        .add_plugins(MyDefaultTraitAssetPlugin)
+        .add_plugins(MyAltTraitAssetPlugin)
+        .add_plugins(MyFavoredClassAssetPlugin)
+        .add_plugins(MyClassAssetPlugin)
+        .add_plugins(MyArchetypeAssetPlugin)
+        .add_systems(PreStartup, load_ascii)
         .add_state::<AppState>()
-        .add_plugin(CharacterCreationPlugin)
-        .add_system(my_camera::my_camera_systems::setup.on_startup())
+        .add_plugins(CharacterCreationPlugin)
+        .add_systems(Startup, my_camera::my_camera_systems::setup)
         // .add_system(my_camera::my_camera_systems::setup.in_schedule(OnEnter(AppState::Battle)))
-        .add_system(main_menu::setup_main_menu.in_schedule(OnEnter(AppState::MainMenu)))
-        .add_system(main_menu::button_system.in_set(OnUpdate(AppState::MainMenu)))
-        .add_system(main_menu::main_menu_cleanup.in_schedule(OnExit(AppState::MainMenu)))
-        .add_system(flex_grid::setup_flex_grid.in_schedule(OnEnter(AppState::Battle)));
+        .add_systems(OnEnter(AppState::MainMenu), main_menu::setup_main_menu)
+        .add_systems(
+            Update,
+            main_menu::button_system.run_if(in_state(AppState::MainMenu)),
+        )
+        .add_systems(OnExit(AppState::MainMenu), main_menu::main_menu_cleanup)
+        .add_systems(OnEnter(AppState::Battle), flex_grid::setup_flex_grid);
     // .add_system(systems::interface::mouse::mouse_scroll);
     // .add_startup_system(new_setup_asset_example)
     // .add_system(new_print_on_load);
@@ -118,7 +121,7 @@ fn main() {
     app.run();
 }
 fn check_state(state: Res<State<AppState>>) {
-    println!("State: {:?}", state.0);
+    println!("State: {:?}", *state.get());
 }
 fn spawn_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
     let mut sprite = TextureAtlasSprite::new(1);

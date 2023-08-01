@@ -14,10 +14,10 @@ use crate::{
         default_race_traits::DefaultTraitAsset,
     },
 };
-use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
 use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
+use bevy::{a11y::accesskit::NodeBuilder, reflect::TypePath};
 
 impl list_traits::HasKey<character::PlayableRace> for DefaultTraitAsset {
     fn key(&self) -> character::PlayableRace {
@@ -132,7 +132,13 @@ pub fn build_button_desc_list<T, V, Q>(
 where
     // This is the CustomAsset
     // e.g. RaceAsset, ClassAsset
-    T: TypeUuid + Send + Sync + 'static + list_traits::HasKey<V> + list_traits::HasItemVec<Q>,
+    T: TypeUuid
+        + Send
+        + Sync
+        + 'static
+        + list_traits::HasKey<V>
+        + list_traits::HasItemVec<Q>
+        + TypePath,
     // This is the identifying enum
     // e.g. PlayableRace, PlayableClass
     V: Component + list_traits::AsVec + Eq + PartialEq + std::fmt::Display + Copy,
@@ -145,18 +151,17 @@ where
           custom_asset: Res<Assets<T>>,
           asset_server: Res<AssetServer>,
           list_resource: Res<CentralListBundles>,
-          mut res_built: ResMut<BuiltLists>,
-          // try to remove this later
-          | {
-        let subtab_list_parent = SubTabListParent {
-            tab,
-            subtab,
-        };
+          mut res_built: ResMut<BuiltLists>| {
+        let subtab_list_parent = SubTabListParent { tab, subtab };
         if !res_built.inner_mut().contains(&subtab_list_parent) {
-            if let Some((parent_entity, _list_parent)) = query_parent.iter().filter(|(_, &list_parent)| list_parent == tab.into()).next() {
-            let shared_font = asset_server.load(PATH_SIMPLE_FONT);
-            let key_vec = V::vec();
-            let key_array = key_vec.as_slice();
+            if let Some((parent_entity, _list_parent)) = query_parent
+                .iter()
+                .filter(|(_, &list_parent)| list_parent == tab.into())
+                .next()
+            {
+                let shared_font = asset_server.load(PATH_SIMPLE_FONT);
+                let key_vec = V::vec();
+                let key_array = key_vec.as_slice();
                 let list_id = commands
                     .spawn((
                         list_resource.list_node.clone(),
@@ -166,9 +171,10 @@ where
                     ))
                     .set_parent(parent_entity)
                     .id();
-                for (asset_key, asset_items_vec) in custom_asset.iter().map(|(_handle, asset)| {
-                    (asset.key(), asset.vec())
-                }) {
+                for (asset_key, asset_items_vec) in custom_asset
+                    .iter()
+                    .map(|(_handle, asset)| (asset.key(), asset.vec()))
+                {
                     for (enum_name, title, descr_text) in asset_items_vec {
                         if key_array.contains(&asset_key) {
                             let key = asset_key;
@@ -182,23 +188,23 @@ where
                                 ))
                                 .set_parent(list_id)
                                 .with_children(|list_node| {
-                                            list_node.spawn((
-                                                Name::from("Node description title"),
-                                                TextBundle {
-                                                    text: Text::from_section(
-                                                        title.to_string(),
-                                                        TextStyle {
-                                                            font: shared_font.clone(),
-                                                            font_size: DESCRIPTION_FONT_SIZE,
-                                                            color: TEXT_COLOR,
-                                                        },
-                                                    ),
-                                                    style: LIST_ITEM_TITLE_STYLE,
-                                                    ..default()
+                                    list_node.spawn((
+                                        Name::from("Node description title"),
+                                        TextBundle {
+                                            text: Text::from_section(
+                                                title.to_string(),
+                                                TextStyle {
+                                                    font: shared_font.clone(),
+                                                    font_size: DESCRIPTION_FONT_SIZE,
+                                                    color: TEXT_COLOR,
                                                 },
-                                                ListTitle,
-                                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                            ));
+                                            ),
+                                            style: LIST_ITEM_TITLE_STYLE,
+                                            ..default()
+                                        },
+                                        ListTitle,
+                                        AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                                    ));
                                     list_node
                                         .spawn((
                                             // Each of these nodes is one row,
@@ -209,48 +215,69 @@ where
                                             // Label
                                         ))
                                         .with_children(|row_node| {
-                                    if with_replaces {
-                                    row_node
-                                        .spawn((
-                                            Name::from("button column"),
-                                            list_resource.list_col_node.clone(),
-                                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                        ))
-                                        .with_children(|button_col| {
-                                            button_col
-                                                // button to choose item
-                                                .spawn((
-                                                    Name::from("button to choose item"),
-                                                    list_resource.list_button.clone(),
-                                                    AccessibilityNode(NodeBuilder::new(
-                                                        Role::Column,
-                                                    )),
-                                                ))
-                                                .with_children(|button| {
-                                                    // button text
-                                                    button.spawn((
-                                                        Name::from("button text"),
-                                                        list_resource.list_button_text.clone(),
-                                                        AccessibilityNode(NodeBuilder::new(
-                                                            Role::Button,
-                                                        )),
-                                                    ));
-                                                });
                                             if with_replaces {
-                                            button_col.spawn((
-                                                Name::from("text that reads 'replace'"),
-                                                list_resource.skill_replaces_text.clone(),
-                                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                            ));
-                                            button_col.spawn((
-                                                Name::from("items that will be replaced"),
-                                                list_resource.skill_replacement_item_text.clone(),
-                                                AccessibilityNode(NodeBuilder::new(Role::ListItem)),
-                                            ));
+                                                row_node
+                                                    .spawn((
+                                                        Name::from("button column"),
+                                                        list_resource.list_col_node.clone(),
+                                                        AccessibilityNode(NodeBuilder::new(
+                                                            Role::ListItem,
+                                                        )),
+                                                    ))
+                                                    .with_children(|button_col| {
+                                                        button_col
+                                                            // button to choose item
+                                                            .spawn((
+                                                                Name::from("button to choose item"),
+                                                                list_resource.list_button.clone(),
+                                                                AccessibilityNode(
+                                                                    NodeBuilder::new(Role::Column),
+                                                                ),
+                                                            ))
+                                                            .with_children(|button| {
+                                                                // button text
+                                                                button.spawn((
+                                                                    Name::from("button text"),
+                                                                    (list_resource
+                                                                        .list_button_text)(
+                                                                    ),
+                                                                    AccessibilityNode(
+                                                                        NodeBuilder::new(
+                                                                            Role::Button,
+                                                                        ),
+                                                                    ),
+                                                                ));
+                                                            });
+                                                        if with_replaces {
+                                                            button_col.spawn((
+                                                                Name::from(
+                                                                    "text that reads 'replace'",
+                                                                ),
+                                                                (list_resource.skill_replaces_text)(
+                                                                ),
+                                                                AccessibilityNode(
+                                                                    NodeBuilder::new(
+                                                                        Role::ListItem,
+                                                                    ),
+                                                                ),
+                                                            ));
+                                                            button_col.spawn((
+                                                                Name::from(
+                                                                    "items that will be replaced",
+                                                                ),
+                                                                (list_resource
+                                                                    .skill_replacement_item_text)(
+                                                                ),
+                                                                AccessibilityNode(
+                                                                    NodeBuilder::new(
+                                                                        Role::ListItem,
+                                                                    ),
+                                                                ),
+                                                            ));
+                                                        }
+                                                    });
                                             }
-                                        });
-                                            }
-                                    row_node
+                                            row_node
                                                 .spawn((
                                                     Name::from("text container"),
                                                     list_resource.list_row_node.clone(),
@@ -286,9 +313,9 @@ where
                                 });
                         }
                     }
-                    }
                 }
+            }
             res_built.inner_mut().push(subtab_list_parent)
         }
-            }
+    }
 }

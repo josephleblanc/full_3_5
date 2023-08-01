@@ -9,11 +9,11 @@ use crate::{
         styles::*,
     },
 };
-use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
 use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
+use bevy::{a11y::accesskit::NodeBuilder, reflect::TypePath};
 
 use super::select_item::BuiltLists;
 
@@ -31,7 +31,13 @@ pub fn build_item_desc_list<T, V, Q>(
 where
     // This is the CustomAsset
     // e.g. RaceAsset, ClassAsset
-    T: TypeUuid + Send + Sync + 'static + list_traits::HasKey<V> + list_traits::HasItemVec<Q>,
+    T: TypeUuid
+        + Send
+        + Sync
+        + 'static
+        + list_traits::HasKey<V>
+        + list_traits::HasItemVec<Q>
+        + TypePath,
     // This is the identifying enum
     // e.g. PlayableRace, PlayableClass
     V: Component + list_traits::AsVec + Eq + PartialEq + std::fmt::Display + Copy,

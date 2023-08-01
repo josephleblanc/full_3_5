@@ -6,6 +6,7 @@ use bevy::a11y::accesskit::NodeBuilder;
 use bevy::a11y::accesskit::Role;
 use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
+use std::sync::Arc;
 
 pub fn build_description_list(
     mut commands: Commands,
@@ -15,7 +16,7 @@ pub fn build_description_list(
     let parent_entity = query_parent.get_single().unwrap();
     let shared_font = asset_server.load(PATH_SIMPLE_FONT);
 
-    let list_item_title = TextBundle {
+    let list_item_title = Arc::new(|| TextBundle {
         text: Text::from_section(
             "Select Me!",
             TextStyle {
@@ -26,7 +27,7 @@ pub fn build_description_list(
         ),
         style: LIST_ITEM_TITLE_STYLE,
         ..default()
-    };
+    });
     let list_row_node = NodeBundle {
         style: Style {
             // padding: UiRect::all(Val::Px(5.)),
@@ -51,30 +52,34 @@ pub fn build_description_list(
     };
     let list_button = ButtonBundle {
         style: Style {
-            size: Size::width(Val::Percent(100.)),
+            width: Val::Percent(100.),
             // padding: UiRect::left(Val::Percent(7.)),
             ..default()
         },
         background_color: Color::DARK_GREEN.into(),
         ..default()
     };
-    let list_button_text = TextBundle::from_section(
-        "List Button Text".to_string(),
-        TextStyle {
-            font: shared_font.clone(),
-            font_size: LIST_BUTTON_TEXT_SIZE,
-            color: TEXT_COLOR,
-        },
-    );
-    let skill_replaces_text = TextBundle::from_section(
-        "Replaces".to_string(),
-        TextStyle {
-            font: shared_font.clone(),
-            font_size: 30.,
-            color: TEXT_COLOR,
-        },
-    );
-    let skill_replacement_item_text = TextBundle {
+    let list_button_text = Arc::new(|| {
+        TextBundle::from_section(
+            "List Button Text".to_string(),
+            TextStyle {
+                font: shared_font.clone(),
+                font_size: LIST_BUTTON_TEXT_SIZE,
+                color: TEXT_COLOR,
+            },
+        )
+    });
+    let skill_replaces_text = Arc::new(|| {
+        TextBundle::from_section(
+            "Replaces".to_string(),
+            TextStyle {
+                font: shared_font.clone(),
+                font_size: 30.,
+                color: TEXT_COLOR,
+            },
+        )
+    });
+    let skill_replacement_item_text = Arc::new(|| TextBundle {
         text: Text::from_section(
             "Alt Race Replaces:".to_string(),
             TextStyle {
@@ -88,8 +93,8 @@ pub fn build_description_list(
             ..default()
         },
         ..default()
-    };
-    let list_description_text = TextBundle {
+    });
+    let list_description_text = Arc::new(|| TextBundle {
         text: Text::from_section(
             "",
             TextStyle {
@@ -99,12 +104,12 @@ pub fn build_description_list(
             },
         ),
         style: Style {
-            max_size: Size::width(Val::Px(900.)),
+            max_width: Val::Px(900.),
             margin: UiRect::left(Val::Px(20.)),
             ..default()
         },
         ..default()
-    };
+    });
 
     commands
         .spawn((
@@ -120,7 +125,7 @@ pub fn build_description_list(
         .with_children(|alt_racial_trait_container| {
             alt_racial_trait_container.spawn((
                 // Alternate Racial Trait Title
-                list_item_title.clone(),
+                (list_item_title)(),
                 ListTitle,
                 RaceItem,
                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
@@ -162,7 +167,7 @@ pub fn build_description_list(
                                 ))
                                 .with_children(|alt_race_select_button| {
                                     alt_race_select_button.spawn((
-                                        list_button_text.clone(),
+                                        (list_button_text)(),
                                         ButtonText,
                                         Name::new("race: moving list item"),
                                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),
@@ -173,14 +178,14 @@ pub fn build_description_list(
                             // Used to load the titles of the traits it will replace, and
                             // select them below the racial trait button.
                             button_and_replace_node.spawn((
-                                skill_replaces_text.clone(),
+                                (skill_replaces_text)(),
                                 RaceItem,
                                 ReplacesText,
                                 Name::new("'replaces' text"),
                                 AccessibilityNode(NodeBuilder::new(Role::ListItem)),
                             ));
                             button_and_replace_node.spawn((
-                                skill_replacement_item_text.clone(),
+                                skill_replacement_item_text(),
                                 RaceItem,
                                 ReplacesContent,
                                 Name::new("Text names of replaced traits"),
@@ -195,7 +200,7 @@ pub fn build_description_list(
                     // - Favored Class description
                     button_and_descr_node.spawn((
                         // Trait description
-                        list_description_text.clone(),
+                        (list_description_text)(),
                         Description,
                         RaceItem,
                         AccessibilityNode(NodeBuilder::new(Role::ListItem)),

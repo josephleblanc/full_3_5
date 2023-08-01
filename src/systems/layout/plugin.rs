@@ -114,23 +114,24 @@ impl Plugin for CharacterCreationPlugin {
                 TimerMode::Once,
             )))
             .add_systems(
+                OnEnter(AppState::CharacterCreation),
                 (
                     setup_assets,
                     build_layout,
                     CentralListBundles::init,
                     class_resource::setup_classes,
                     archetype_resource::setup_archetypes,
-                    apply_system_buffers,
+                    apply_deferred,
                     build_tab_buttons::build_tab_buttons::<CharacterTabs, Tab>(),
                     build_subtab_buttons::build_subtab_buttons::<
                         CharacterCreationSubTabs,
                         SubTabButton,
                     >(),
                 )
-                    .chain()
-                    .in_schedule(OnEnter(AppState::CharacterCreation)),
+                    .chain(),
             )
             .configure_set(
+                Update,
                 // Ensure custom assets loaded, only run in character creation
                 SuperSet::Super
                     .run_if(is_custom_asset_loaded::<RaceAsset>())
@@ -138,9 +139,10 @@ impl Plugin for CharacterCreationPlugin {
                     .run_if(is_custom_asset_loaded::<DefaultTraitAsset>())
                     .run_if(is_custom_asset_loaded::<AltTraitAsset>())
                     .run_if(is_custom_asset_loaded::<FavoredClassAsset>())
-                    .in_set(OnUpdate(AppState::CharacterCreation)),
+                    .run_if(in_state(AppState::CharacterCreation)),
             )
             .configure_sets(
+                Update,
                 (
                     EventSet::Sending,
                     EventSet::Receiving.after(EventSet::Sending),
@@ -148,6 +150,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(SuperSet::Super),
             )
             .configure_sets(
+                Update,
                 (
                     Build::Super.run_if(resource_changed::<SelectedRace>()),
                     Build::PreBuild
@@ -159,9 +162,10 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(SuperSet::Super),
             )
             // Mouse Scroll systems
-            .add_system(mouse_scroll.in_set(SuperSet::Super))
+            .add_systems(Update, mouse_scroll.in_set(SuperSet::Super))
             // Tab select button management (Race, Class, etc.)
             .add_systems(
+                Update,
                 (
                     // Race Tab
                     description::build_description_list::<RaceAsset, PlayableRace>(
@@ -243,6 +247,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(SuperSet::Super),
             )
             .add_systems(
+                Update,
                 (
                     select_tab::tab_button_select,
                     select_tab::subtab_button_select,
@@ -250,6 +255,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(EventSet::Sending),
             )
             .add_systems(
+                Update,
                 (
                     select_tab::new_display_tab_list,
                     select_tab::new_display_subtab_list,
@@ -261,6 +267,7 @@ impl Plugin for CharacterCreationPlugin {
             )
             // left panel management
             .add_systems(
+                Update,
                 (
                     left_panel::button_event::<PlayableRace, SelectedRace>,
                     left_panel::button_event::<PlayableClass, SelectedClass>,
@@ -269,6 +276,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(EventSet::Sending),
             )
             .add_systems(
+                Update,
                 (
                     left_panel::panel_recv_tab_display,
                     left_panel::select_race,
@@ -278,6 +286,7 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(EventSet::Receiving),
             )
             .add_systems(
+                Update,
                 (
                     display_central::display_race.run_if(on_event::<LeftPanelEvent>()),
                     display_central::display_class.run_if(on_event::<LeftPanelEvent>()),
@@ -286,15 +295,17 @@ impl Plugin for CharacterCreationPlugin {
                     .in_set(EventSet::Receiving),
             )
             .add_systems(
+                Update,
                 (left_panel::button_color, left_panel::cleanup_buttons).in_set(SuperSet::Super),
             )
-            .add_system(update_race_builder.in_set(Build::PreBuild))
+            .add_systems(Update, update_race_builder.in_set(Build::PreBuild))
             .add_systems(
+                Update,
                 (
                     reset_race,
-                    apply_system_buffers,
+                    apply_deferred,
                     build_race,
-                    apply_system_buffers,
+                    apply_deferred,
                     // only for testing, remove later
                     // --------------------------
                     // print_builder,
@@ -313,6 +324,6 @@ impl Plugin for CharacterCreationPlugin {
                     .chain()
                     .in_set(Build::Build),
             )
-            .add_system(tooltip::display_on_hover.in_set(SuperSet::Super));
+            .add_systems(Update, tooltip::display_on_hover.in_set(SuperSet::Super));
     }
 }

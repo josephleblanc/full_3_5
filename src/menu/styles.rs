@@ -1,94 +1,104 @@
 use bevy::prelude::*;
 
-pub const MAIN_MENU_TITLE_STYLE: Style = Style {
-    position_type: PositionType::Absolute,
-    position: UiRect {
-        left: Val::Px(50.),
-        top: Val::Px(550.),
-        ..UiRect::DEFAULT
-    },
-    ..Style::DEFAULT
+pub const MAIN_MENU_TITLE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.position_type = PositionType::Absolute;
+    style.left = Val::Px(50.);
+    style.top = Val::Px(550.);
+    style
 };
 
-pub const NAV_BUTTON_TOP_STYLE: Style = Style {
-    size: Size::new(Val::Px(200.), Val::Px(50.)),
-    margin: UiRect {
+pub const NAV_BUTTON_TOP_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.width = Val::Px(200.);
+    style.height = Val::Px(50.);
+    style.margin = UiRect {
         top: Val::Auto,
         bottom: Val::Px(5.),
         ..UiRect::DEFAULT
-    },
-    align_items: AlignItems::Center,
-    justify_content: JustifyContent::Center,
-    ..Style::DEFAULT
+    };
+    style.align_items = AlignItems::Center;
+    style.justify_content = JustifyContent::Center;
+    style
 };
 
-pub const NAV_BUTTON_MIDDLE_STYLE: Style = Style {
-    size: Size::new(Val::Px(200.), Val::Px(50.)),
-    margin: UiRect {
+pub const NAV_BUTTON_MIDDLE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.width = Val::Px(200.);
+    style.height = Val::Px(50.);
+    style.margin = UiRect {
         top: Val::Px(5.),
         bottom: Val::Px(5.),
         ..UiRect::DEFAULT
-    },
-    align_items: AlignItems::Center,
-    justify_content: JustifyContent::Center,
-    ..Style::DEFAULT
+    };
+    style.align_items = AlignItems::Center;
+    style.justify_content = JustifyContent::Center;
+    style
 };
 
-pub const NAV_BUTTON_BOTTOM_STYLE: Style = Style {
-    size: Size::new(Val::Px(200.), Val::Px(50.)),
-    margin: UiRect {
+pub const NAV_BUTTON_BOTTOM_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.width = Val::Px(200.);
+    style.height = Val::Px(50.);
+    style.margin = UiRect {
         top: Val::Px(5.),
         bottom: Val::Auto,
         ..UiRect::DEFAULT
-    },
-    align_items: AlignItems::Center,
-    justify_content: JustifyContent::Center,
-    ..Style::DEFAULT
+    };
+    style.align_items = AlignItems::Center;
+    style.justify_content = JustifyContent::Center;
+    style
 };
 
-pub const NAV_BAR_STYLE: Style = Style {
-    size: Size::new(Val::Px(200.), Val::Percent(100.)),
-    display: Display::Flex,
-    align_items: AlignItems::Center,
-    flex_direction: FlexDirection::Column,
-    margin: UiRect {
+pub const NAV_BAR_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.width = Val::Px(200.);
+    style.height = Val::Percent(100.);
+    style.display = Display::Flex;
+    style.align_items = AlignItems::Center;
+    style.flex_direction = FlexDirection::Column;
+    style.margin = UiRect {
         right: Val::Percent(8.),
         ..UiRect::DEFAULT
-    },
-    ..Style::DEFAULT
+    };
+    style
 };
 
-pub const CHARACTER_CREATION_TITLE_STYLE: Style = Style {
-    size: Size::new(Val::Auto, Val::Px(50.)),
-    display: Display::Flex,
-    align_items: AlignItems::Center,
-    margin: UiRect {
+pub const CHARACTER_CREATION_TITLE_STYLE: Style = {
+    let mut style = Style::DEFAULT;
+    style.width = Val::Auto;
+    style.height = Val::Px(50.);
+    style.display = Display::Flex;
+    style.align_items = AlignItems::Center;
+    style.margin = UiRect {
         bottom: Val::Px(15.),
         ..UiRect::DEFAULT
-    },
-    ..Style::DEFAULT
+    };
+    style
 };
 
-pub const CHARACTER_SHEET_STYLE_H2: Style = Style {
-    display: Display::Flex,
-    ..Style::DEFAULT
+pub const CHARACTER_SHEET_STYLE_H2: Style = {
+    let mut style = Style::DEFAULT;
+    style.display = Display::Flex;
+    style
 };
 
-pub const STAGES_OF_CREATION_BUTTON: Style = Style {
-    display: Display::Flex,
-    padding: UiRect {
+pub const STAGES_OF_CREATION_BUTTON: Style = {
+    let mut style = Style::DEFAULT;
+    style.display = Display::Flex;
+    style.padding = UiRect {
         left: Val::Px(10.),
         right: Val::Px(10.),
         top: Val::Px(10.),
         bottom: Val::Px(10.),
-    },
-    margin: UiRect {
+    };
+    style.margin = UiRect {
         left: Val::Px(8.),
         right: Val::Px(8.),
         top: Val::Px(8.),
         bottom: Val::Px(8.),
-    },
-    ..Style::DEFAULT
+    };
+    style
 };
 pub const TEXT_COLOR: Color = Color::WHITE;
 
@@ -104,7 +114,10 @@ pub const LIST_TITLE_TEXT_SIZE: f32 = 30.;
 
 pub const STAGES_OF_CREATION_FONT_SIZE: f32 = 30.;
 pub const STAGES_OF_CREATION_TEXT_COLOR: Color = Color::WHITE;
-pub const STAGES_OF_CREATION_TEXT_STYLE: Style = Style { ..Style::DEFAULT };
+pub const STAGES_OF_CREATION_TEXT_STYLE: Style = {
+    let style = Style::DEFAULT;
+    style
+};
 
 pub const RACIAL_CHOICES_NODE_COLOR: BackgroundColor = BackgroundColor(Color::rgb(34., 58., 77.));
 pub const RACIAL_CHOICES_PANEL_COLOR: BackgroundColor = BackgroundColor(Color::rgb(34., 58., 77.));

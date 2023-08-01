@@ -4,7 +4,7 @@ pub struct TestRenderSimple;
 
 impl Plugin for TestRenderSimple {
     fn build(&self, app: &mut App) {
-        app.add_system(setup.on_startup());
+        app.add_systems(Startup, setup);
     }
 }
 

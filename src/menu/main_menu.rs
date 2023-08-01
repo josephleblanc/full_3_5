@@ -43,7 +43,8 @@ pub fn setup_main_menu(
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
                     display: Display::Flex,
                     align_items: AlignItems::End,
                     flex_direction: FlexDirection::Column,
@@ -79,7 +80,8 @@ pub fn setup_main_menu(
                 Container::Central,
                 NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Auto, Val::Auto),
+                        width: Val::Auto,
+                        height: Val::Auto,
                         ..default()
                     },
                     background_color: Color::PURPLE.into(),
@@ -185,7 +187,7 @@ pub fn button_system(
     query: Query<(&NavBarButtonType, &Interaction), (Changed<Interaction>, With<Button>)>,
 ) {
     for (button_type, interaction) in query.iter() {
-        if *interaction == Interaction::Clicked {
+        if *interaction == Interaction::Pressed {
             match button_type {
                 NavBarButtonType::Battle => {
                     next_state.set(AppState::Battle);

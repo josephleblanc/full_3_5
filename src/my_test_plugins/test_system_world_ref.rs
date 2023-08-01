@@ -4,7 +4,7 @@ pub struct TestSystemWorldRef;
 
 impl Plugin for TestSystemWorldRef {
     fn build(&self, app: &mut App) {
-        app.add_system(my_system_ref_world);
+        app.add_systems(Update, my_system_ref_world);
     }
 }
 

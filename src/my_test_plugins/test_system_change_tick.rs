@@ -4,12 +4,12 @@ pub struct TestSystemChangeTick;
 
 impl Plugin for TestSystemChangeTick {
     fn build(&self, app: &mut App) {
-        app.add_system(test_system_change_tick);
+        app.add_systems(Update, test_system_change_tick);
     }
 }
 
 use bevy::ecs::system::SystemChangeTick;
 
 fn test_system_change_tick(my_tick: SystemChangeTick) {
-    println!("change_tick: {}", my_tick.change_tick());
+    println!("my_tick.this_run: {:#?}", my_tick.this_run());
 }

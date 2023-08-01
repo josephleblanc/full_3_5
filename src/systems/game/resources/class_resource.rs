@@ -16,6 +16,7 @@ use crate::systems::game::{class::*, skills::SkillName::*};
 use crate::technical::class::ClassAsset;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use std::sync::Arc;
 pub fn setup_classes(mut commands: Commands, class_asset: Res<Assets<ClassAsset>>) {
     use BABProgression::*;
     use ClassFeature::*;
@@ -147,16 +148,16 @@ pub struct ProgressionRowNode {
     pub row: MyTable,
 }
 
-#[derive(Bundle, Clone)]
+#[derive(Component, Clone)]
 pub struct ProgressionHeader {
-    pub text_bundle: TextBundle,
+    pub text_bundle: Arc<dyn Fn() -> TextBundle + Send + Sync>,
     pub column: MyTable,
     pub cell: CellPosition,
 }
 
-#[derive(Bundle, Clone)]
+#[derive(Component, Clone)]
 pub struct TextCell {
-    pub text_bundle: TextBundle,
+    pub text_bundle: Arc<dyn Fn() -> TextBundle + Send + Sync>,
     pub column: MyTable,
     pub cell: CellPosition,
 }
@@ -190,6 +191,8 @@ pub fn progression_table_resource(
 ) {
     class_tables_built.set_true();
     let classes = PlayableClass::array();
+
+    let class_map = class_map.into_inner();
 
     for (class, features) in custom_asset
         .iter()
@@ -256,40 +259,13 @@ pub fn progression_table_resource(
                     // Special section with class features
                     // TODO: add a +1, +2, etc. to class features like Bravery
                     if col_i == 5 && row_i > 0 {
-                        for (i, class_feature) in
-                            class_info.class_features[row_i - 1].iter().enumerate()
-                        {
-                            let feature = &features
-                                .iter()
-                                .filter(|feature_desc| {
-                                    feature_desc.class_feature_name == class_feature.as_default()
-                                })
-                                .next()
-                                .expect("class feature in class_info not found in class_asset");
-                            feature_items.push(FeatureItem {
-                                title_string: {
-                                    if class_info.class_features[row_i - 1].len() > i + 1 {
-                                        let feature_title = feature.title.clone();
-                                        let mut title_string = feature_title.to_string();
-                                        title_string.push_str(", ");
-                                        title_string
-                                    } else {
-                                        feature.title.clone()
-                                    }
-                                },
-                                text_style: text_style.clone(),
-                                class_feature: *class_feature,
-                                interaction: Interaction::default(),
-                                tooltip: TooltipText(Text::from_sections([
-                                    TextSection::new(&feature.title, text_style.clone()),
-                                    TextSection::new("\n", text_style.clone()),
-                                    TextSection::new(
-                                        tooltip::first_99_words(feature.description.clone()),
-                                        text_style.clone(),
-                                    ),
-                                ])),
-                            });
-                        }
+                        class_table_common(
+                            class_info,
+                            row_i,
+                            features,
+                            &mut feature_items,
+                            &text_style,
+                        );
                         features_cells.push(FeaturesCell {
                             cell_node: list_resource.list_row_node.clone(),
                             feature_items,
@@ -302,45 +278,17 @@ pub fn progression_table_resource(
                     } else {
                         // All other sections, e.g. BAB, fort save, level
                         let regular_text_bundle = {
-                            let level = row_i;
-                            TextBundle {
-                                text: Text::from_section(
-                                    if row_i == 0 {
-                                        String::from(table_headers[col_i].clone())
-                                    } else if col_i == 0 {
-                                        level.to_string()
-                                    } else if col_i == 1 {
-                                        BaseAttack::from_progression(
-                                            &class_info.bab_progression,
-                                            level,
-                                        )
-                                        .to_string()
-                                    } else if col_i == 2 {
-                                        format!("+{}", fort_save)
-                                    } else if col_i == 3 {
-                                        format!("+{}", will_save)
-                                    } else if col_i == 4 {
-                                        format!("+{}", reflex_save)
-                                    } else {
-                                        format!("|{row_i}, {col_i}|")
-                                    },
-                                    {
-                                        if row_i == 0 {
-                                            header_style.clone()
-                                        } else {
-                                            text_style.clone()
-                                        }
-                                    },
-                                ),
-                                style: Style {
-                                    padding: UiRect::all(Val::Px(5.)),
-                                    margin: UiRect::all(Val::Px(5.)),
-                                    size: Size::width(Val::Px(cols_widths[col_i])),
-                                    ..default()
-                                },
-                                background_color: Color::rgba(0.2, 0.2, 0.2, 0.9).into(),
-                                ..default()
-                            }
+                            class_table_contents(
+                                row_i,
+                                col_i,
+                                fort_save,
+                                will_save,
+                                reflex_save,
+                                header_style.clone(),
+                                text_style.clone(),
+                                cols_widths[col_i],
+                                class_info.bab_progression,
+                            )
                         };
                         if row_i == 0 {
                             headers.push(ProgressionHeader {
@@ -438,14 +386,14 @@ pub fn spawn_tables(
                 for header in &class_table.headers {
                     if let Some(row_entity) = row_ids.get(&MyTable::Row(header.cell.row)) {
                         commands
-                            .spawn(header.clone().text_bundle)
+                            .spawn((header.text_bundle)())
                             .set_parent(*row_entity);
                     }
                 }
                 for text_cell in &class_table.text_cells {
                     if let Some(row_entity) = row_ids.get(&MyTable::Row(text_cell.cell.row)) {
                         commands
-                            .spawn(text_cell.clone().text_bundle)
+                            .spawn((text_cell.text_bundle)())
                             .set_parent(*row_entity);
                     }
                 }
@@ -474,5 +422,94 @@ pub fn spawn_tables(
                 }
             }
         }
+    }
+}
+
+fn class_table_contents(
+    row_i: usize,
+    col_i: usize,
+    fort_save: usize,
+    will_save: usize,
+    reflex_save: usize,
+    header_style_clone: TextStyle,
+    text_style_clone: TextStyle,
+    cols_width: f32,
+    bab: BABProgression,
+) -> Arc<dyn Fn() -> TextBundle + Send + Sync> {
+    let level = row_i;
+    let table_headers = PROGRESSION_TABLE_HEADERS;
+    Arc::new(move || TextBundle {
+        text: Text::from_section(
+            if row_i == 0 {
+                String::from(table_headers[col_i].clone())
+            } else if col_i == 0 {
+                level.to_string()
+            } else if col_i == 1 {
+                BaseAttack::from_progression(&bab, level).to_string()
+            } else if col_i == 2 {
+                format!("+{}", fort_save)
+            } else if col_i == 3 {
+                format!("+{}", will_save)
+            } else if col_i == 4 {
+                format!("+{}", reflex_save)
+            } else {
+                format!("|{row_i}, {col_i}|")
+            },
+            {
+                if row_i == 0 {
+                    header_style_clone.clone()
+                } else {
+                    text_style_clone.clone()
+                }
+            },
+        ),
+        style: Style {
+            padding: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(5.)),
+            width: Val::Px(cols_width),
+            ..default()
+        },
+        background_color: Color::rgba(0.2, 0.2, 0.2, 0.9).into(),
+        ..default()
+    })
+}
+
+use crate::technical::class::ClassFeatureDescription;
+fn class_table_common(
+    class_info: &ClassInfo,
+    row_i: usize,
+    features: &Vec<ClassFeatureDescription>,
+    feature_items: &mut Vec<FeatureItem>,
+    text_style: &TextStyle,
+) {
+    for (i, class_feature) in class_info.class_features[row_i - 1].iter().enumerate() {
+        let feature = &features
+            .iter()
+            .filter(|feature_desc| feature_desc.class_feature_name == class_feature.as_default())
+            .next()
+            .expect("class feature in class_info not found in class_asset");
+        feature_items.push(FeatureItem {
+            title_string: {
+                if class_info.class_features[row_i - 1].len() > i + 1 {
+                    let feature_title = feature.title.clone();
+                    let mut title_string = feature_title.to_string();
+                    title_string.push_str(", ");
+                    title_string
+                } else {
+                    feature.title.clone()
+                }
+            },
+            text_style: text_style.clone(),
+            class_feature: *class_feature,
+            interaction: Interaction::default(),
+            tooltip: TooltipText(Text::from_sections([
+                TextSection::new(&feature.title, text_style.clone()),
+                TextSection::new("\n", text_style.clone()),
+                TextSection::new(
+                    tooltip::first_99_words(feature.description.clone()),
+                    text_style.clone(),
+                ),
+            ])),
+        });
     }
 }

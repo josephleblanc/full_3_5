@@ -5,7 +5,7 @@ use crate::systems::game::race::RacialTraitName;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     utils::BoxedFuture,
 };
 use serde::Deserialize;
@@ -22,8 +22,9 @@ pub struct AltTraitDisplay {
     pub source: String,
 }
 
-#[derive(Debug, Deserialize, TypeUuid, Default)]
+#[derive(Debug, Deserialize, TypeUuid, Default, TypePath)]
 #[uuid = "06c14941-a310-4f2d-bbf0-4abe3dec0847"]
+#[type_path = "crate::technical::alternate_traits"]
 pub struct AltTraitAsset {
     pub race: PlayableRace,
     pub alternate_traits: Vec<AltTraitDisplay>,

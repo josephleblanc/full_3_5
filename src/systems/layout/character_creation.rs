@@ -1,6 +1,7 @@
 use crate::menu::character_creation::components::*;
 use crate::menu::character_creation::layout::generics::build_subtab_buttons::CharacterCreationSubTabs;
 use crate::menu::character_creation::layout::generics::build_tab_buttons::CharacterTabs;
+use std::sync::Arc;
 
 use crate::menu::components::ScrollingList;
 use crate::menu::styles::*;
@@ -33,7 +34,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             background_color: Color::BLACK.into(),
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size::width(Val::Px(300.)),
+                width: Val::Px(300.),
                 ..default()
             },
             text: Text::from_section(
@@ -55,7 +56,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             style: Style {
                 display: Display::Flex,
                 flex_direction: FlexDirection::Column,
-                size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
                 ..default()
             },
             background_color: Color::BLACK.into(),
@@ -72,7 +74,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                     display: Display::Flex,
                     flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
-                    size: Size::new(Val::Percent(100.), Val::Auto),
+                    width: Val::Percent(100.),
+                    height: Val::Auto,
                     margin: UiRect {
                         bottom: Val::Px(10.),
                         ..default()
@@ -97,8 +100,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     display: Display::Flex,
-                    size: Size::new(Val::Percent(100.), Val::Percent(75.)),
-                    min_size: Size::new(Val::Auto, Val::Percent(70.)),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(75.),
+                    min_width: Val::Auto,
+                    min_height: Val::Percent(70.),
                     flex_grow: 1.0,
                     ..default()
                 },
@@ -116,10 +121,11 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     display: Display::Flex,
-                    size: Size::new(Val::Percent(100.), Val::Auto),
+                    width: Val::Percent(100.),
+                    height: Val::Auto,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    gap: Size::width(Val::Px(30.)),
+                    column_gap: Val::Px(30.),
                     margin: UiRect {
                         top: Val::Percent(3.),
                         ..default()
@@ -176,7 +182,6 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size::new(Val::Auto, Val::Auto),
                     align_items: AlignItems::Center,
                     ..default()
                 },
@@ -205,8 +210,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Row,
-                    size: Size::height(Val::Percent(90.)),
-                    overflow: (Overflow::Hidden),
+                    height: Val::Percent(90.),
+                    overflow: Overflow::clip(),
                     ..default()
                 },
                 background_color: Color::DARK_GREEN.into(),
@@ -249,7 +254,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 list.spawn((
                     ButtonBundle {
                         style: Style {
-                            size: Size::width(Val::Percent(100.)),
+                            width: Val::Percent(100.),
                             padding: UiRect::left(Val::Percent(7.)),
                             ..default()
                         },
@@ -311,7 +316,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 list.spawn((
                     ButtonBundle {
                         style: Style {
-                            size: Size::width(Val::Percent(100.)),
+                            width: Val::Percent(100.),
                             padding: UiRect::left(Val::Percent(7.)),
                             ..default()
                         },
@@ -404,7 +409,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                         list.spawn((
                             ButtonBundle {
                                 style: Style {
-                                    size: Size::width(Val::Percent(100.)),
+                                    width: Val::Percent(100.),
                                     padding: UiRect::left(Val::Percent(7.)),
                                     ..default()
                                 },
@@ -448,14 +453,15 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
-                    size: Size::new(Val::Percent(100.), Val::Percent(90.)),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(90.),
                     padding: UiRect {
                         top: Val::Px(8.),
                         bottom: Val::Px(8.),
                         left: Val::Px(0.),
                         right: Val::Px(0.),
                     },
-                    overflow: (Overflow::Hidden),
+                    overflow: Overflow::clip(),
                     ..default()
                 },
                 background_color: Color::DARK_GREEN.into(),
@@ -471,7 +477,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 style: Style {
                     flex_direction: FlexDirection::Column,
                     align_items: AlignItems::FlexStart,
-                    size: Size::width(Val::Percent(100.)),
+                    width: Val::Percent(100.),
                     padding: UiRect {
                         left: Val::Px(20.),
                         right: Val::Px(20.),
@@ -498,7 +504,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             // padding: UiRect::all(Val::Px(5.)),
             // margin: UiRect::all(Val::Px(10.)),
             flex_direction: FlexDirection::Column,
-            gap: Size::height(Val::Px(8.)),
+            row_gap: Val::Px(8.),
             ..default()
         },
         background_color: Color::rgba(0.2, 0.2, 0.2, 0.2).into(), // RACIAL_CHOICES_BUTTON_COLOR,
@@ -546,9 +552,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
-                    size: Size::new(Val::Px(400.), Val::Percent(100.)),
+                    width: Val::Px(400.),
+                    height: Val::Percent(100.),
                     align_self: AlignSelf::Center,
-                    max_size: Size::width(Val::Px(400.)),
+                    max_width: Val::Px(400.),
                     padding: UiRect::all(Val::Px(15.)),
                     ..default()
                 },
@@ -592,7 +599,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
                 NodeBundle {
                     style: Style {
                         flex_direction: FlexDirection::Row,
-                        max_size: Size::width(Val::Px(400.)),
+                        max_width: Val::Px(400.),
                         justify_content: JustifyContent::SpaceBetween,
                         margin: UiRect::new(Val::Px(20.), Val::Px(140.), Val::Px(8.), Val::Px(8.)),
                         ..default()
@@ -654,7 +661,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     let trait_column = NodeBundle {
         style: Style {
             flex_direction: FlexDirection::Column,
-            size: Size::width(Val::Percent(100.)),
+            width: Val::Percent(100.),
             ..default()
         },
         background_color: Color::YELLOW_GREEN.into(),
@@ -662,10 +669,10 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     let trait_row = NodeBundle {
         style: Style {
-            size: Size::width(Val::Percent(100.)),
+            width: Val::Percent(100.),
             margin: UiRect::all(Val::Px(8.)),
             flex_direction: FlexDirection::Row,
-            gap: Size::width(Val::Px(20.)),
+            column_gap: Val::Px(20.),
             ..default()
         },
         background_color: Color::YELLOW_GREEN.into(),
@@ -867,7 +874,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         background_color: Color::PURPLE.into(), // RACIAL_CHOICES_BUTTON_COLOR,
         ..default()
     },);
-    let chosen_trait_text = (TextBundle {
+    let chosen_trait_text = Arc::new(|| TextBundle {
         text: Text::from_section(
             "",
             TextStyle {
@@ -882,12 +889,12 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         background_color: Color::VIOLET.into(), // RACIAL_CHOICES_TEXT_BG_COLOR,
         ..default()
-    },);
+    });
     //  Chosen Standard Traits - make 20 and use as needed
     for i in 0..20 {
         commands
             .spawn((
-                chosen_trait_text.clone(),
+                chosen_trait_text(),
                 ChosenStandardTrait,
                 Interaction::None,
                 Name::from(format!("Chosen Standard Trait Name Text {}", i)),
@@ -931,14 +938,7 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
     for i in 0..20 {
         commands
             .spawn((
-                //         chosen_trait_node.clone(),
-                //         // Label, shared with text below
-                //         ChosenAlternateTrait,
-                //         Name::from(format!("Chosen Alternate Trait Name {}", i)),
-                //     ))
-                //     .with_children(|list_button| {
-                //         list_button.spawn((
-                chosen_trait_text.clone(),
+                (chosen_trait_text)(),
                 // Label, shared with node above
                 ChosenAlternateTrait,
                 Name::from(format!("Chosen Standard Trait Name Text {}", i)),
@@ -1009,7 +1009,8 @@ pub fn build_layout(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     flex_direction: FlexDirection::Column,
-                    size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
                     align_self: AlignSelf::Center,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,

@@ -58,7 +58,7 @@ impl Into<TabListParent> for Tab {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Event)]
 pub struct SelectTabEvent {
     pub entity: Entity,
     pub tab: Tab,
@@ -92,7 +92,7 @@ impl SelectedWrapper<SubTab> for SelectedSubTab {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Event)]
 pub struct SelectSubTabEvent {
     pub tab: Tab,
     pub subtab: SubTab,
@@ -252,7 +252,7 @@ pub enum LeftPanelEnum {
 //     }
 // }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Event)]
 /// Event sent when clicking on a button in the left panel of character creation.
 /// Used to determine whether a node in the central area is displayed or hidden.
 pub struct LeftPanelEvent {

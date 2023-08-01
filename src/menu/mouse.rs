@@ -48,7 +48,7 @@ pub fn mouse_scroll(
 
                     scrolling_list.position += dy;
                     scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
-                    style.position.top = Val::Px(scrolling_list.position);
+                    style.top = Val::Px(scrolling_list.position);
                     println!("moved padding by {}", scrolling_list.position);
                 }
             }
@@ -60,6 +60,6 @@ pub fn scroll_snap_top(mut query_list: Query<(&mut ScrollingList, &mut Style)>) 
     for (mut scrolling_list, mut style) in &mut query_list {
         // snap to top
         scrolling_list.position = 0.;
-        style.position.top = Val::Px(scrolling_list.position);
+        style.top = Val::Px(scrolling_list.position);
     }
 }

@@ -16,15 +16,20 @@ pub fn display_on_hover(
                 tooltip_style.display = Display::Flex;
                 let mut calculated_tooltip_left = Val::Px(cursor_event.position.x - 20.);
                 calculated_tooltip_left
-                    .try_sub_assign(tooltip_style.size.width)
+                    .try_sub_assign(tooltip_style.width)
                     .unwrap();
-                tooltip_style.position = UiRect {
-                    left: calculated_tooltip_left,
-                    bottom: Val::Px(cursor_event.position.y),
-                    ..default()
-                };
+                // tooltip_style.position = UiRect {
+                //     left: calculated_tooltip_left,
+                //     bottom: Val::Px(cursor_event.position.y),
+                //     ..default()
+                // };
+                tooltip_style.left = calculated_tooltip_left;
+                tooltip_style.bottom = Val::Px(cursor_event.position.y);
                 *tooltip = tooltip_text.0.clone();
-                println!("tooltip position: {:#?}", tooltip_style.position);
+                println!(
+                    "tooltip left and bottom values: (left: {:#?}) (bottom: {:#?})",
+                    tooltip_style.left, tooltip_style.bottom
+                );
                 println!("tooltip position: {:#?}", cursor_event.position);
             }
         }

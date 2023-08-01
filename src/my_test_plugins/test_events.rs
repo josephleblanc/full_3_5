@@ -10,15 +10,21 @@ impl Plugin for TestEvents {
             TimerMode::Repeating,
         )))
         .add_event::<TestEvent>()
-        .add_system(my_system_send_event)
-        .add_system(my_system_recv_event_one)
-        .add_system(my_system_recv_event_two.before(my_system_send_event));
+        .add_systems(
+            Update,
+            (
+                my_system_send_event,
+                my_system_recv_event_one,
+                my_system_recv_event_two.before(my_system_send_event),
+            ),
+        );
     }
 }
 
 #[derive(Resource)]
 struct TestEventsTimer(Timer);
 
+#[derive(Event)]
 pub struct TestEvent(usize); // custom event type
 
 fn my_system_send_event(

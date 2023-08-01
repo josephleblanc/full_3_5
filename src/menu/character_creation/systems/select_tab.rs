@@ -111,7 +111,7 @@ pub fn tab_button_color(
     for (mut background_color, interaction, tab) in interaction_query.iter_mut() {
         if (*selected).selected() != *tab {
             match *interaction {
-                Interaction::Clicked => {
+                Interaction::Pressed => {
                     *background_color = RACE_BUTTON_COLOR_SELECTED.into();
                 }
                 Interaction::Hovered => {
@@ -136,7 +136,7 @@ pub fn subtab_button_color(
     for (mut background_color, interaction, subtab) in interaction_query.iter_mut() {
         if (*selected).as_ref().get(&subtab.tab).unwrap() != &subtab.subtab {
             match *interaction {
-                Interaction::Clicked => {
+                Interaction::Pressed => {
                     *background_color = RACE_BUTTON_COLOR_SELECTED.into();
                 }
                 Interaction::Hovered => {
@@ -165,7 +165,7 @@ pub fn tab_button_select(
     if let Some((interaction, entity, &tab)) = interaction_query.iter_mut().last() {
         if selected.selected() != tab {
             match *interaction {
-                Interaction::Clicked => {
+                Interaction::Pressed => {
                     println!(
                         "sending event: {:#?}",
                         SelectTabEvent {
@@ -213,7 +213,7 @@ pub fn subtab_button_select(
     mut selected: ResMut<SelectedSubTabsMap>,
 ) {
     if let Some((interaction, entity, &button)) = interaction_query.iter_mut().last() {
-        if *interaction == Interaction::Clicked {
+        if *interaction == Interaction::Pressed {
             if let Some(selected_subtab) = (*selected).as_ref_mut().get_mut(&button.tab) {
                 if selected_subtab != &button.subtab {
                     subtab_event_writer.send(SelectSubTabEvent {

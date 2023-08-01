@@ -1,6 +1,7 @@
 //! Implements loader for a custom asset type.
 
 pub(crate) use crate::systems::game::character::PlayableRace;
+use bevy::reflect::TypePath;
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     prelude::*,
@@ -9,8 +10,9 @@ use bevy::{
 };
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize, TypeUuid, Default)]
+#[derive(Debug, Deserialize, TypeUuid, Default, TypePath)]
 #[uuid = "c9b00296-4394-478c-a140-1bcb3d78c517"]
+#[type_path = "crate::technical::race_load"]
 pub struct RaceAsset {
     pub race: PlayableRace,
     pub text: String,

@@ -1,4 +1,5 @@
 use crate::menu::styles::*;
+
 use bevy::prelude::*;
 
 pub fn new_selected_tab<T, U>(
@@ -24,7 +25,7 @@ where
         let selection_copy = *selected_tab;
         for (interaction, tab, mut color) in &mut interaction_query {
             match *interaction {
-                Interaction::Clicked => {
+                Interaction::Pressed => {
                     if selection_copy != Into::<T>::into(*tab) {
                         *color = RACE_BUTTON_COLOR_SELECTED.into();
                         *selected_tab = Into::<T>::into(*tab);

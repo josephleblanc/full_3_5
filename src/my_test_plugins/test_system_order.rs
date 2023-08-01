@@ -13,9 +13,9 @@ impl Plugin for TestSystemOrderMethodOne {
                 second: false,
                 third: false,
             })
-            .add_system(print_1st.before(print_2nd))
-            .add_system(print_2nd)
-            .add_system(print_3rd.after(print_2nd));
+            .add_systems(Update, print_1st.before(print_2nd))
+            .add_systems(Update, print_2nd)
+            .add_systems(Update, print_3rd.after(print_2nd));
     }
 }
 
@@ -30,7 +30,7 @@ impl Plugin for TestSystemOrderMethodTwo {
                 second: false,
                 third: false,
             })
-            .add_systems((print_1st, print_2nd, print_3rd).chain());
+            .add_systems(Update, (print_1st, print_2nd, print_3rd).chain());
     }
 }
 
